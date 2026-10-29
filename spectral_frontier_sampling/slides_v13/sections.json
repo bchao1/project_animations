@@ -1,0 +1,308 @@
+[
+  {
+    "scene": "S00_Title",
+    "index": 0,
+    "name": "title",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S00_Title_0000_title.mp4",
+    "duration_s": 6.7,
+    "last_frame": "slides_v13/qa/S00_Title_0000_title_last.png",
+    "description": "spectrogram (step →, frequency ↑, height ∝ compute) fills; white frontier, yellow: our grid size"
+  },
+  {
+    "scene": "S01_Frontier",
+    "index": 0,
+    "name": "xhat",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S01_Frontier_0000_xhat.mp4",
+    "duration_s": 3.8,
+    "last_frame": "slides_v13/qa/S01_Frontier_0000_xhat_last.png",
+    "description": "climber x̂₀ sharpens, step 0 → 49"
+  },
+  {
+    "scene": "S01_Frontier",
+    "index": 1,
+    "name": "spectrum",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S01_Frontier_0001_spectrum.mp4",
+    "duration_s": 1.3,
+    "last_frame": "slides_v13/qa/S01_Frontier_0001_spectrum_last.png",
+    "description": "final image's power spectrum: a power law (dashed fit)"
+  },
+  {
+    "scene": "S01_Frontier",
+    "index": 2,
+    "name": "snr",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S01_Frontier_0002_snr.mp4",
+    "duration_s": 6.3,
+    "last_frame": "slides_v13/qa/S01_Frontier_0002_snr_last.png",
+    "description": "SNR curve per step rises past δ; its crossing = frontier; spectrogram fills one column per step"
+  },
+  {
+    "scene": "S01_Frontier",
+    "index": 3,
+    "name": "frontier",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S01_Frontier_0003_frontier.mp4",
+    "duration_s": 3.0,
+    "last_frame": "slides_v13/qa/S01_Frontier_0003_frontier_last.png",
+    "description": "white line joins the crossings: the spectral frontier; legend"
+  },
+  {
+    "scene": "S02_Waste",
+    "index": 0,
+    "name": "nyquist",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S02_Waste_0000_nyquist.mp4",
+    "duration_s": 1.5,
+    "last_frame": "slides_v13/qa/S02_Waste_0000_nyquist_last.png",
+    "description": "Nyquist: grid n holds ω ≤ n/2; tokens ∝ n² ∝ ω², so compute grows with frequency"
+  },
+  {
+    "scene": "S02_Waste",
+    "index": 1,
+    "name": "area",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S02_Waste_0001_area.mp4",
+    "duration_s": 2.3,
+    "last_frame": "slides_v13/qa/S02_Waste_0001_area_last.png",
+    "description": "y axis stretches to compute: area = cost"
+  },
+  {
+    "scene": "S02_Waste",
+    "index": 2,
+    "name": "fullres",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S02_Waste_0002_fullres.mp4",
+    "duration_s": 1.6,
+    "last_frame": "slides_v13/qa/S02_Waste_0002_fullres_last.png",
+    "description": "full res (70.5 s): everything above the frontier hatched red = still noise"
+  },
+  {
+    "scene": "S02_Waste",
+    "index": 3,
+    "name": "speed",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S02_Waste_0003_speed.mp4",
+    "duration_s": 2.3,
+    "last_frame": "slides_v13/qa/S02_Waste_0003_speed_last.png",
+    "description": "SPEED-3 staircase: each 2× stage adds an octave of noise (35% of full-res compute)"
+  },
+  {
+    "scene": "S02_Waste",
+    "index": 4,
+    "name": "more_stages",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S02_Waste_0004_more_stages.mp4",
+    "duration_s": 3.1,
+    "last_frame": "slides_v13/qa/S02_Waste_0004_more_stages_last.png",
+    "description": "4, 6, 8 stages: less waste, more hand-set choices"
+  },
+  {
+    "scene": "S03_PerSample",
+    "index": 0,
+    "name": "morph",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S03_PerSample_0000_morph.mp4",
+    "duration_s": 8.4,
+    "last_frame": "slides_v13/qa/S03_PerSample_0000_morph_last.png",
+    "description": "frontier reaches ω = 32 at step 38 / 37 / 32 / 32 (astronaut, lake, torii, koi); SPEED-3 the same for all"
+  },
+  {
+    "scene": "S03_PerSample",
+    "index": 1,
+    "name": "pair",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S03_PerSample_0001_pair.mp4",
+    "duration_s": 0.3,
+    "last_frame": "slides_v13/qa/S03_PerSample_0001_pair_last.png",
+    "description": "astronaut (smooth) vs koi pond (detailed)"
+  },
+  {
+    "scene": "S03_PerSample",
+    "index": 2,
+    "name": "same_speed",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S03_PerSample_0002_same_speed.mp4",
+    "duration_s": 1.7,
+    "last_frame": "slides_v13/qa/S03_PerSample_0002_same_speed_last.png",
+    "description": "same SPEED staircase: share of its compute still noise, per image"
+  },
+  {
+    "scene": "S04_Tracking",
+    "index": 0,
+    "name": "ladder",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S04_Tracking_0000_ladder.mp4",
+    "duration_s": 1.3,
+    "last_frame": "slides_v13/qa/S04_Tracking_0000_ladder_last.png",
+    "description": "candidate grid sides 64, 66, …, 256"
+  },
+  {
+    "scene": "S04_Tracking",
+    "index": 1,
+    "name": "grow",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S04_Tracking_0001_grow.mp4",
+    "duration_s": 5.7,
+    "last_frame": "slides_v13/qa/S04_Tracking_0001_grow_last.png",
+    "description": "yellow staircase traced on the real schedule; x̂₀ at 64² … 256²"
+  },
+  {
+    "scene": "S04_Tracking",
+    "index": 2,
+    "name": "saved",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S04_Tracking_0002_saved.mp4",
+    "duration_s": 0.9,
+    "last_frame": "slides_v13/qa/S04_Tracking_0002_saved_last.png",
+    "description": "skipped compute hatched: 13 s vs 70 s, 5.3× faster"
+  },
+  {
+    "scene": "S04_Tracking",
+    "index": 3,
+    "name": "cap",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S04_Tracking_0003_cap.mp4",
+    "duration_s": 1.5,
+    "last_frame": "slides_v13/qa/S04_Tracking_0003_cap_last.png",
+    "description": "2× cap: 64² → 256² crossed out"
+  },
+  {
+    "scene": "S05_Measure",
+    "index": 0,
+    "name": "unknown",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S05_Measure_0000_unknown.mp4",
+    "duration_s": 1.1,
+    "last_frame": "slides_v13/qa/S05_Measure_0000_unknown_last.png",
+    "description": "true frontier hidden: needs the final image"
+  },
+  {
+    "scene": "S05_Measure",
+    "index": 1,
+    "name": "xhat_now",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S05_Measure_0001_xhat_now.mp4",
+    "duration_s": 2.2,
+    "last_frame": "slides_v13/qa/S05_Measure_0001_xhat_now_last.png",
+    "description": "clean guess at step 19 on the 64² grid"
+  },
+  {
+    "scene": "S05_Measure",
+    "index": 2,
+    "name": "rings",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S05_Measure_0002_rings.mp4",
+    "duration_s": 2.2,
+    "last_frame": "slides_v13/qa/S05_Measure_0002_rings_last.png",
+    "description": "ring power of the guess: rings 2–12 used, the rest faded"
+  },
+  {
+    "scene": "S06_Estimate",
+    "index": 0,
+    "name": "extrapolate",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S06_Estimate_0000_extrapolate.mp4",
+    "duration_s": 1.2,
+    "last_frame": "slides_v13/qa/S06_Estimate_0000_extrapolate_last.png",
+    "description": "sketch: low rings carried to the grid edge with an uncertainty band"
+  },
+  {
+    "scene": "S06_Estimate",
+    "index": 1,
+    "name": "test",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S06_Estimate_0001_test.mp4",
+    "duration_s": 2.5,
+    "last_frame": "slides_v13/qa/S06_Estimate_0001_test_last.png",
+    "description": "real estimate vs the falling threshold: climber grows at step 20"
+  },
+  {
+    "scene": "S06_Estimate",
+    "index": 2,
+    "name": "two_samples",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S06_Estimate_0002_two_samples.mp4",
+    "duration_s": 2.9,
+    "last_frame": "slides_v13/qa/S06_Estimate_0002_two_samples_last.png",
+    "description": "climber grows at step 20, astronaut at 38; SPEED at 27 for every image"
+  },
+  {
+    "scene": "S06_Estimate",
+    "index": 3,
+    "name": "free",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S06_Estimate_0003_free.mp4",
+    "duration_s": 1.0,
+    "last_frame": "slides_v13/qa/S06_Estimate_0003_free_last.png",
+    "description": "cost: a few FFTs per step, no training"
+  },
+  {
+    "scene": "S07_Loop",
+    "index": 0,
+    "name": "loop",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S07_Loop_0000_loop.mp4",
+    "duration_s": 4.3,
+    "last_frame": "slides_v13/qa/S07_Loop_0000_loop_last.png",
+    "description": "measure → estimate → test → grow; staircase traced step by step"
+  },
+  {
+    "scene": "S07_Loop",
+    "index": 1,
+    "name": "pair_loop",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S07_Loop_0001_pair_loop.mp4",
+    "duration_s": 3.1,
+    "last_frame": "slides_v13/qa/S07_Loop_0001_pair_loop_last.png",
+    "description": "astronaut 9.2 s (7.7×) vs koi pond (2.9×), each with its own staircase"
+  },
+  {
+    "scene": "S07_Loop",
+    "index": 2,
+    "name": "gallery",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S07_Loop_0002_gallery.mp4",
+    "duration_s": 1.5,
+    "last_frame": "slides_v13/qa/S07_Loop_0002_gallery_last.png",
+    "description": "six images smooth → detailed: 7.7× … 2.9×"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 0,
+    "name": "spread",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S08_Results_0000_spread.mp4",
+    "duration_s": 2.3,
+    "last_frame": "slides_v13/qa/S08_Results_0000_spread_last.png",
+    "description": "100 cinematic prompts by speedup: 2.9× to 7.7×, median 4.9×"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 1,
+    "name": "styles",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S08_Results_0001_styles.mp4",
+    "duration_s": 0.3,
+    "last_frame": "slides_v13/qa/S08_Results_0001_styles_last.png",
+    "description": "line art / anime / product photo, full res vs ours, 9.5–10.2×"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 2,
+    "name": "power",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S08_Results_0002_power.mp4",
+    "duration_s": 1.7,
+    "last_frame": "slides_v13/qa/S08_Results_0002_power_last.png",
+    "description": "20,000 prompts: time per power decile; 6.45× smoothest, 3.95× most detailed"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 3,
+    "name": "bars",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S08_Results_0003_bars.mp4",
+    "duration_s": 1.9,
+    "last_frame": "slides_v13/qa/S08_Results_0003_bars_last.png",
+    "description": "time bars: 70.5 / 29.0 / 24.9 / 15.1 s; 4.68× vs full res, 1.65× vs SPEED-3"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 4,
+    "name": "images",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S08_Results_0004_images.mp4",
+    "duration_s": 1.5,
+    "last_frame": "slides_v13/qa/S08_Results_0004_images_last.png",
+    "description": "canyon: full res 70 s, SPEED-2 29 s, ours 10 s"
+  },
+  {
+    "scene": "S09_Outlook",
+    "index": 0,
+    "name": "three",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S09_Outlook_0000_three.mp4",
+    "duration_s": 6.0,
+    "last_frame": "slides_v13/qa/S09_Outlook_0000_three_last.png",
+    "description": "three ideas, headline numbers"
+  },
+  {
+    "scene": "S09_Outlook",
+    "index": 1,
+    "name": "end",
+    "file": "/home/bchao/project_animations/spectral_frontier_sampling/media/videos/animation_sfs_v13/1080p60/sections/S09_Outlook_0001_end.mp4",
+    "duration_s": 4.0,
+    "last_frame": "slides_v13/qa/S09_Outlook_0001_end_last.png",
+    "description": "end card"
+  }
+]
