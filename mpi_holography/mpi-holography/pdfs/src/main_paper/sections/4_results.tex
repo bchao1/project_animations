@@ -1,0 +1,83 @@
+In this section, we describe implementation details including the data preparation pipeline and hardware configurations in Section \ref{subsec:impl} and show simulated and experimentally captured results in Section \ref{subsec:results}.
+
+% talk about how to generate MPI representations. 
+\subsection{Implementation Details}
+\label{subsec:impl}
+
+\subsubsection{Evaluation Datasets} We demonstrate the effectiveness of our method on a wide collection of scenes from the NeRF Blender synthetic dataset \cite{mildenhall2020nerf} and the Mip-NeRF 360 \cite{barron2022mipnerf360} dataset. 
+
+\subsubsection{Baseline 3D Scene Representations} We compare MPI-based CGH with conventional layer-based CGH \cite{peng2020neural, shi2021towards, shi2022end} using RGBD images, and the state-of-the-art primitives-based random-phase CGH method, Random-phase Wave Splatting (RPWS) with 2D Gaussians \cite{chao2025rpws}.
+
+For the RPWS baseline, we use the \texttt{gsplat} software library to optimize 2DGS representations for Gaussian-based CGH. As described in RPWS \cite{chao2025rpws}, we optimize Gaussians to reconstruct the square of the target image, and extract the square root of the optimized Gaussian colors of CGH calculation.
+
+\begin{figure*}[t!]
+    \centering
+    \includegraphics[width=\textwidth]{main_paper/draft_figures/depth_leakage.pdf}
+    \caption{\textbf{Defocus and occlusion behaviours of different CGH algorithms at depth transitions.} We show zoom-in crops of 3D focal stacks and 4D light fields reconstructed using different CGH algorithms. RPWS, a state-of-the-art primitives-based CGH method, produces the most natural defocus blur and accurate occlusion behavior. In contrast, RGBD holograms exhibit light leakage and halo artifacts in defocus regions, as well as dark occlusion boundaries in light field views. Increasing the number of RGBD depth layers does not alleviate these issues. Our MPI holograms, on the other hand, reconstruct natural defocus blur and accurate occlusion effects using as few as four depth layers. }
+    \label{fig:artifacts_comparison}
+\end{figure*}
+
+There are many ways to generate an MPI representation of a 3D scene. Prior methods include training a feed-forward neural network to predict the MPIs of a 3D scene given a stereo image pair \cite{zhou2018mpi} or from a single image \cite{pu2023sinmpi, khan2023tiledmpi, tucker2020singlempi, han2022adaptivempi}.
+
+Since our goal is to demonstrate the potential of MPIs for CGH, we do not focus on how to acquire the MPI representation itself as there has already been extensive research in such area and that \textit{our method is agnostic of the MPI generation process}. Instead, we simply extract MPIs from a set of pre-optimized Gaussian splats by binding the Gaussians to predetermined depth planes. Specifically, given a set of depth-sorted Gaussian splats, we define the color image $c_{d_k}$ and alpha image $\alpha_{d_k}$ at depth plane $d_k, 1\leq k\leq D$ to be 
+\begin{align}
+    c_{d_k} & = \frac{\sum_{i=s_k}^{s_k+N_k}\alpha_i c_i\prod_{j<i}(1-\alpha_j)}{1 - \prod_{i=s_k}^{N_k}(1-\alpha_i)}, \;
+    \alpha_{d_k} = 1 - \prod_{i=s_k}^{N_k}(1-\alpha_i)
+\end{align}
+We partition the depth planes such that they are uniformly distributed within $(z_\text{min}, z_\text{max})$, which are the nearest and farthest depth planes of the 3D hologram volume, respectively.
+
+
+Most importantly, this data generation pipeline allows us to flexibly control the number of layers in the MPI representation, which is not supported for current data-driven MPI generation networks as they all generate MPIs with a fixed number of layers. This flexibility allows for extensive ablation studies and benchmarking experiments in Section 4 to help investigate the effect of the number of MPI layers on image quality and CGH runtime. We addtionally demonstrate that MPI-based CGH is independent of how MPIs are acquired in Fig. \ref{fig:stereo_mag}, where we show qualitative results of MPI holograms generated using a representative neural-network-based MPI predictor, Stereo Magnification \cite{zhou2018mpi}. 
+ 
+To generate RGBD images of a given view, we use DepthAnything \cite{depth_anything_v2} to predict its depth and partition the scene into different depth bins to generate corresponding depth masks and masked RGB images. We use the same uniform depth partitioning scheme as MPIs.
+
+\subsubsection{Algorithm Implementations. } We implement MPI-based CGH and all baseline methods in PyTorch. Please refer to the supplementary materials for pseudocode and implementation details.
+
+% Fig. 5 is placed with [H] (exactly here) so it lands at the top of the RIGHT column,
+% beneath the full-width Fig. 4 banner, while text fills the left column.
+% (Vanilla top floats always go to the left column first, so [H] positional placement
+% is used to reach the right column.)
+
+
+\begin{figure*}[t!]
+    \centering
+    \includegraphics[width=\textwidth]{main_paper/draft_figures/fs_lf_main.pdf}
+    \caption{\textbf{Experimentally captured light field parallax at different focused depths.} We capture light field parallax \textit{at different depth planes} by translating both the pupil horizontally at the Fourier plane and the camera along the optical axis. As expected, the parallax shift of objects increases as they move farther away from the focused depth, as seen from the red zoom-in crops for the front-focus results, and the blue zoom-in crops from the back-focus results. The objects that are at the focused depth, i.e. light field plane, don't move. These results collectively demonstrate that our MPI holograms reconstruct accurate light fields that respect standard ray optics geometry.}
+    \label{fig:lf_different_depths}
+\end{figure*}
+
+
+\subsubsection{Experimental Hardware Setup.} MPI-based CGH generates complex-valued holograms. We perform SGD \cite{peng2020neural} with a complex field supervision loss \cite{chen2021complex} to synthesize phase-only holograms that accurately reconstruct the target complex wavefront at a fixed propagation distance (4cm) from the phase-only SLM. We use a 1080p HOLOEYE Pluto-2.1 phase-only SLM with $8 \mu m$ pixel pitch and a FISBA READYBeam Ind2 fiber-coupled laser module as the illumination source. We use a FLIR GS3-U3-123S6C-C color camera placed on a z-axis translation stage (Thorlabs MTS25-Z8 50mm) to capture focal slices at different distances from the SLM. For horizontal parallax and light field capture, we place an adjustable pupil on a motorized horizontal translation stage (Newport Optics CONEX-AGP) at the Fourier plane. We refer readers to the supplementary materials for more details on the experimental setup.
+
+\iffalse
+\subsection{Theoretical Analysis}
+\label{subsec:analysis}
+
+\subsubsection{Bounds on Depth Partitioning}
+We analyze the theoretical lower bound of the number of partitioned depth planes such that the reconstructed light field and parallax from the MPI hologram is imperceptible from the ground truth light field.
+
+% shifts in light field
+
+When rendering a light field from the 
+\fi
+
+\subsection{Simulation and Experimental Results}
+\label{subsec:results}
+\subsubsection{Baseline Comparisons with Simulation Results. } We compare our method (MPI) with prior layer-based RGBD CGH and a state-of-the-art primitives-based CGH algorithm, Random-phase Wave Splatting (RPWS) with 2D Gaussians \cite{chao2025rpws}. For RGBD-based CGH and our MPI-based CGH method, we also ablate the number of depth layers. We use 24 frames time multiplexing ($T=24$) for all baselines.
+
+In Fig. \ref{fig:artifacts_comparison} and \ref{fig:results_sim}, we see that RPWS achieves the best quantitative 3D focal stack and 4D light field reconstruction quality at the cost of slow runtime. On the other hand, RGBD-based CGH achieves fast runtime yet results in poor reconstruction quality. Our MPI-based CGH pipeline gets the best of both worlds, achieving \textit{both} fast runtime and high image quality. RGBD holograms reconstruct somewhat plausible focal stacks and light fields, yet severe halo, leakage, and dark border artifacts, often appearing as “depth-tearing” near depth discontinuities, remain prominent. RPWS holograms achieve high image quality through dense 2D Gaussian representations with millions of primitives, but incur extremely slow runtimes. In contrast, our MPI holograms reconstruct both focal stacks and light fields with perceptually similar quality to RPWS while simultaneously achieving fast runtime.
+
+
+Additionally, Fig. \ref{fig:metrics_plot} presents runtime and image quality comparisons across various CGH baselines. Both RGBD-based CGH and MPI-based CGH reconstruction quality improve with an increasing number of depth layers, but their runtime scales approximately linearly with layer count. While this reflects an inherent trade-off between quantitative image quality and computational cost, we observe that perceptual quality saturates beyond roughly 30 layers, suggesting that MPI-based CGH offers a favorable balance for interactive display applications.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\linewidth]{main_paper/draft_figures/stereo_mag.pdf}
+    \caption{\textbf{MPI-based CGH works with MPIs produced by off-the-shelf neural networks.} We use MPIs generated by Stereo Magnification~\cite{zhou2018mpi}, a representative neural-network–based MPI predictor, for hologram synthesis. Our MPI-based CGH algorithm is \textit{agnostic to the MPI generation process} and reconstructs accurate 3D focal stacks.
+}
+    \label{fig:stereo_mag}
+\end{figure}
+
+\subsubsection{Experimentally Captured Focal Stack Results. } In Fig. \ref{fig:results_captured}, we show experimentally captured 3D focal stacks of holograms synthesized using different CGH algorithms. The captured results closely follow the trend observed in our simulations. MPI holograms reconstruct focal stacks with accuracy comparable to RPWS, whereas RGBD holograms struggle to reproduce realistic defocus blur even with additional depth layers.
+
+\subsubsection{Experimentally Captured Light Field Parallax Results. } In Fig. \ref{fig:results_captured}, we show experimentally captured horizontal parallax-only light fields of holograms synthesized using different CGH algorithms when the camera is focused at the hologram plane, or middle depth plane. We also capture the parallax effects at different focal planes (rear, middle, and front planes), which is shown in Fig. \ref{fig:lf_different_depths} and the supplemental materials. The captured light field results also closely follow the trend observed in our simulations, where we see clear parallax shifts in the zoom-in crops.

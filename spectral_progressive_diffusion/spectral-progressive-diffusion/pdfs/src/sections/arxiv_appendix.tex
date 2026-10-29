@@ -1,0 +1,561 @@
+% !TEX root = ../arxiv.tex
+\makeatletter
+\let\addcontentsline\arxiv@savedaddcontentsline
+\makeatother
+
+\newpage
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{Appendix Contents}
+\tableofcontents
+\newpage
+\appendix
+
+\section{Supporting Definitions and Proofs for Section~\ref{sec:method:schedule:signal}}
+\label{app:proofs-schedule}
+
+This appendix provides the justification of timestep alignment in Spectral Progressive Diffusion, the deferred proofs of Propositions~1 and~2 from Sec.~\ref{sec:method:schedule:signal}, along with supporting definitions.
+
+\subsection{Definitions}
+\label{app:prelim-schedule}
+
+\paragraph{Per-frequency SNR.}
+Following~\citet{kingma2021vdm}, we define the \emph{per-frequency signal-to-noise ratio (SNR)} as the ratio of the clean- and noise-component second moments of the per-frequency forward process in Eq.~\eqref{eq:forward-mode}:
+\begin{equation}
+  \mathrm{SNR}_\omega(t)
+  \;:=\;
+  \frac{\mathbb{E}[\,|(1-t)\,x_0^{(\omega)}|^2\,]}{\mathbb{E}[\,|t\,\epsilon^{(\omega)}|^2\,]}
+  \;=\;
+  \underbrace{\frac{(1-t)^2}{t^2}}_{\mathrm{SNR}(t)}\;\cdot\;P_\omega,
+  \label{eq:snr}
+\end{equation}
+which factorizes into a frequency-independent timestep term $\mathrm{SNR}(t) = (1-t)^2/t^2$ and the frequency-specific signal power $P_\omega$.
+
+\paragraph{Resolution grids and representable frequencies.}
+By the Nyquist--Shannon sampling theorem~\citep{nyquist1928certain,shannon1949communication}, a spatial grid of size $H \times W$ can represent 2D frequencies in the rectangle $|\omega_x| \le W/2$, $|\omega_y| \le H/2$. We define the maximum (fully) representable radial frequency as
+\begin{equation}
+  \omega_{\max}(H, W) \;=\; \frac{\min(H, W)}{2}.
+  \label{eq:nyquist-cap}
+\end{equation}
+Note that our definition of the maximum (fully) representable frequency above is conservative, as it captures only the maximum radial frequency fully supported on the spatial grid $H \times W$.
+A stage operating at reduced resolution $(sH, sW)$ for $s \in (0,1]$ can represent only a subset of the representable frequencies at full-resolution:
+\begin{equation}
+  \Omega_s \;:=\; \{\,\omega \in \Omega : |\omega| \le s \cdot \omega_{\max}(H, W)\,\} \;\subseteq\; \Omega.
+  \label{eq:nyquist-set}
+\end{equation}
+
+\subsection{Justification of Timestep Alignment}
+\label{app:time-align}
+
+We verify that applying the scalar rescaling in Eq.~\eqref{eq:scale-align} and querying the pretrained model at the aligned timestep $\tilde{t}_i$ in Eq.~\eqref{eq:time-align} maps the spectral noise expansion output $\mathbf{x}^{s_{i+1}}_{t_i}$ to a valid flow-matching state $\tilde{\mathbf{x}}^{s_{i+1}}_{\tilde{t}_i}$ at the new resolution scale $s_{i+1} > s_i$. Throughout this subsection we write $r := s_{i+1}/s_i > 1$ for the resolution ratio; the final formulas are stated in both the $r$ and $s_{i+1}/s_i$ forms to tie directly back to Eqs.~\eqref{eq:scale-align}--\eqref{eq:time-align} in Sec.~\ref{sec:method:noise-injection}. The derivations below assume the ideal setting in which the network outputs match the ground-truth flow targets.
+
+\paragraph{1. Setup.}
+The spectral noise expansion produces an expanded state $\mathbf{x}^{s_{i+1}}_{t_i}$ in the frequency domain of the expanded resolution grid. For a grid with $N_{s_{i+1}}$ points, the coefficients are:
+$$
+\left(x^{s_{i+1}}_{t_i}\right)^{(\omega)} =
+\begin{cases}
+(1-t_i)\left(x_{0}^{s_i}\right)^{(\omega)} + t_i\epsilon^{(\omega)}, & \omega \in \Omega_{s_i}, \\[2pt]
+t_i\epsilon'^{(\omega)}, & \omega \in \Omega_{s_{i+1}} \setminus \Omega_{s_i},
+\end{cases}
+$$
+where $\epsilon^{(\omega)}, \epsilon'^{(\omega)} \sim \mathcal{N}(0, 1)$ are independent standard Gaussian variables. Under the orthonormal identification of spectra across resolutions, the clean-signal coefficient at a shared frequency $\omega \in \Omega_{s_i}$ relates to its scale-$s_{i+1}$ counterpart by the resolution ratio $r$:
+$$
+\left(x_{0}^{s_{i+1}}\right)^{(\omega)} = r \cdot \left(x_{0}^{s_i}\right)^{(\omega)} = (s_{i+1}/s_i) \cdot \left(x_{0}^{s_i}\right)^{(\omega)}, \quad \omega \in \Omega_{s_i}.
+$$
+For the newly exposed high-frequency slots $\omega \in \Omega_{s_{i+1}} \setminus \Omega_{s_i}$, the clean coefficients are treated as noise-dominated at timestep $t_i$ per Proposition~1, so spectral noise expansion initializes them with the correct noise level.
+
+\paragraph{2. Timestep alignment.}
+We seek a scaling factor $\kappa_i$ and an aligned timestep $\tilde{t}_i \in (0, 1)$ such that, for every $\omega \in \Omega_{s_{i+1}}$, the transformed state satisfies:
+$$
+\left(\tilde{x}^{s_{i+1}}_{\tilde{t}_i}\right)^{(\omega)} = \kappa_i\left(x^{s_{i+1}}_{t_i}\right)^{(\omega)} = (1-\tilde{t}_i)\left(x_{0}^{s_{i+1}}\right)^{(\omega)} + \tilde{t}_i\tilde\epsilon^{(\omega)}, \quad \tilde\epsilon^{(\omega)} \sim \mathcal{N}(0,1) \text{ i.i.d.}
+$$
+By matching the noise coefficients across all bands and the signal coefficients on the shared band $\Omega_{s_i}$, we derive two scalar conditions:
+$$
+\kappa_i \cdot t_i = \tilde{t}_i, \quad \kappa_i(1-t_i) = r(1-\tilde{t}_i).
+$$
+Substituting $\kappa_i = \tilde{t}_i/t_i$ from the noise match into the signal match equation gives:
+$$
+\frac{\tilde{t}_i}{t_i}(1-t_i) = r(1-\tilde{t}_i)
+$$
+Solving for $\tilde{t}_i$ and re-expressing the result in $s_{i+1}/s_i$ notation gives:
+$$
+\tilde{t}_i = \frac{r \cdot t_i}{1 + (r - 1)t_i} = \frac{(s_{i+1}/s_i) \cdot t_i}{1 + ((s_{i+1}/s_i) - 1)t_i}.
+$$
+Consequently, the scaling factor $\kappa_i$ is:
+$$
+\kappa_i = \frac{r}{1 + (r - 1)t_i} = \frac{s_{i+1}/s_i}{1 + ((s_{i+1}/s_i) - 1)t_i}.
+$$
+Substituting these back into the setup confirms that $\left(\tilde{x}^{s_{i+1}}_{\tilde{t}_i}\right)^{(\omega)} = (1-\tilde{t}_i)\left(x_{0}^{s_{i+1}}\right)^{(\omega)} + \tilde{t}_i\tilde\epsilon^{(\omega)}$ holds for all $\omega \in \Omega_{s_{i+1}}$. This proves that the resulting scaled and timestep-aligned state $\tilde{\mathbf{x}}^{s_{i+1}}_{\tilde{t}_i}$ is a valid flow-matching state at resolution $s_{i+1}$ and timestep $\tilde{t}_i$. $\square$
+
+\subsection{Proof of Proposition 1: Per-frequency $\delta$-optimal Activation Time}
+\label{app:proof-prop1}
+
+We first establish a lemma giving the Bayes-optimal velocity error in closed form under a simplified modelling assumption $x_0^{(\omega)} \sim \mathcal{N}(0, P_\omega)$. In practice, we measure the power spectrum on centered (i.e. zero-mean) inputs $\mathbf{x}_0$ to get the power spectrum $P_\omega$, and this modelling assumption serves as a second moment approximation that allows the analytical derivation of our $\delta$-optimal resolution schedule. The proof of Proposition~1 then follows by solving the $\delta$-bound on the Bayes-optimal velocity error for $t$ to obtain the activation time $t_\omega$ in Eq.~\eqref{eq:activation}.
+
+\begin{lemma}[Bayes-optimal velocity error] Let $v^{*(\omega)}$ be the per-frequency component of the Bayes-optimal velocity predictor $\mathbf{v}^{*}$ defined in Sec.~\ref{sec:method:prelim:basics}:
+
+\begin{equation}
+  \mathbf{v}^*(\mathbf{x}_t, t) \;=\; \mathbb{E}\!\left[\,\boldsymbol{\epsilon} - \mathbf{x}_0 \,\big|\, \mathbf{x}_t\,\right].
+  \label{eq:optimal-v}
+\end{equation}
+Under the modelling assumption $x_0^{(\omega)} \sim \mathcal{N}(0, P_\omega)$, $v^{*(\omega)}$ deviates from the noise-only prediction $\epsilon^{(\omega)}$ in expectation by
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)}(\mathbf{x}_t, t) - \epsilon^{(\omega)}\bigr|^2\right]
+  \;=\; \frac{\mathrm{SNR}_\omega(t)\,(1 + P_\omega)}{1 + \mathrm{SNR}_\omega(t)}.
+  \label{eq:velocity-error-optimal}
+\end{equation}
+\end{lemma}
+
+
+%\paragraph{Remark.} Real-data latents are not perfectly Gaussian, so Eq.~\eqref{eq:velocity-error-optimal} plays the role of an analytically tractable reference curve for our resolution schedule calculations. In practice, classifier-free guidance (CFG) from the text prompt during the generation process can also allow lower frequencies to be generated faster. We empirically measure this error in Sec.~\ref{sec:motivation}. \hx{TODO!}
+
+\begin{proof}
+\leavevmode
+
+\paragraph{1. Assumptions.} The proof assumes a linear-Gaussian model, where:
+\begin{enumerate}
+  \item[(A1)] we model the clean data spectrum as zero-mean Gaussian $x_0^{(\omega)} \sim \mathcal{N}(0,\, P_\omega)$ with second moment $P_\omega > 0$;
+  \item[(A2)] we assume $\epsilon^{(\omega)} \sim \mathcal{N}(0, 1)$, by orthonormality of $\Phi$ applied to $\boldsymbol{\epsilon} \sim \mathcal{N}(0, I)$;
+  \item[(A3)] we assume $x_0^{(\omega)} \perp \epsilon^{(\omega)}$, i.e. the signal and noise coefficients are independent.
+\end{enumerate}
+(A1) is the simplified modelling assumption; (A2) and (A3) follow directly from the flow-matching forward process. Under (A1), the triple $(x_0^{(\omega)},\, \epsilon^{(\omega)},\, x_t^{(\omega)})$ is jointly Gaussian, so conditional expectations are linear and closed-form.
+
+\paragraph{2. Second-moment quantities.} From the per-frequency forward process in Eq.~\eqref{eq:forward-mode} and (A1)--(A3),
+\begin{align}
+  \mathbb{E}[x_t^{(\omega)}]                     &= 0, \qquad
+  \mathrm{Var}(x_t^{(\omega)}) \;=\; (1-t)^2 P_\omega + t^2,  \\
+  \mathrm{Cov}(x_t^{(\omega)},\, x_0^{(\omega)})      &= (1-t)\,P_\omega, \qquad
+  \mathrm{Cov}(x_t^{(\omega)},\, \epsilon^{(\omega)}) \;=\; t.
+\end{align}
+
+\paragraph{3. Bayes-optimal velocity as a linear predictor.}
+Under (A1)--(A3), the triplet $(x_0^{(\omega)},\, \epsilon^{(\omega)},\, x_t^{(\omega)})$ is jointly Gaussian with zero mean, since $x_t^{(\omega)} = (1-t) x_0^{(\omega)} + t\,\epsilon^{(\omega)}$ is a linear combination of two independent zero-mean Gaussians. For any pair of zero-mean jointly Gaussian random variables $(X, Y)$ with $\mathrm{Var}(Y) > 0$, the conditional expectation is a linear function of $Y$:
+\begin{equation}
+  \mathbb{E}[X \,|\, Y] \;=\; \frac{\mathrm{Cov}(X, Y)}{\mathrm{Var}(Y)}\,Y.
+  \label{eq:gauss-cond}
+\end{equation}
+
+We apply \eqref{eq:gauss-cond} twice, using the second moments computed above. First, with $X = x_0^{(\omega)}$ and $Y = x_t^{(\omega)}$,
+\begin{equation}
+  \mathbb{E}\bigl[x_0^{(\omega)} \,\big|\, x_t^{(\omega)}\bigr]
+  \;=\; \frac{(1-t)\,P_\omega}{(1-t)^2 P_\omega + t^2}\, x_t^{(\omega)}.
+  \label{eq:cond-x0}
+\end{equation}
+Second, with $X = \epsilon^{(\omega)}$ and $Y = x_t^{(\omega)}$,
+\begin{equation}
+  \mathbb{E}\bigl[\epsilon^{(\omega)} \,\big|\, x_t^{(\omega)}\bigr]
+  \;=\; \frac{t}{(1-t)^2 P_\omega + t^2}\, x_t^{(\omega)}.
+  \label{eq:cond-eps}
+\end{equation}
+
+The Bayes-optimal velocity at frequency $\omega$ is $v^{*(\omega)} = \mathbb{E}\bigl[\epsilon^{(\omega)} - x_0^{(\omega)} \,\big|\, \mathbf{x}_t\bigr]$, the $\phi_\omega$-projection of the full-input optimal velocity in Eq.~\eqref{eq:optimal-v}. Under the modelling assumption that $\mathbf{x}_0$ has diagonal covariance in basis $\Phi$ (i.e., (A1) holds independently for every $\omega$), the joint Gaussian $(\mathbf{x}_0, \boldsymbol{\epsilon}, \mathbf{x}_t)$ factorizes across $\Omega$, so the posterior collapses to its single-coefficient marginal:
+\begin{equation}
+  \mathbb{E}\bigl[\epsilon^{(\omega)} - x_0^{(\omega)} \,\big|\, \mathbf{x}_t\bigr]
+  \;=\; \mathbb{E}\bigl[\epsilon^{(\omega)} - x_0^{(\omega)} \,\big|\, x_t^{(\omega)}\bigr].
+  \label{eq:full-to-scalar}
+\end{equation}
+Subtracting \eqref{eq:cond-x0} from \eqref{eq:cond-eps} and combining with \eqref{eq:full-to-scalar},
+\begin{equation}
+  v^{*(\omega)} \;=\; A \cdot x_t^{(\omega)},
+  \qquad
+  A \;:=\; \frac{t - (1-t)\,P_\omega}{(1-t)^2 P_\omega + t^2}.
+  \label{eq:vstar-linear}
+\end{equation}
+
+\paragraph{4. Substitute and simplify.} Plugging $x_t^{(\omega)} = (1-t)\, x_0^{(\omega)} + t\,\epsilon^{(\omega)}$ into \eqref{eq:vstar-linear} and collecting terms in $x_0^{(\omega)}$ and $\epsilon^{(\omega)}$,
+\begin{equation}
+  v^{*(\omega)} - \epsilon^{(\omega)}
+  \;=\; A\bigl[(1-t)\,x_0^{(\omega)} + t\,\epsilon^{(\omega)}\bigr] - \epsilon^{(\omega)}
+  \;=\; A(1-t)\,x_0^{(\omega)} \,+\, (At - 1)\,\epsilon^{(\omega)}.
+\end{equation}
+Squaring and taking expectation, using (A1)--(A3) (so $\mathbb{E}[(x_0^{(\omega)})^2] = P_\omega$, $\mathbb{E}[(\epsilon^{(\omega)})^2] = 1$, and $\mathbb{E}[x_0^{(\omega)}\,\epsilon^{(\omega)}] = 0$), the cross term vanishes:
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right]
+  \;=\; A^2 (1-t)^2\,P_\omega \,+\, (At - 1)^2.
+\end{equation}
+Expanding $(At-1)^2 = A^2 t^2 - 2At + 1$ and grouping the $A^2$ terms,
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right]
+  \;=\; A^2\!\left[(1-t)^2 P_\omega + t^2\right] - 2At + 1.
+  \label{eq:verror-expanded}
+\end{equation}
+Denote $D := (1-t)^2 P_\omega + t^2 = \mathrm{Var}(x_t^{(\omega)})$; from Eq.~\eqref{eq:vstar-linear},
+\begin{equation}
+  A \;=\; \frac{t - (1-t)\, P_\omega}{D}.
+  \label{eq:A-in-D}
+\end{equation}
+Substituting into Eq.~\eqref{eq:verror-expanded} term by term,
+\begin{align}
+  A^2\!\left[(1-t)^2 P_\omega + t^2\right] \;&=\; A^2 D \;=\; \frac{(t - (1-t)\, P_\omega)^2}{D}, \\
+  2At \;&=\; \frac{2t\,(t - (1-t)\, P_\omega)}{D},
+\end{align}
+so the right-hand side of Eq.~\eqref{eq:verror-expanded} combines into a single fraction over $D$:
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right]
+  \;=\; \frac{(t - (1-t)\, P_\omega)^2 \,-\, 2t\,(t - (1-t)\, P_\omega) \,+\, D}{D}.
+  \label{eq:verror-singlefrac}
+\end{equation}
+Expanding $(t - (1-t)\, P_\omega)^2 = t^2 - 2t(1-t) P_\omega + (1-t)^2 P_\omega^2$, the numerator of Eq.~\eqref{eq:verror-singlefrac} simplifies as
+\begin{align}
+  & \bigl[t^2 - 2t(1-t) P_\omega + (1-t)^2 P_\omega^2\bigr]
+    - \bigl[2t^2 - 2t(1-t) P_\omega\bigr]
+    + \bigl[(1-t)^2 P_\omega + t^2\bigr] \nonumber\\
+  ={}& (1-t)^2 P_\omega^2 + (1-t)^2 P_\omega
+    \;=\; (1-t)^2\,P_\omega\,(1 + P_\omega).
+\end{align}
+Substituting back into Eq.~\eqref{eq:verror-singlefrac},
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right]
+  \;=\; \frac{(1-t)^2\,P_\omega\,(1 + P_\omega)}{(1-t)^2 P_\omega + t^2}.
+\end{equation}
+
+\paragraph{5. Rewrite via $\mathrm{SNR}_\omega(t)$.} Using $\mathrm{SNR}_\omega(t) = (1-t)^2 P_\omega / t^2$ from Eq.~\eqref{eq:snr}, the denominator is $(1-t)^2 P_\omega + t^2 = t^2(1 + \mathrm{SNR}_\omega(t))$ and the numerator equals $t^2\,\mathrm{SNR}_\omega(t)\,(1 + P_\omega)$. The $t^2$ cancels, recovering the right-hand side of Eq.~\eqref{eq:velocity-error-optimal} and completing the proof of the lemma.
+
+\end{proof}
+
+\begin{proposition}[Per-frequency $\delta$-optimal activation time] Denote the per-frequency Bayes-optimal velocity predictor by $v^{*(\omega)}(\mathbf{x}_t, t)$, whose spatial-domain counterpart is defined in Eq.~\eqref{eq:optimal-v}. Under the simplified modelling assumption $x_0^{(\omega)} \sim \mathcal{N}(0, P_\omega)$ with $P_\omega > 0$, we have
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)}(\mathbf{x}_t, t) - \epsilon^{(\omega)}\bigr|^2\right] \;\le\; \delta
+  \label{eq:noise-dominated-appendix}
+\end{equation}
+for all $t \ge t_\omega$ and $\delta\in(0, 1)$, where
+\begin{equation}
+  t_\omega \;:=\; \frac{1}{1 + \sqrt{\dfrac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}}.
+  \label{eq:activation-appendix}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+\leavevmode
+
+\paragraph{Solving the $\delta$-bound for $t$.} Substituting the closed-form error into the tolerance bound $\mathbb{E}[|v^{*(\omega)} - \epsilon^{(\omega)}|^2] \le \delta$ of Proposition~1 yields
+\begin{equation}
+  \frac{\mathrm{SNR}_\omega(t)\,(1 + P_\omega)}{1 + \mathrm{SNR}_\omega(t)} \;\le\; \delta.
+\end{equation}
+Clearing the (positive) denominator and collecting terms in $\mathrm{SNR}_\omega(t)$,
+\begin{equation}
+  \mathrm{SNR}_\omega(t)\,(1 + P_\omega - \delta) \;\le\; \delta,
+  \qquad \text{i.e.,} \qquad
+  \mathrm{SNR}_\omega(t) \;\le\; \frac{\delta}{1 + P_\omega - \delta},
+\end{equation}
+where the rearrangement is valid because $\delta < 1 \le 1 + P_\omega$ keeps $1 + P_\omega - \delta > 0$. Substituting $\mathrm{SNR}_\omega(t) = (1-t)^2 P_\omega / t^2$ and taking the positive square root (all quantities positive for $t \in (0, 1)$),
+\begin{equation}
+  \frac{1-t}{t} \;\le\; \sqrt{\frac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}.
+\end{equation}
+Adding $1$ to both sides gives $1/t \le 1 + \sqrt{\delta / (P_\omega(1 + P_\omega - \delta))}$, which inverts to
+\begin{equation}
+  t \;\ge\; \frac{1}{1 + \sqrt{\dfrac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}} \;=\; t_\omega,
+\end{equation}
+recovering Eq.~\eqref{eq:activation-appendix}.
+\end{proof}
+
+
+\subsection{Proof of Proposition 2: Per-resolution $\delta$-optimal Transition Time}
+\label{app:proof-prop2}
+
+\begin{proposition}[Per-resolution $\delta$-optimal transition time] Under the setting of Proposition~1, and assuming $P_\omega$ is monotonically decreasing in $|\omega|$ based on the power-law decay in Eq.~\eqref{eq:power-law}, for any resolution scale $s_i, s_{i+1} \in (0, 1]$, the optimal transition time from scale $s_i$ up to $s_{i+1}$ is
+\begin{equation}
+  t_i^* \;:=\; \min_{\omega \in \Omega_{s_i}}\, t_\omega \;=\; t_{\omega=s_i \cdot \omega_{\max}(H,W)},
+  \label{eq:stage-transition-appendix}
+\end{equation}
+where $\Omega_{s_i}$ is the set of frequencies representable on the $(s_iH, s_iW)$ grid.
+\end{proposition}
+
+\begin{proof}
+\leavevmode
+
+We show that the activation time $t_\omega$ of Eq.~\eqref{eq:activation} is strictly decreasing in $|\omega|$ under the assumptions of the proposition; the claim then follows immediately.
+
+\paragraph{1. $t_\omega$ is strictly increasing in $P_\omega$.}
+For $\delta \in (0, 1)$ and $P_\omega > 0$, the quadratic $P_\omega\,(1 + P_\omega - \delta) = P_\omega^2 + (1-\delta)\, P_\omega$ has derivative $2 P_\omega + (1-\delta) > 0$, hence is strictly increasing in $P_\omega$. Therefore the radicand $\delta / \bigl(P_\omega(1 + P_\omega - \delta)\bigr)$ in Eq.~\eqref{eq:activation} is strictly decreasing in $P_\omega$, and so is its square root. Hence
+\begin{equation}
+  t_\omega \;=\; \frac{1}{1 + \sqrt{\dfrac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}}
+\end{equation}
+is strictly increasing in $P_\omega$.
+
+\paragraph{2. $P_\omega$ is strictly decreasing in $|\omega|$.}
+The power-law assumption in Eq.~\eqref{eq:power-law} gives $P_\omega \propto |\omega|^{-\beta}$ with $\beta > 0$. Thus $P_\omega$ is strictly decreasing in $|\omega|$.
+
+\paragraph{3. Minimum over $\Omega_s$.}
+Combining the above observations, $t_\omega$ is strictly decreasing in $|\omega|$. The set $\Omega_s = \{\omega \in \Omega : |\omega| \le s \cdot \omega_{\max}(H, W)\}$ consists exactly of the frequencies with radius at most $s \cdot \omega_{\max}(H, W)$, so
+\begin{equation}
+  \min_{\omega \in \Omega_s}\, t_\omega \;=\; t_{\,s \cdot \omega_{\max}(H, W)},
+\end{equation}
+which is Eq.~\eqref{eq:stage-transition}.
+\end{proof}
+
+\clearpage
+\input{supp_sections/motivation}
+
+\clearpage
+\input{supp_sections/power_spec.tex}
+
+\clearpage
+\input{supp_sections/image_results}
+
+\clearpage
+\input{supp_sections/video_results}
+
+\clearpage
+\input{supp_sections/ablation_arxiv}
+
+\clearpage
+\input{supp_sections/image_editing}
+
+\clearpage
+\section{Broader Impacts}
+\label{app:broader-impacts}
+
+Spectral Progressive Diffusion is a principled method for improving the efficiency of pretrained image and video generation models, rather than a system targeted at a particular deployment domain. Its main positive impact is to reduce the compute, latency, and energy cost of generation, which can make experimentation and creative workflows more accessible and lower the environmental footprint of repeated generation. At the same time, because the method can accelerate existing generative models, we acknowledge that it could also lower the cost of producing synthetic media for undesirable uses such as disinformation, impersonation, or spam, depending on the pretrained model and release setting. We do not release new datasets or generation services, and any future release of fine-tuned adapters should follow the access terms, safeguards, and usage restrictions of the underlying pretrained models.
+
+\section{Existing Assets and Licenses}
+\label{app:assets-licenses}
+
+Our experiments build on publicly available pretrained models, datasets, evaluation benchmarks, and software packages, including FLUX.1-dev~\citep{black2024flux}, Z-Image~\citep{zimage}, PixelGen~\citep{pixelgen}, WAN~\citep{wan}, MS-COCO~\citep{lin2014microsoft}, GenEval~\citep{geneval}, T2I-CompBench~\citep{t2icompbench}, VBench~\citep{vbench}, and the evaluation metrics used in Sec.~\ref{sec:exp}, including ImageReward~\citep{imagereward}, CLIP-IQA~\citep{wang2023clipiqa}, and NIQE~\citep{mittal2013niqe}. We cite the original sources for these assets and use them under their respective licenses and access terms.
+The named licenses and access terms are: FLUX.1-dev is released under the FLUX.1 [dev] Non-Commercial License; Z-Image, PixelGen, WAN~2.1, VBench, ImageReward, VChitect-T2V-Dataverse, and the PyIQA implementation used for NIQE are under the Apache License 2.0; GenEval and T2I-CompBench are under the MIT License; and CLIP-IQA is under the NTU S-Lab License 1.0.
+MS-COCO annotations are under Creative Commons Attribution 4.0 International (CC BY 4.0), while its images follow their original Flickr licenses; the public page for Aesthetic-Train-V2 does not list an explicit license, so we use it only under its stated access terms and do not redistribute the dataset.
+
+% \subsection{Training-free Acceleration of Latent-space Video Generation}
+% \label{app:video_generation}
+
+% We run all latent-space video generation experiments on a single H100 GPU and measure wall-clock time measurements. For quantitative evaluation, we generate 200 videos using 200 test prompts and report the standard VBench scores across six evaluation dimensions, including Subject Consistency, Background Consistency, Motion Smoothness, Dynamic Degree, Aesthetic Quality, and Image Quality, in Table~\ref{tab:wan_vbench_720p}. All videos are generated in 720P resolution. For additional video results and qualitative comparisons, please see the supplementary website (\texttt{website/index.html}).
+
+% \section{Classification of general progressive-resolution transforms}
+% \label{app:family}
+% \hx{Under construction...}
+
+% Progressive resolution generation requires a principled transition between a low-resolution flow state and a high-resolution flow state. In this appendix we characterize \emph{all} such transitions in closed form: they form an affine-linear family determined by an upsample operator $U$ and an associated noise-injection matrix $B$. Three specific choices of $U$ (block-repeat, bilinear, sinc) recover Haar wavelet, spatial interpolation, and Fourier-domain constructions respectively.
+
+% \subsection{Problem Setup}
+% \label{app:family:setup}
+
+% Let $x \in \mathbb{R}^{N_l}$ be a clean data sample at low resolution, and let $y \in \mathbb{R}^{N_h}$ denote the corresponding clean sample at high resolution, related by a fixed linear upsample $U \in \mathbb{R}^{N_h \times N_l}$ with $y = U x$ and $N_h > N_l$. Write $k = N_h / N_l$ for the total count ratio (so $k = c^d$ if each of $d$ spatial dimensions grows by a factor $c$).
+
+% At some diffusion time $t \in (0, 1)$, the low-resolution rectified-flow state is
+% \begin{equation}
+%   x_t \;=\; (1-t)\, x + t\, \epsilon_l,
+%   \qquad \epsilon_l \sim \mathcal{N}(0, I_{N_l}),
+%   \label{eq:low-res-state}
+% \end{equation}
+% and we seek a \emph{resolution lift} $L_t : \mathbb{R}^{N_l} \to \mathbb{R}^{N_h}$ (possibly using auxiliary randomness $\xi$) whose output is a valid flow state of $y = Ux$ at some target time $t'$:
+% \begin{equation}
+%   L_t(x_t;\, \xi)
+%   \;\stackrel{d}{=}\;
+%   (1-t')\, U x + t'\, \epsilon_h,
+%   \qquad \epsilon_h \sim \mathcal{N}(0, I_{N_h}),
+%   \label{eq:high-res-state}
+% \end{equation}
+% with $\xi$ independent of the low-resolution noise $\epsilon_l$. The requirement that $\epsilon_h$ be i.i.d.\ standard Gaussian is essential: the pretrained denoiser $v_\theta$ was trained on precisely this distribution, and any departure produces out-of-distribution inputs.
+
+% \subsection{Characterization: $L_t$ Must Be Affine-Linear}
+% \label{app:family:affine}
+
+% \begin{theorem}[Affine-linearity]
+% \label{thm:affine}
+% Any $L_t$ satisfying \eqref{eq:high-res-state} for all clean signals $x \in \mathbb{R}^{N_l}$ and all realizations of $\epsilon_l$ is an affine-linear function of its first argument:
+% \begin{equation}
+%   L_t(y; \xi) \;=\; A\, y + B\, \xi,
+%   \label{eq:affine}
+% \end{equation}
+% where $A \in \mathbb{R}^{N_h \times N_l}$, $B \in \mathbb{R}^{N_h \times m}$ for some $m$, and $\xi \sim \mathcal{N}(0, I_m)$ is an auxiliary Gaussian independent of the argument.
+% \end{theorem}
+
+% \begin{proof}[Proof sketch]
+% The right-hand side of \eqref{eq:high-res-state} is Gaussian with mean $(1-t')\, U x$ \emph{linear} in $x$ and covariance $t'^2\, I_{N_h}$ \emph{independent of $x$}. Translating $x \mapsto x + \Delta x$ shifts the argument of $L_t$ by $(1-t)\, \Delta x$ and must shift the output distribution by $(1-t')\, U \Delta x$. Since $\xi$ is independent of the argument, this shift property holds pointwise in $\xi$:
+% \begin{equation*}
+%   L_t\bigl(y + (1-t)\,\Delta x;\; \xi\bigr)
+%   \;=\;
+%   L_t(y;\; \xi) \,+\, (1-t')\, U\, \Delta x .
+% \end{equation*}
+% A measurable function satisfying Cauchy's functional equation $f(y + \Delta) - f(y) = \ell(\Delta)$ for all $\Delta$ must be affine-linear in $y$; this yields $L_t(y; \xi) = A\, y + g(\xi)$ for some linear $A$ and measurable $g$. Finally, $L_t(y; \xi)$ must be Gaussian for every fixed $y$ (so that the distributional identity in~\eqref{eq:high-res-state} is preserved under conditioning on $y$), which forces $g(\xi) = B\, \xi$ for a linear $B$.
+% \end{proof}
+
+% \subsection{Closed-Form Solution for $A$ and $B$}
+% \label{app:family:closedform}
+
+% Given Theorem~\ref{thm:affine}, we substitute $y = x_t = (1-t)\, x + t\, \epsilon_l$ into \eqref{eq:affine} and match moments against the target distribution in \eqref{eq:high-res-state}.
+
+% \paragraph{Mean matching.} Linearity in $x$ gives $A\, (1-t) x = (1-t')\, U x$ for all $x$, so
+% \begin{equation}
+%   \boxed{\;\;A \;=\; \frac{1-t'}{1-t}\, U\;\;}
+%   \label{eq:A-closedform}
+% \end{equation}
+% The signal-path operator is therefore the upsample $U$, rescaled by the ratio of signal coefficients at the two times.
+
+% \paragraph{Covariance matching.} The output covariance is the sum of contributions from $\epsilon_l$ (via $A$) and from $\xi$ (via $B$), and must equal $t'^2\, I_{N_h}$:
+% \begin{equation}
+%   t^2\, A A^\top + B B^\top \;=\; t'^2\, I_{N_h}.
+%   \label{eq:cov-match}
+% \end{equation}
+% Substituting \eqref{eq:A-closedform} and solving for $B B^\top$,
+% \begin{equation}
+%   \boxed{\;\;B B^\top \;=\; t'^2\, I_{N_h} \,-\, t^2 \!\left(\tfrac{1-t'}{1-t}\right)^{\!2}\, U U^\top\;\;}
+%   \label{eq:B-closedform}
+% \end{equation}
+% Any $B$ whose Gram matrix equals the right-hand side of \eqref{eq:B-closedform} (e.g., its symmetric square root) realizes a valid lift.
+
+% \paragraph{$B$ is necessarily nonzero.} Since $U \in \mathbb{R}^{N_h \times N_l}$ maps between spaces of different dimension, $\operatorname{rank}(U U^\top) \le N_l < N_h$. The target $t'^2 I_{N_h}$ has full rank $N_h$. Hence the right-hand side of \eqref{eq:B-closedform} has rank at least $N_h - N_l > 0$: \emph{any genuine resolution lift requires injecting fresh Gaussian noise}, whose variance fills the $N_h - N_l$ directions not reached by $U$. This is a direct structural consequence of the dimension increase and is independent of the specific choice of $U$.
+
+% \paragraph{PSD feasibility and the minimum-$t'$ theorem.} For $B$ to exist as a real matrix, $B B^\top$ must be positive semi-definite. Applying this to \eqref{eq:B-closedform},
+% \begin{equation}
+%   t'^2\, I_{N_h} \;\succeq\; t^2\! \left(\tfrac{1-t'}{1-t}\right)^{\!2} U U^\top,
+%   \label{eq:PSD-condition}
+% \end{equation}
+% which reduces to a scalar inequality on the maximum eigenvalue of $U U^\top$:
+% \begin{equation}
+%   t'^2 \;\ge\; t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2} \lambda_{\max}(U U^\top).
+%   \label{eq:PSD-scalar}
+% \end{equation}
+% This bound is \emph{always active} for DC-preserving upsamples, as we now show.
+
+% \begin{theorem}[Minimum-$t'$ bound for DC-preserving upsamples]
+% \label{thm:min-t-prime}
+% Let $U \in \mathbb{R}^{N_h \times N_l}$ be a DC-preserving upsample, i.e., $U\,\mathbf{1}_{N_l} = \mathbf{1}_{N_h}$ where $\mathbf{1}_n \in \mathbb{R}^n$ is the all-ones vector. Let $k = N_h / N_l$. Then $\lambda_{\max}(U U^\top) \ge k$, and the PSD feasibility condition \eqref{eq:PSD-scalar} combined with $t, t' \in (0, 1)$ forces
+% \begin{equation}
+%   \boxed{\;\; t' \;\ge\; \frac{\sqrt{\lambda_{\max}(U U^\top)} \; t}{1 + \bigl(\sqrt{\lambda_{\max}(U U^\top)} - 1\bigr)\, t} \;\;}
+%   \label{eq:min-t-prime}
+% \end{equation}
+% with equality achievable when $\lambda_{\max}(U U^\top) = k$ (i.e., when $U$ attains the DC-preserving lower bound). In particular, for any $U$ that saturates $\lambda_{\max}(U U^\top) = k$,
+% \begin{equation}
+%   t'_{\min} \;=\; \frac{\sqrt{k}\, t}{1 + (\sqrt{k} - 1)\, t},
+%   \label{eq:min-t-prime-tight}
+% \end{equation}
+% giving the tightest possible target time while preserving flow-matching structure.
+% \end{theorem}
+
+% \begin{proof}[Proof sketch]
+% The Rayleigh quotient at the all-ones vector gives $\lambda_{\max}(U U^\top) \ge \|U\,\mathbf{1}_{N_l}\|_2^2 / \|\mathbf{1}_{N_l}\|_2^2 = \|\mathbf{1}_{N_h}\|_2^2 / N_l = N_h/N_l = k$. Let $s := \sqrt{\lambda_{\max}(U U^\top)}$. Taking square roots of \eqref{eq:PSD-scalar} (all quantities positive for $t, t' \in (0,1)$), $t'(1-t) \ge s\, t (1-t')$. Rearranging, $t' + s\,t\,t' \ge s\,t + t\,t'$, so $t'\bigl(1 + (s-1)\,t\bigr) \ge s\,t$, yielding \eqref{eq:min-t-prime}. Equality in \eqref{eq:PSD-scalar} is achieved when the eigenspace of $\lambda_{\max}$ saturates and all other eigenvalues lie below $\lambda_{\max}$; this is exactly the condition that $U U^\top$ has a rank-one eigenvector at the all-ones direction with eigenvalue $k$ and no direction exceeds $k$, i.e., $\|U\|_{\mathrm{op}}^2 = k$.
+% \end{proof}
+
+% \emph{Interpretation.} Equation \eqref{eq:min-t-prime-tight} captures a fundamental ``rewind'' required at every resolution transition: since $t'_{\min} > t$ for any $k > 1$, the target state must always sit at a \emph{noisier} time than the source. The rewind grows with $k$: at $t = 0.5$, $t'_{\min} = \sqrt{k}/(\sqrt{k}+1)$ yields $0.67$ for $k{=}4$, $0.75$ for $k{=}9$, and $0.80$ for $k{=}16$. Upsamples that amplify a non-DC direction above $k$ (e.g., bicubic, which exhibits a spectral overshoot) carry $\lambda_{\max} > k$ and therefore pay a strictly larger rewind than block-repeat, bilinear, and sinc---all of which saturate $\lambda_{\max}(U U^\top) = k$ exactly and thus achieve the tight minimum \eqref{eq:min-t-prime-tight}.
+
+% \subsection{Three Canonical Instances of $U$}
+% \label{app:family:instances}
+
+% We now specialize \eqref{eq:A-closedform}--\eqref{eq:B-closedform} to three choices of $U$ used throughout the literature. We give closed-form expressions for $A$ and $B B^\top$ in each case, and illustrate them in the elementary $2 \!\times\! 2 \to 4 \!\times\! 4$ example (so $N_l = 4$, $N_h = 16$, and $k = 4$).
+
+% \paragraph{(i) Block-repeat upsample (Haar LL-only IDWT).}
+% The nearest-neighbor lift replicates each low-resolution coefficient $x_{(i)}$ to the $k$ high-resolution positions it covers:
+% \begin{equation}
+%   [U_{\mathrm{BR}}\, x]_{(i,\alpha)} \;=\; x_{(i)},
+%   \qquad \alpha \in \{0, \ldots, k-1\}.
+%   \label{eq:BR-def}
+% \end{equation}
+% For the $2\!\times\!2 \to 4\!\times\!4$ case, each input pixel is replicated into its $2\!\times\!2$ output block. The Gram matrix $U_{\mathrm{BR}} U_{\mathrm{BR}}^\top$ is block-diagonal: each $N_l$-group of $k$ replicated positions yields a $k \!\times\! k$ all-ones block $J_k$, with zero off-block entries. Its eigendecomposition has eigenvalue $k$ on the per-block constant vector and $0$ on the $(k{-}1)$-dimensional orthogonal complement (per block). Substituting into \eqref{eq:A-closedform}--\eqref{eq:B-closedform},
+% \begin{equation}
+%   A_{\mathrm{BR}} = \tfrac{1-t'}{1-t}\, U_{\mathrm{BR}},
+%   \qquad
+%   B_{\mathrm{BR}} B_{\mathrm{BR}}^\top = t'^2\, I_{N_h} \;-\; t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2}\,
+%   \bigoplus_{i=1}^{N_l} J_k .
+%   \label{eq:BR-AB}
+% \end{equation}
+% Equivalently, $B_{\mathrm{BR}} B_{\mathrm{BR}}^\top$ is block-diagonal with per-block matrix $t'^2 I_k - t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2} J_k$, whose eigenvalues are $t'^2$ on the $(k{-}1)$-dim complement of the constant direction and $t'^2 - k\, t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2}$ on the constant direction itself.
+
+% \emph{Connection to the Haar wavelet.} $U_{\mathrm{BR}}$ is exactly $\sqrt{k}$ times the orthonormal Haar inverse DWT applied to the coefficient vector $(x, 0, \ldots, 0)$ (low-frequency slot populated; detail slots zero). The block-diagonal decomposition into \emph{per-block constant direction} and \emph{per-block detail complement} is precisely the LL-vs-\{LH, HL, HH\} split of the Haar basis in the $2\!\times\!2 \to 4\!\times\!4$ case.
+
+% \paragraph{(ii) Bilinear upsample.}
+% The bilinear lift convolves $x$ with a separable tent kernel, yielding weighted averages of neighboring coefficients. For the $2\!\times\!2 \to 4\!\times\!4$ case with half-pixel offset, each output pixel receives four weights $w_1 w_1', w_1 w_2', w_2 w_1', w_2 w_2'$ with $(w_1, w_2) = (\tfrac{3}{4}, \tfrac{1}{4})$ in each dimension:
+% \begin{equation}
+%   [U_{\mathrm{BL}}\, x]_{(2i+a, 2j+b)}
+%   \;=\; \sum_{p,q \in \{-1,0\}} w_{a-p}\, w_{b-q}\, x_{(i+p, j+q)}.
+%   \label{eq:BL-def}
+% \end{equation}
+% The Gram matrix $U_{\mathrm{BL}} U_{\mathrm{BL}}^\top$ is now a \emph{banded, non-block-diagonal} matrix: adjacent $2\!\times\!2$ blocks share weights, so correlation leaks across block boundaries. It has the same maximum eigenvalue $k$ (attained on the all-ones direction, since $U_{\mathrm{BL}}$ preserves DC by construction $\sum_\alpha w_\alpha = 1$), but its eigenstructure decays smoothly with frequency rather than collapsing to $\{k, 0\}$. Substituting:
+% \begin{equation}
+%   A_{\mathrm{BL}} = \tfrac{1-t'}{1-t}\, U_{\mathrm{BL}},
+%   \qquad
+%   B_{\mathrm{BL}} B_{\mathrm{BL}}^\top = t'^2\, I_{N_h} \,-\, t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2}\, U_{\mathrm{BL}} U_{\mathrm{BL}}^\top.
+%   \label{eq:BL-AB}
+% \end{equation}
+% Taking the symmetric square root gives a frequency-shaped noise injector that is strongest where $U_{\mathrm{BL}} U_{\mathrm{BL}}^\top$ has the smallest eigenvalues (high spatial frequencies, where the bilinear transfer function rolls off). Unlike the block-repeat case, $B_{\mathrm{BL}}$ has no exact spatial locality.
+
+% \paragraph{(iii) Sinc (ideal bandlimited) upsample.}
+% In the Fourier domain, the ideal lift zero-pads the spectrum: $U_{\mathrm{S}}$ takes $x$, computes its orthonormal DFT $X = \mathcal{F}_{N_l} x$, places $X$ in the low-frequency block of an $N_h$-point spectrum, and inverts. Algebraically,
+% \begin{equation}
+%   U_{\mathrm{S}} \;=\; \sqrt{k}\, \mathcal{F}_{N_h}^{-1}\, P_L\, \widetilde{\mathcal{F}}_{N_l},
+%   \qquad
+%   P_L : \mathbb{R}^{N_h} \to \mathbb{R}^{N_h}
+%   \text{ is the projection onto the low-frequency support},
+%   \label{eq:sinc-def}
+% \end{equation}
+% where $\widetilde{\mathcal{F}}_{N_l}$ embeds the $N_l$-point spectrum into the low-frequency block of an $N_h$-point grid. For $2\!\times\!2 \to 4\!\times\!4$, $P_L$ selects the two lowest horizontal and two lowest vertical frequency bins (the central $2\!\times\!2$ block of the $4\!\times\!4$ shifted spectrum). The Gram matrix is a \emph{pure projection}:
+% \begin{equation}
+%   U_{\mathrm{S}} U_{\mathrm{S}}^\top \;=\; k\, P_L,
+%   \label{eq:sinc-gram}
+% \end{equation}
+% with eigenvalues $k$ on the $N_l$-dim low-frequency subspace and $0$ on the $N_h - N_l$-dim high-frequency complement. Substituting,
+% \begin{equation}
+%   A_{\mathrm{S}} = \tfrac{1-t'}{1-t}\, U_{\mathrm{S}},
+%   \qquad
+%   B_{\mathrm{S}} B_{\mathrm{S}}^\top = t'^2\, I_{N_h} \,-\, k\, t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2}\, P_L
+%   \;=\; \underbrace{\Big(t'^2 - k\, t^2\!\left(\tfrac{1-t'}{1-t}\right)^{\!2}\Big)\, P_L}_{\text{low-freq residual}} \;+\; t'^2\, P_H,
+%   \label{eq:sinc-AB}
+% \end{equation}
+% where $P_H = I_{N_h} - P_L$. When the rewind time $t'$ is chosen so that the low-frequency coefficient vanishes (i.e., $t' = \sqrt{k}\, t / (1 + (\sqrt{k}-1) t)$), $B_{\mathrm{S}}$ reduces to a \emph{pure high-pass} noise injector: $B_{\mathrm{S}} = t'\, P_H$, which simply fills the high-frequency half of the $N_h$-spectrum with fresh i.i.d.\ complex Gaussian noise. This is the cleanest form of \eqref{eq:B-closedform} and motivates the Fourier interpretation of the lift.
+
+% \emph{Connection to FFT padding.} The sinc lift is exactly ``FFT, zero-pad spectrum, inverse FFT'' when the detail-band noise is zero. With the prescribed $B_{\mathrm{S}}$, it becomes ``FFT, pad with complex Gaussian noise at amplitude $t'$, inverse FFT''---a single-operator drop-in replacement for the wavelet lift.
+
+% \paragraph{Summary.}
+% All three instances share the same $A = \tfrac{1-t'}{1-t}\, U$ in \eqref{eq:A-closedform} and saturate the DC eigenvalue $\lambda_{\max}(U U^\top) = k$; they differ only in how $B B^\top$ distributes the required $N_h - N_l$ units of fresh variance. The block-repeat choice concentrates $B$ in per-block detail directions (Haar-local), bilinear spreads $B$ as a smooth high-pass filter (mildly non-local), and sinc projects $B$ onto the exact high-frequency subspace of the global DFT (fully non-local, frequency-ideal).
+
+
+
+% \iffalse
+% \section{Additional Quantitative Results}
+% \label{app:additional-quant}
+
+% \subsection{SD3 Main Results}
+% \label{app:sd3-results}
+
+% Table~\ref{tab:sd3-supp} replicates the main-paper FLUX.1-dev table (Table~\ref{tab:flux-main}) on Stable Diffusion~3~\citep{sd3} using the same RALU~\citep{ralu} evaluation protocol, at SD3's native 28 steps and 1024$\times$1024 resolution. Speedup targets are 2$\times$ and 3$\times$ per RALU. RAS~\citep{ras} is included as an SD3-specific baseline from the RALU table.
+
+% \begin{table}[t]
+%   \centering
+%   \footnotesize
+%   \caption{\textbf{Image results on Stable Diffusion~3}, matching RALU's~\citep{ralu} SD3 table. Placeholder values.}
+%   \label{tab:sd3-supp}
+%   \setlength{\tabcolsep}{2.5pt}
+%   \begin{tabular}{l ccc ccccc}
+%     \toprule
+%     Method & Latency $\downarrow$ & TFLOPs $\downarrow$ & Speedup $\uparrow$ & FID $\downarrow$ & NIQE $\downarrow$ & CLIP-IQA $\uparrow$ & T2I-Comp.\ $\uparrow$ & GenEval $\uparrow$ \\
+%     \midrule
+%     SD3 (28 steps, base)                   & - & - & 1$\times$ & - & - & - & - & - \\
+%     SD3 (reduced steps)                    & - & - & -         & - & - & - & - & - \\
+%     ToCa~\citep{toca}                      & - & - & -         & - & - & - & - & - \\
+%     Bottleneck Sampling~\citep{bottleneck} & - & - & -         & - & - & - & - & - \\
+%     RAS~\citep{ras}                        & - & - & -         & - & - & - & - & - \\
+%     RALU~\citep{ralu}                      & - & - & -         & - & - & - & - & - \\
+%     Ours (spectral passthrough)            & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-TF (Haar)}                & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-TF (FFT)}                 & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-LoRA (Haar)}              & - & - & -         & - & - & - & - & - \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+
+% \subsection{PixelGen (Pixel-Space) Main Results}
+% \label{app:pixelgen-results}
+
+% Table~\ref{tab:pixelgen-supp} reports the same protocol on the pixel-space backbone PixelGen~\citep{pixelgen}, which operates directly on RGB pixels rather than a VAE latent.
+
+% \begin{table}[t]
+%   \centering
+%   \footnotesize
+%   \caption{\textbf{Pixel-space image results on PixelGen}~\citep{pixelgen}. Same RALU-style columns as Table~\ref{tab:flux-main}; baselines restricted to methods applicable in pixel space. Placeholder values.}
+%   \label{tab:pixelgen-supp}
+%   \setlength{\tabcolsep}{2.5pt}
+%   \begin{tabular}{l ccc ccccc}
+%     \toprule
+%     Method & Latency $\downarrow$ & TFLOPs $\downarrow$ & Speedup $\uparrow$ & FID $\downarrow$ & NIQE $\downarrow$ & CLIP-IQA $\uparrow$ & T2I-Comp.\ $\uparrow$ & GenEval $\uparrow$ \\
+%     \midrule
+%     PixelGen (base)                        & - & - & 1$\times$ & - & - & - & - & - \\
+%     PixelGen (reduced steps)               & - & - & -         & - & - & - & - & - \\
+%     Bottleneck Sampling~\citep{bottleneck} & - & - & -         & - & - & - & - & - \\
+%     Ours (spectral passthrough)            & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-TF (Haar)}                & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-TF (FFT)}                 & - & - & -         & - & - & - & - & - \\
+%     \textbf{Ours-LoRA (Haar)}              & - & - & -         & - & - & - & - & - \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+
+% \fi

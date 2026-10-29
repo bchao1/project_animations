@@ -1,0 +1,39 @@
+{
+  "_note": "Measured LoT speedups from the paper (ICLR 2027 sub. 7014), via ../level-of-token-diffusion/summaries/lot_diffusion.md. tokens = LoT tokens used; full = full-resolution tokens. 'fit': true points define the curve in lot_speedup.py.",
+  "image": {
+    "model": "LoT-FLUX.2 [klein] 4B, 1024x1024, 64x64 = 4,096 tokens",
+    "full": 4096,
+    "points": [
+      {"tokens": 2163.8, "speedup": 1.560, "source": "Tab. 1, compression 1.893x (dataset mean)", "fit": true},
+      {"tokens": 1702.4, "speedup": 1.818, "source": "Tab. 1, compression 2.406x (dataset mean)", "fit": true},
+      {"tokens": 1395.6, "speedup": 2.040, "source": "Tab. 1, compression 2.935x (dataset mean)", "fit": true},
+      {"tokens": 1269,   "speedup": 2.29,  "source": "Fig. 7a", "fit": true},
+      {"tokens": 2367.6, "speedup": 1.54,  "source": "Fig. 4 deer, box (1.73x compression)", "fit": true},
+      {"tokens": 1878.9, "speedup": 1.81,  "source": "Fig. 4 deer, mask (2.18x)", "fit": true},
+      {"tokens": 3011.8, "speedup": 1.28,  "source": "Fig. 4 deer, texture variance (1.36x)", "fit": true},
+      {"tokens": 1317.0, "speedup": 2.29,  "source": "Fig. 4 deer, depth (3.11x)", "fit": true},
+      {"tokens": 758,    "speedup": 2.8,   "source": "Fig. 21", "fit": true},
+      {"tokens": 765,    "speedup": 2.9,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1076,   "speedup": 2.4,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1111,   "speedup": 2.2,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1592,   "speedup": 1.9,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1675,   "speedup": 1.9,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1752,   "speedup": 1.8,   "source": "Fig. 21", "fit": true},
+      {"tokens": 1636,   "speedup": 2.50,  "source": "Fig. 19a (controllability figure; ~0.6x above the 4B trend, setting unclear)", "fit": false},
+      {"tokens": 1222,   "speedup": 3.35,  "source": "Fig. 19c (same)", "fit": false},
+      {"tokens": 1519,   "speedup": 2.70,  "source": "Fig. 19i (same)", "fit": false},
+      {"tokens": 3189,   "speedup": 1.28,  "source": "Fig. 22 limitation", "fit": false},
+      {"tokens": 1466,   "speedup": 2.79,  "source": "Fig. 22 limitation (above the 4B trend)", "fit": false}
+    ]
+  },
+  "video": {
+    "model": "LoT-Wan2.1 14B, 81 frames 720p, 21 x 45 x 80 = 75,600 tokens",
+    "full": 75600,
+    "points": [
+      {"tokens": 37800, "speedup": 2.262, "source": "Tab. 2, budget 2x", "fit": true},
+      {"tokens": 30240, "speedup": 2.909, "source": "Tab. 2, budget 2.5x", "fit": true},
+      {"tokens": 25200, "speedup": 3.530, "source": "Tab. 2, budget 3x", "fit": true},
+      {"tokens": 50134, "speedup": 1.62,  "source": "Fig. 7b", "fit": true}
+    ]
+  }
+}

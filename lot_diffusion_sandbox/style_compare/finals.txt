@@ -1,0 +1,11 @@
+arcade arcade_clip/media/final/LoT_arcade_v2_1080p60.mp4 20.032000
+mondrian mondrian_clip/media/final/LoT_mondrian_v2_1080p60.mp4 20.022000
+quilt quilt_clip/media/final/LoT_quilt_v2_1080p60.mp4 20.022000
+stained_glass stained_glass_clip/media/final/LoT_stained_glass_v2_1080p60.mp4 20.022000
+map_tiles map_tiles_clip/media/final/LoT_map_tiles_v2_1080p60.mp4 20.022000
+comic comic_clip/media/final/LoT_comic_v2_1080p60.mp4 20.022000
+f1_race f1_race_clip/media/final/LoT_f1_race_v3_1080p60.mp4 20.022000
+blueprint blueprint_clip/media/final/LoT_blueprint_v2_1080p60.mp4 20.022000
+retro_desktop retro_desktop_clip/media/final/LoT_retro_desktop_v2_1080p60.mp4 20.022000
+blocks blocks_clip/media/final/LoT_blocks_v2_1080p60.mp4 20.022000
+cut_paper cut_paper_clip/media/final/LoT_cut_paper_v2_1080p60.mp4 20.022000

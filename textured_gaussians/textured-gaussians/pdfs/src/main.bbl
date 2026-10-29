@@ -1,0 +1,354 @@
+\begin{thebibliography}{70}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Aliev et~al.(2019)Aliev, Sevastopolsky, Kolos, Ulyanov, and Lempitsky]{aliev2019point}
+K. Aliev, A. Sevastopolsky, M. Kolos, D. Ulyanov, and V. Lempitsky.
+\newblock {Neural Point-Based Graphics}, 2019.
+\newblock arXiv preprint.
+
+\bibitem[Attal et~al.(2022)Attal, Huang, Zollh{\"o}fer, Kopf, and Kim]{attal2022learning}
+Benjamin Attal, Jia-Bin Huang, Michael Zollh{\"o}fer, Johannes Kopf, and Changil Kim.
+\newblock Learning neural light fields with ray-space embedding.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Bagdasarian et~al.(2024)Bagdasarian, Knoll, Li, Barthel, Hilsmann, Eisert, and Morgenstern]{bagdasarian20243dgszipsurvey3dgaussian}
+Milena~T. Bagdasarian, Paul Knoll, Yi-Hsin Li, Florian Barthel, Anna Hilsmann, Peter Eisert, and Wieland Morgenstern.
+\newblock {3DGS.zip: A survey on 3D Gaussian Splatting Compression Methods}, 2024.
+\newblock arXiv preprint.
+
+\bibitem[Barron et~al.(2022)Barron, Mildenhall, Verbin, Srinivasan, and Hedman]{barron2022mipnerf360}
+Jonathan~T. Barron, Ben Mildenhall, Dor Verbin, Pratul~P. Srinivasan, and Peter Hedman.
+\newblock {Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields}.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Brown and Lowe(2005)]{brown2005unsupervised}
+Matthew Brown and David~G Lowe.
+\newblock {Unsupervised 3D Object Recognition and Reconstruction in Unordered Datasets}.
+\newblock In \emph{3DIM}, 2005.
+
+\bibitem[Bulò et~al.(2024)Bulò, Porzi, and Kontschieder]{bulo2024revising}
+Samuel~Rota Bulò, Lorenzo Porzi, and Peter Kontschieder.
+\newblock {Revising Densification in Gaussian Splatting}.
+\newblock In \emph{ECCV}, 2024.
+
+\bibitem[Chan et~al.(2022)Chan, Lin, Chan, Nagano, Pan, De~Mello, Gallo, Guibas, Tremblay, Khamis, Karras, and Wetzstein]{Chan2021eg3d}
+Eric~R. Chan, Connor~Z. Lin, Matthew~A. Chan, Koki Nagano, Boxiao Pan, Shalini De~Mello, Orazio Gallo, Leonidas Guibas, Jonathan Tremblay, Sameh Khamis, Tero Karras, and Gordon Wetzstein.
+\newblock {Efficient Geometry-Aware 3D Generative Adversarial Networks}.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Chaurasia et~al.(2013)Chaurasia, Duchene, Sorkine-Hornung, and Drettakis]{chaurasia2013depth}
+Gaurav Chaurasia, Sylvain Duchene, Olga Sorkine-Hornung, and George Drettakis.
+\newblock {Depth Synthesis and Local Warps for Plausible Image-Based Navigation}.
+\newblock \emph{ACM TOG}, 32\penalty0 (3), 2013.
+
+\bibitem[Chen et~al.(2022)Chen, Xu, Geiger, Yu, and Su]{Chen2022ECCVtensorf}
+Anpei Chen, Zexiang Xu, Andreas Geiger, Jingyi Yu, and Hao Su.
+\newblock {TensoRF: Tensorial Radiance Fields}.
+\newblock In \emph{ECCV}, 2022.
+
+\bibitem[Chen et~al.(2024{\natexlab{a}})Chen, Chen, Zhang, Wang, Yang, Wang, Cai, Yang, Liu, and Lin]{chen2024gaussianeditor}
+Yiwen Chen, Zilong Chen, Chi Zhang, Feng Wang, Xiaofeng Yang, Yikai Wang, Zhongang Cai, Lei Yang, Huaping Liu, and Guosheng Lin.
+\newblock {GaussianEditor: Swift and Controllable 3D Editing with Gaussian Splatting}.
+\newblock In \emph{CVPR}, 2024{\natexlab{a}}.
+
+\bibitem[Chen et~al.(2024{\natexlab{b}})Chen, Wu, Lin, Harandi, and Cai]{chen2024hash}
+Yihang Chen, Qianyi Wu, Weiyao Lin, Mehrtash Harandi, and Jianfei Cai.
+\newblock {HAC: Hash-Grid Assisted Context for 3D Gaussian Splatting Compression}.
+\newblock In \emph{ECCV}, 2024{\natexlab{b}}.
+
+\bibitem[{Chong Bao and Bangbang Yang} et~al.(2022){Chong Bao and Bangbang Yang}, Junyi, Hujun, Yinda, Zhaopeng, and Guofeng]{neumesh}
+{Chong Bao and Bangbang Yang}, Zeng Junyi, Bao Hujun, Zhang Yinda, Cui Zhaopeng, and Zhang Guofeng.
+\newblock {NeuMesh: Learning Disentangled Neural Mesh-Based Implicit Field for Geometry and Texture Editing}.
+\newblock In \emph{ECCV}, 2022.
+
+\bibitem[Eisemann et~al.(2008)Eisemann, De~Decker, Magnor, Bekaert, De~Aguiar, Ahmed, Theobalt, and Sellent]{eisemann2008floating}
+Martin Eisemann, Bert De~Decker, Marcus Magnor, Philippe Bekaert, Edilson De~Aguiar, Naveed Ahmed, Christian Theobalt, and Anita Sellent.
+\newblock {Floating Textures}.
+\newblock In \emph{CGF}, 2008.
+
+\bibitem[Fan et~al.(2024)Fan, Wang, Wen, Zhu, Xu, and Wang]{fan2023lightgaussian}
+Zhiwen Fan, Kevin Wang, Kairun Wen, Zehao Zhu, Dejia Xu, and Zhangyang Wang.
+\newblock {LightGaussian: Unbounded 3D Gaussian Compression with 15x Reduction and 200+ FPS}.
+\newblock In \emph{NeurIPS}, 2024.
+
+\bibitem[Goesele et~al.(2007)Goesele, Snavely, Curless, Hoppe, and Seitz]{goesele2007multi}
+Michael Goesele, Noah Snavely, Brian Curless, Hugues Hoppe, and Steven~M Seitz.
+\newblock {Multi-View Stereo for Community Photo Collections}.
+\newblock In \emph{ICCV}, 2007.
+
+\bibitem[Gu{\'e}don and Lepetit(2024{\natexlab{a}})]{guedon2023sugar}
+Antoine Gu{\'e}don and Vincent Lepetit.
+\newblock {SuGaR: Surface-Aligned Gaussian Splatting for Efficient 3D Mesh Reconstruction and High-Quality Mesh Rendering}.
+\newblock In \emph{CVPR}, 2024{\natexlab{a}}.
+
+\bibitem[Gu{\'e}don and Lepetit(2024{\natexlab{b}})]{guedon2024frosting}
+Antoine Gu{\'e}don and Vincent Lepetit.
+\newblock {Gaussian Frosting: Editable Complex Radiance Fields with Real-Time Rendering}.
+\newblock In \emph{ECCV}, 2024{\natexlab{b}}.
+
+\bibitem[Guo et~al.(2023)Guo, Cao, Wang, He, Shan, and Zhang]{guo2023vmesh}
+Yuan-Chen Guo, Yan-Pei Cao, Chen Wang, Yu He, Ying Shan, and Song-Hai Zhang.
+\newblock {VMesh: Hybrid Volume-Mesh Representation for Efficient View Synthesis}.
+\newblock In \emph{SIGGRAPH Asia}, 2023.
+
+\bibitem[Hartley and Zisserman(2004)]{Hartley2004sfm}
+R.~I. Hartley and A. Zisserman.
+\newblock \emph{{Multiple View Geometry in Computer Vision}}.
+\newblock Cambridge University Press, second edition, 2004.
+
+\bibitem[Hedman et~al.(2018)Hedman, Philip, Price, Frahm, Drettakis, and Brostow]{DeepBlending2018}
+Peter Hedman, Julien Philip, True Price, Jan-Michael Frahm, George Drettakis, and Gabriel Brostow.
+\newblock {Deep Blending for Free-Viewpoint Image-Based Rendering}.
+\newblock \emph{ACM TOG}, 37\penalty0 (6), 2018.
+
+\bibitem[Hu et~al.(2023)Hu, Zhang, Hou, Liu, Fu, and Gong]{hu2023multiscale}
+D. Hu, Z. Zhang, T. Hou, T. Liu, H. Fu, and M. Gong.
+\newblock {Multiscale Representation for Real-Time Anti-Aliasing Neural Rendering}.
+\newblock In \emph{ICCV}, 2023.
+
+\bibitem[Hu et~al.(2021)Hu, Ravi, Berg, and Pathak]{hu2021worldsheet}
+Ronghang Hu, Nikhila Ravi, Alexander~C. Berg, and Deepak Pathak.
+\newblock {Worldsheet: Wrapping the World in a 3D Sheet for View Synthesis from a Single Image}.
+\newblock In \emph{ICCV}, 2021.
+
+\bibitem[Huang et~al.(2024)Huang, Yu, Chen, Geiger, and Gao]{Huang2DGS2024}
+Binbin Huang, Zehao Yu, Anpei Chen, Andreas Geiger, and Shenghua Gao.
+\newblock {2D Gaussian Splatting for Geometrically Accurate Radiance Fields}.
+\newblock In \emph{SIGGRAPH}, 2024.
+
+\bibitem[Huang et~al.(2018)Huang, Matzen, Kopf, Ahuja, and Huang]{huang2018deepmvs}
+Po-Han Huang, Kevin Matzen, Johannes Kopf, Narendra Ahuja, and Jia-Bin Huang.
+\newblock Deepmvs: Learning multi-view stereopsis.
+\newblock In \emph{CVPR}, 2018.
+
+\bibitem[Huang and Gong(2024)]{huang2024spatial}
+Zhentao Huang and Minglun Gong.
+\newblock {Textured-GS: Gaussian Splatting with Spatially Defined Color and Opacity}, 2024.
+\newblock arXiv preprint.
+
+\bibitem[Hyung et~al.(2024)Hyung, Hong, Hwang, Lee, Choo, and Kim]{hyung2024erank}
+Junha Hyung, Susung Hong, Sungwon Hwang, Jaeseong Lee, Jaegul Choo, and Jin-Hwa Kim.
+\newblock Effective rank analysis and regularization for enhanced 3d gaussian splatting.
+\newblock In \emph{NeuRIPS}, 2024.
+
+\bibitem[Jensen et~al.(2014)Jensen, Dahl, Vogiatzis, Tola, and Aan{\ae}s]{jensen2014DTU}
+Rasmus Jensen, Anders Dahl, George Vogiatzis, Engil Tola, and Henrik Aan{\ae}s.
+\newblock {Large Scale Multi-View Stereopsis Evaluation}.
+\newblock In \emph{CVPR}, 2014.
+
+\bibitem[Kato et~al.(2018)Kato, Ushiku, and Harada]{kato2018meshrenderer}
+H. Kato, Y. Ushiku, and T. Harada.
+\newblock {Neural 3D Mesh Renderer}.
+\newblock In \emph{CVPR}, 2018.
+
+\bibitem[Kerbl et~al.(2023)Kerbl, Kopanas, Leimk{\"u}hler, and Drettakis]{kerbl3Dgaussians}
+Bernhard Kerbl, Georgios Kopanas, Thomas Leimk{\"u}hler, and George Drettakis.
+\newblock {3D Gaussian Splatting for Real-Time Radiance Field Rendering}.
+\newblock \emph{ACM TOG}, 42\penalty0 (4), 2023.
+
+\bibitem[Knapitsch et~al.(2017)Knapitsch, Park, Zhou, and Koltun]{Knapitsch2017tanks}
+Arno Knapitsch, Jaesik Park, Qian-Yi Zhou, and Vladlen Koltun.
+\newblock {Tanks and Temples: Benchmarking Large-Scale Scene Reconstruction}.
+\newblock \emph{ACM TOG}, 36\penalty0 (4), 2017.
+
+\bibitem[Kopanas et~al.(2021)Kopanas, Philip, Leimk{\"u}hler, and Drettakis]{KPLD21point}
+Georgios Kopanas, Julien Philip, Thomas Leimk{\"u}hler, and George Drettakis.
+\newblock {Point-Based Neural Rendering with Per-View Optimization}.
+\newblock \emph{CGF}, 40\penalty0 (4), 2021.
+
+\bibitem[Kulhanek and Sattler(2024)]{kulhanek2024nerfbaselines}
+Jonas Kulhanek and Torsten Sattler.
+\newblock {NerfBaselines: Consistent and Reproducible Evaluation of Novel View Synthesis Methods}, 2024.
+\newblock arXiv preprint.
+
+\bibitem[Lee et~al.(2024)Lee, Rho, Sun, Ko, and Park]{lee2024compact}
+Joo~Chan Lee, Daniel Rho, Xiangyu Sun, Jong~Hwan Ko, and Eunbyung Park.
+\newblock {Compact 3D Gaussian Representation for Radiance Field}.
+\newblock In \emph{CVPR}, 2024.
+
+\bibitem[Li et~al.(2023)Li, M\"uller, Evans, Taylor, Unberath, Liu, and Lin]{li2023neuralangelo}
+Zhaoshuo Li, Thomas M\"uller, Alex Evans, Russell~H Taylor, Mathias Unberath, Ming-Yu Liu, and Chen-Hsuan Lin.
+\newblock {Neuralangelo: High-Fidelity Neural Surface Reconstruction}.
+\newblock In \emph{CVPR}, 2023.
+
+\bibitem[Lombardi et~al.(2018)Lombardi, Saragih, Simon, and Sheikh]{Lombardi2018deepappearance}
+Stephen Lombardi, Jason Saragih, Tomas Simon, and Yaser Sheikh.
+\newblock {Deep Appearance Models for Face Rendering}.
+\newblock \emph{ACM TOG}, 37\penalty0 (4), 2018.
+
+\bibitem[Lu et~al.(2024)Lu, Yu, Xu, Xiangli, Wang, Lin, and Dai]{tao2024scaffoldgs}
+Tao Lu, Mulin Yu, Linning Xu, Yuanbo Xiangli, Limin Wang, Dahua Lin, and Bo Dai.
+\newblock {Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering}.
+\newblock In \emph{CVPR}, 2024.
+
+\bibitem[Mildenhall et~al.(2020)Mildenhall, Srinivasan, Tancik, Barron, Ramamoorthi, and Ng]{mildenhall2020nerf}
+Ben Mildenhall, Pratul~P. Srinivasan, Matthew Tancik, Jonathan~T. Barron, Ravi Ramamoorthi, and Ren Ng.
+\newblock {NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis}.
+\newblock In \emph{ECCV}, 2020.
+
+\bibitem[Morgenstern et~al.(2024)Morgenstern, Barthel, Hilsmann, and Eisert]{morgenstern2023compact}
+Wieland Morgenstern, Florian Barthel, Anna Hilsmann, and Peter Eisert.
+\newblock {Compact 3D Scene Representation via Self-Organizing Gaussian Grids}.
+\newblock In \emph{ECCV}, 2024.
+
+\bibitem[M\"uller et~al.(2022)M\"uller, Evans, Schied, and Keller]{mueller2022instant}
+Thomas M\"uller, Alex Evans, Christoph Schied, and Alexander Keller.
+\newblock {Instant Neural Graphics Primitives with a Multiresolution Hash Encoding}.
+\newblock \emph{ACM TOG}, 41\penalty0 (4), 2022.
+
+\bibitem[Navaneet et~al.(2024)Navaneet, Meibodi, Koohpayegani, and Pirsiavash]{navaneet2023compact3d}
+KL Navaneet, Kossar~Pourahmadi Meibodi, Soroush~Abbasi Koohpayegani, and Hamed Pirsiavash.
+\newblock Compgs: Smaller and faster gaussian splatting with vector quantization.
+\newblock In \emph{ECCV}, 2024.
+
+\bibitem[Niedermayr et~al.(2024)Niedermayr, Stumpfegger, and Westermann]{Niedermayr_2024_CVPR}
+Simon Niedermayr, Josef Stumpfegger, and R\"udiger Westermann.
+\newblock {Compressed 3D Gaussian Splatting for Accelerated Novel View Synthesis}.
+\newblock In \emph{CVPR}, pages 10349--10358, 2024.
+
+\bibitem[Papantonakis et~al.(2024)Papantonakis, Kopanas, Kerbl, Lanvin, and Drettakis]{kerbl2024reducing}
+Panagiotis Papantonakis, Georgios Kopanas, Bernhard Kerbl, Alexandre Lanvin, and George Drettakis.
+\newblock {Reducing the Memory Footprint of 3D Gaussian Splatting}.
+\newblock \emph{ACM CGIT}, 7\penalty0 (1), 2024.
+
+\bibitem[Qian et~al.(2024)Qian, Wang, Mihajlovic, Geiger, and Tang]{qian20233dgsavatar}
+Zhiyin Qian, Shaofei Wang, Marko Mihajlovic, Andreas Geiger, and Siyu Tang.
+\newblock {3DGS-Avatar: Animatable Avatars via Deformable 3D Gaussian Splatting}.
+\newblock In \emph{CVPR}, 2024.
+
+\bibitem[Ren et~al.(2023)Ren, Pan, Tang, Zhang, Cao, Zeng, and Liu]{ren2023dreamgaussian4d}
+Jiawei Ren, Liang Pan, Jiaxiang Tang, Chi Zhang, Ang Cao, Gang Zeng, and Ziwei Liu.
+\newblock {DreamGaussian4D: Generative 4D Gaussian Splatting}, 2023.
+\newblock arXiv preprint.
+
+\bibitem[Rong et~al.(2024)Rong, Chen, Bahmani, Kutulakos, and Lindell]{rong2024gstex}
+Victor Rong, Jingxiang Chen, Sherwin Bahmani, Kiriakos~N Kutulakos, and David~B Lindell.
+\newblock {GStex: Per-Primitive Texturing of 2D Gaussian Splatting for Decoupled Appearance and Geometry Modeling}, 2024.
+
+\bibitem[Rosinol et~al.(2023)Rosinol, Leonard, and Carlone]{rosinol2023nerfslam}
+Antoni Rosinol, John~J Leonard, and Luca Carlone.
+\newblock {NeRF-SLAM: Real-time Dense Monocular Slam with Neural Radiance Fields}.
+\newblock In \emph{IROS}, 2023.
+
+\bibitem[{Sara Fridovich-Keil and Alex Yu} et~al.(2022){Sara Fridovich-Keil and Alex Yu}, Tancik, Chen, Recht, and Kanazawa]{yu_and_fridovichkeil2021plenoxels}
+{Sara Fridovich-Keil and Alex Yu}, Matthew Tancik, Qinhong Chen, Benjamin Recht, and Angjoo Kanazawa.
+\newblock {Plenoxels: Radiance Fields without Neural Networks}.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Seitz et~al.(2006)Seitz, Curless, Diebel, Scharstein, and Szeliski]{seitz2006comparison}
+Steven~M Seitz, Brian Curless, James Diebel, Daniel Scharstein, and Richard Szeliski.
+\newblock {A Comparison and Evaluation of Multi-View Stereo Reconstruction Algorithms}.
+\newblock In \emph{CVPR}, 2006.
+
+\bibitem[Shao et~al.(2024)Shao, Wang, Li, Wang, Lin, Zhang, Fan, and Wang]{shao2024splattingavatar}
+Zhijing Shao, Zhaolong Wang, Zhuang Li, Duotun Wang, Xiangru Lin, Yu Zhang, Mingming Fan, and Zeyu Wang.
+\newblock {SplattingAvatar: Realistic Real-Time Human Avatars with Mesh-Embedded Gaussian Splatting}.
+\newblock In \emph{CVPR}, 2024.
+
+\bibitem[Shih et~al.(2024)Shih, Huang, Kim, Shah, Kopf, and Gao]{shih2024modeling}
+Meng-Li Shih, Jia-Bin Huang, Changil Kim, Rajvi Shah, Johannes Kopf, and Chen Gao.
+\newblock Modeling ambient scene dynamics for free-view synthesis.
+\newblock 2024.
+
+\bibitem[Sitzmann et~al.(2019)Sitzmann, Zollh{\"o}fer, and Wetzstein]{sitzmann2019srns}
+Vincent Sitzmann, Michael Zollh{\"o}fer, and Gordon Wetzstein.
+\newblock {Scene Representation Networks: Continuous 3D-Structure-Aware Neural Scene Representations}.
+\newblock In \emph{NeurIPS}, 2019.
+
+\bibitem[Snavely et~al.(2006)Snavely, Seitz, and Szeliski]{snavely2026phototourism}
+Noah Snavely, Steven~M. Seitz, and Richard Szeliski.
+\newblock {Photo Tourism: Exploring Photo Collections in 3D}.
+\newblock \emph{ACM TOG}, 25\penalty0 (3), 2006.
+
+\bibitem[Song et~al.(2024)Song, Lin, Lei, Liu, and Daniilidis]{song2024hdgstextured2dgaussian}
+Yunzhou Song, Heguang Lin, Jiahui Lei, Lingjie Liu, and Kostas Daniilidis.
+\newblock {HDGS: Textured 2D Gaussian Splatting for Enhanced Scene Rendering}, 2024.
+
+\bibitem[Srinivasan et~al.(2021)Srinivasan, Deng, Zhang, Tancik, Mildenhall, and Barron]{nerv2021}
+Pratul~P. Srinivasan, Boyang Deng, Xiuming Zhang, Matthew Tancik, Ben Mildenhall, and Jonathan~T. Barron.
+\newblock {NeRV: Neural Reflectance and Visibility Fields for Relighting and View Synthesis}.
+\newblock In \emph{CVPR}, 2021.
+
+\bibitem[Su et~al.(2021)Su, Yu, Zollh{\"o}fer, and Rhodin]{su2021anerf}
+Shih-Yang Su, Frank Yu, Michael Zollh{\"o}fer, and Helge Rhodin.
+\newblock {A-NeRF: Articulated Neural Radiance Fields for Learning Human Shape, Appearance, and Pose}.
+\newblock In \emph{NeurIPS}, 2021.
+
+\bibitem[Svitov et~al.(2025)Svitov, Morerio, Agapito, and Bue]{svitov2025billboardsplattingbbsplatlearnable}
+David Svitov, Pietro Morerio, Lourdes Agapito, and Alessio~Del Bue.
+\newblock {BillBoard Splatting (BBSplat): Learnable Textured Primitives for Novel View Synthesis}, 2025.
+
+\bibitem[Tang et~al.(2024)Tang, Ren, Zhou, Liu, and Zeng]{tang2023dreamgaussian}
+Jiaxiang Tang, Jiawei Ren, Hang Zhou, Ziwei Liu, and Gang Zeng.
+\newblock {DreamGaussian: Generative Gaussian Splatting for Efficient 3D Content Creation}.
+\newblock In \emph{ICLR}, 2024.
+
+\bibitem[Tewari et~al.(2022)Tewari, Thies, Mildenhall, Srinivasan, Tretschk, Yifan, Lassner, Sitzmann, Martin-Brualla, Lombardi, et~al.]{tewari2022advances}
+Ayush Tewari, Justus Thies, Ben Mildenhall, Pratul Srinivasan, Edgar Tretschk, Wang Yifan, Christoph Lassner, Vincent Sitzmann, Ricardo Martin-Brualla, Stephen Lombardi, et~al.
+\newblock {Advances in Neural Rendering}.
+\newblock \emph{CGF}, 41\penalty0 (2), 2022.
+
+\bibitem[Wang et~al.(2021)Wang, Liu, Liu, Theobalt, Komura, and Wang]{wang2021neus}
+Peng Wang, Lingjie Liu, Yuan Liu, Christian Theobalt, Taku Komura, and Wenping Wang.
+\newblock {NeuS: Learning Neural Implicit Surfaces by Volume Rendering for Multi-view Reconstruction}.
+\newblock In \emph{NeurIPS}, 2021.
+
+\bibitem[Weng et~al.(2022)Weng, Curless, Srinivasan, Barron, and Kemelmacher-Shlizerman]{weng2022humannerf}
+Chung-Yi Weng, Brian Curless, Pratul~P. Srinivasan, Jonathan~T. Barron, and Ira Kemelmacher-Shlizerman.
+\newblock Humannerf: Free-viewpoint rendering of moving people from monocular video.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Xu et~al.(2022)Xu, Xu, Philip, Bi, Shu, Sunkavalli, and Neumann]{xu2022point}
+Qiangeng Xu, Zexiang Xu, Julien Philip, Sai Bi, Zhixin Shu, Kalyan Sunkavalli, and Ulrich Neumann.
+\newblock {Point-Nerf: Point-Based Neural Radiance Fields}.
+\newblock In \emph{CVPR}, 2022.
+
+\bibitem[Xu et~al.(2024{\natexlab{a}})Xu, Chen, Wang, Liu, Wang, Gao, Xin, Komura, Li, and Wang]{xu2024SuperGaussians}
+Rui Xu, Wenyue Chen, Jiepeng Wang, Yuan Liu, Peng Wang, Lin Gao, Shiqing Xin, Taku Komura, Xin Li, and Wenping Wang.
+\newblock {SuperGaussians: Enhancing Gaussian Splatting Using Primitives with Spatially Varying Colors}, 2024{\natexlab{a}}.
+
+\bibitem[Xu et~al.(2024{\natexlab{b}})Xu, Hu, Lai, Shan, and Zhang]{xu2024texturegs}
+Tian-Xing Xu, Wenbo Hu, Yu-Kun Lai, Ying Shan, and Song-Hai Zhang.
+\newblock {Texture-GS: Disentangling the Geometry and Texture for 3D Gaussian Splatting Editing}.
+\newblock In \emph{ECCV}, 2024{\natexlab{b}}.
+
+\bibitem[Yang et~al.(2024)Yang, Gao, Zhou, Jiao, Zhang, and Jin]{yang2023deformable3dgs}
+Ziyi Yang, Xinyu Gao, Wen Zhou, Shaohui Jiao, Yuqing Zhang, and Xiaogang Jin.
+\newblock {Deformable 3D Gaussians for High-Fidelity Monocular Dynamic Scene Reconstruction}.
+\newblock In \emph{CVPR}, 2024.
+
+\bibitem[Ye et~al.(2024{\natexlab{a}})Ye, Danelljan, Yu, and Ke]{gaussian_grouping}
+Mingqiao Ye, Martin Danelljan, Fisher Yu, and Lei Ke.
+\newblock {Gaussian Grouping: Segment and Edit Anything in 3D Scenes}.
+\newblock In \emph{ECCV}, 2024{\natexlab{a}}.
+
+\bibitem[Ye et~al.(2024{\natexlab{b}})Ye, Li, Liu, Qiao, and Dou]{ye2024absgs}
+Zongxin Ye, Wenyu Li, Sidun Liu, Peng Qiao, and Yong Dou.
+\newblock Absgs: Recovering fine details in 3d gaussian splatting.
+\newblock In \emph{ACM-MM}, 2024{\natexlab{b}}.
+
+\bibitem[Yu et~al.(2021)Yu, Li, Tancik, Li, Ng, and Kanazawa]{yu2021plenoctrees}
+Alex Yu, Ruilong Li, Matthew Tancik, Hao Li, Ren Ng, and Angjoo Kanazawa.
+\newblock {PlenOctrees for Real-Time Rendering of Neural Radiance Fields}.
+\newblock In \emph{ICCV}, 2021.
+
+\bibitem[Yu et~al.(2024)Yu, Sattler, and Geiger]{Yu2024GOF}
+Zehao Yu, Torsten Sattler, and Andreas Geiger.
+\newblock {Gaussian Opacity Fields: Efficient Adaptive Surface Reconstruction in Unbounded Scenes}.
+\newblock \emph{ACM TOG}, 2024.
+
+\bibitem[Zhang et~al.(2021)Zhang, Srinivasan, Deng, Debevec, Freeman, and Barron]{nerfactor2021}
+Xiuming Zhang, Pratul~P. Srinivasan, Boyang Deng, Paul Debevec, William~T. Freeman, and Jonathan~T. Barron.
+\newblock {NeRFactor: Neural Factorization of Shape and Reflectance under an Unknown Illumination}.
+\newblock \emph{ACM TOG}, 40\penalty0 (6), 2021.
+
+\bibitem[Zhu et~al.(2022)Zhu, Peng, Larsson, Xu, Bao, Cui, Oswald, and Pollefeys]{nice2022CVPR}
+Zihan Zhu, Songyou Peng, Viktor Larsson, Weiwei Xu, Hujun Bao, Zhaopeng Cui, Martin~R. Oswald, and Marc Pollefeys.
+\newblock {NICE-SLAM: Neural Implicit Scalable Encoding for SLAM}.
+\newblock In \emph{CVPR}, 2022.
+
+\end{thebibliography}

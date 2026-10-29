@@ -1,0 +1,979 @@
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic
+Displays
+BRIAN CHAO∗, Stanford University, USA and Meta, USA
+DARIO SEYB, Meta, USA
+NATHAN MATSUDA, Meta, USA
+OLIVER COSSAIRT, Meta, USA
+YANG ZHOU, Meta, USA
+DOUGLAS LANMAN, Meta, USA
+GORDON WETZSTEIN, Stanford University, USA
+GRACE KUO, Meta, USA
+CHANGWON JANG, Meta, USA
+(b) Sequential 
+wavefront 
+compositing
+(a) Multiplane images representation [Zhou et al. 2018]
+Light leakage artifacts ✘
+Long generation time ✘
+Efficient rendering ✓
+Accurate occlusion ✓
+(c) RGBD
+front-focus
+(d) RPWS
+front-focus
+(f) MPI (ours)
+front-focus
+(e) MPI (ours)
+back-focus
+−π
+π
+Hologram 
+phase
+Fig. 1. We propose a wave-optics rendering pipeline for multiplane images (MPIs) (a, b) to generate holograms that accurately reconstruct 3D focal stacks
+and 4D light fields. Conventional RGBD holograms are fast to render, yet suffer from incorrect defocus and parallax behaviour at depth transitions (c). The
+state-of-the-art primitive-based CGH algorithm, RPWS [Chao et al. 2025], generates high-quality holograms but suffer from extremely slow runtime (d). Our
+proposed MPI-based CGH efficiently converts MPIs into holograms that accurately reconstruct 3D focal stacks and 4D light fields (e), (f). The randomness of
+the final composited hologram, as shown in the color-coded phase map on the left, significantly expands the eyebox and improves the space–bandwidth
+product utilization of the spatial light modulator in the holographic display, allowing for natural defocus and accurate parallax reconstruction.
+Recent advances in neural rendering have unlocked unprecedented capabili-
+ties in 3D reconstruction and novel view synthesis, giving rise to applications
+such as virtual fly-throughs of a 3D scene reconstructed from a set of sparse,
+casually captured images. However, these renderings are viewed on a com-
+puter screen or conventional VR headsets as 2D images, greatly limiting
+the perceptual realism and immersiveness of such experiences. The rapid
+development in novel 3D scene representations calls for dedicated rendering
+algorithms that convert these readily-available 3D contents into formats that
+are compatible with emerging 3D display technologies, such as holographic
+displays. In this paper, we propose a wave-optics rendering pipeline that
+works with multiplane images (MPIs) for efficient and high-quality hologram
+∗Corresponding author.
+Authors’ Contact Information: Brian Chao, brianchc@stanford.edu, Stanford University,
+USA and Meta, USA; Dario Seyb, dseyb@meta.com, Meta, USA; Nathan Matsuda, nathan.
+matsuda@meta.com, Meta, USA; Oliver Cossairt, ocossairt@meta.com, Meta, USA; Yang
+Zhou, zhouyang@meta.com, Meta, USA; Douglas Lanman, douglas.lanman@meta.com,
+Meta, USA; Gordon Wetzstein, gordon.wetzstein@stanford.edu, Stanford University,
+USA; Grace Kuo, gracekuo@meta.com, Meta, USA; Changwon Jang, changwon.jang@
+meta.com, Meta, USA.
+synthesis. Our MPI-based computer-generated holography algorithm greatly
+outperforms state-of-the-art primitive-based CGH algorithms in terms of
+runtime, achieving speedups up to 250, 000× while achieving comparable
+image quality, and significantly outperforms conventional layer-based CGH
+algorithms in terms of image quality. We validate our method extensively
+on a wide variety of 3D scene datasets both in simulation and through ex-
+perimentally captured results, showing exceptional 3D focal stack and 4D
+light field reconstruction performance without sacrificing efficiency.
+CCS Concepts: • Computing methodologies →Computer graphics; •
+Hardware →Emerging technologies.
+Additional Key Words and Phrases: computational displays, holography,
+virtual reality, augmented reality, multiplane images, neural rendering
+1
+Introduction
+Holographic near-eye displays are an emerging class of 3D dis-
+play technology that enable realistic, immersive visual experiences
+through physically accurate wavefront reconstruction [Chao et al.
+arXiv:2607.19731v1  [cs.GR]  22 Jul 2026
+111:2
+•
+Chao et al.
+2024; Gopakumar et al. 2024; Jang et al. 2024; Kim et al. 2022; Mai-
+mone et al. 2017]. However, despite their immense promise, their
+practical deployment remains fundamentally constrained by the ex-
+treme computational cost of computer-generated holography (CGH).
+Driving such displays requires synthesizing interference patterns
+from complex 3D inputs in real time, yet this mapping from scene
+representation to SLM wavefront modulation is computationally
+demanding.
+Existing CGH algorithms work with a wide range of 3D represen-
+tations. However, each representation introduces significant com-
+putational trade-offs that limit real-time CGH: RGBD images [Choi
+et al. 2021; Peng et al. 2020] suffer from occlusion artifacts, mesh-
+[Matsushima 2005; Matsushima and Nakahara 2009], point-cloud-
+[Chen and Wilkinson 2009; Maimone et al. 2017], or Gaussian-based
+[Chao et al. 2025; Choi et al. 2025a] pipelines must process millions
+of primitives, and densely-sampled light fields [Chao et al. 2024;
+Schiffers et al. 2023] require content that is rarely produced in typical
+capture settings. As a result, generating high-quality, photorealistic
+holograms at interactive rates from compact or casually captured
+inputs remains an open challenge.
+Multiplane images (MPIs) [Flynn et al. 2019; Han et al. 2022; Khan
+et al. 2023; Luvizon et al. 2021; Pu et al. 2023; Srinivasan et al. 2019;
+Tucker and Snavely 2020; Zhao et al. 2022; Zhou et al. 2018] are a
+layered 3D representation that consists of a set of RGBA images,
+each defined at a corresponding depth which can be predetermined
+or adaptively optimized from a set of casually captured images of a
+front-facing 3D scene. Novel views are synthesized through warping
+the RGBA images from a reference viewpoint to the novel viewpoint
+and subsequent alpha compositing. Although a single set of MPIs is
+unable to achieve 360-degree, free-view 3D reconstruction due to its
+fronto-parallel arrangement, it provides exceptional reconstruction
+of novel views particularly for local, front-facing light fields of a 3D
+scene. This property is especially well-suited for CGH since only
+front-facing views need to be reconstructed well in the small eyebox
+of a near-eye display. Most importantly, MPIs usually only con-
+sist of a handful of RGBA images (<100), allowing for much faster
+processing in the wave optics domain compared to Gaussians and
+meshes where millions of primitive wavefronts have to be propa-
+gated and composited [Choi et al. 2025a; Matsushima and Nakahara
+2009; Matsushima and Sonobe 2018].
+In this paper, we devise a CGH pipeline that uses MPIs as an
+intermediate 3D representation for efficient computer-generated
+holography. We show that MPI-based CGH achieves high-quality
+focal stack and light field reconstruction quality and outperforms
+other conventional layer-based CGH methods such as CGH us-
+ing RGBD images. We further demonstrate that MPI-based CGH
+can achieve up to 250, 000× speedup compared to state-of-the-art
+primitive-based methods such as polygon- or Gaussians-based CGH
+[Choi et al. 2025a; Matsushima 2005; Matsushima and Nakahara
+2009; Matsushima et al. 2014], paving the way for practical and
+real-time CGH.
+Specifically, our contributions include:
+• A novel CGH algorithm that composites multiplane images
+into complex holograms with optional time multiplexing.
+Table 1. Comparison of different 3D representations for CGH in terms
+of efficiency and visual quality. Point cloud and mesh representations
+lead to poor appearance reconstruction quality due to the underlying coarse
+3D representation. CGH algorithms based on focal stack and light field
+targets require iterative optimization. RGBD holograms are efficient to
+synthesize, yet image quality degrades at depth transitions. Gaussian-based
+holograms, on the other hand, achieve superior quality but suffers from
+slow generation time. Our MPI-based holograms achieve the best of both
+worlds of RGBD and Gaussian holograms, simultaneously achieving efficient
+runtime and high image quality.
+Methods
+Efficient
+inference
+Focal stack
+quality
+Light field
+quality
+Point cloud
+✘
+✘
+RGBD
+✔
+Focal stack
+✔
+Light field
+✔
+✔
+Mesh
+✘
+✘
+✘
+Gaussians
+✘
+✔
+✔
+MPIs
+✔
+✔
+✔
+• A detailed evaluation of MPI-based holograms against ex-
+isting CGH baselines, analyzing how the number of depth
+layers impacts image quality and runtime.
+• Experimental validation demonstrating accurate 3D focal
+stack reconstruction and 4D light field parallax in MPI-based
+holograms.
+Source code and example datasets will be made public.
+2
+Related Work
+CGH has a long history of algorithmic and display innovations.
+In the next section, we highlight prior work most relevant to our
+approach and point interested readers to broader surveys of holo-
+graphic displays [Chang et al. 2020; Javidi et al. 2021; Park 2017; Pi
+et al. 2022; Yaraş et al. 2010].
+Computer-generated Holography. Computer-generated holog-
+raphy (CGH) is a process that maps a three-dimensional volume
+onto the 2D plane of a spatial light modulator (SLM) via simulated
+interference. This computational process is heavily dependent on
+the format of the input data; historically, CGH frameworks have
+been designed to handle inputs ranging from explicit geometric
+primitives, such as point clouds, meshes, and Gaussians, to layered
+representations like RGBD images and densely-sampled image sets
+like light fields and focal stacks.
+Regardless of the input representation, the computational ef-
+ficiency of CGH algorithms is fundamentally determined by the
+choice between optimization-based and direct algorithms. Optimization-
+based approaches, while capable of reconstructing focal stacks and
+light fields with high fidelity through error minimization [Chakravarthula
+et al. 2019; Fienup 1980; Gerchberg 1972; Peng et al. 2020; Schiffers
+et al. 2023; Zhang et al. 2017], suffer from prohibitive runtime costs.
+These methods require tens to hundreds of wave propagation steps
+and gradient updates per frame, making them unsuitable for real-
+time operation.
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays
+•
+111:3
+In contrast, direct methods offer a pathway to interactive frame
+rates by synthesizing holograms in a single forward computation.
+However, the efficiency of direct methods is strictly bounded by
+the complexity of the input representation. Methods that model
+scenes with primitives, such as points, triangular meshes, or Gaus-
+sians, must propagate millions of individual wavefronts and employ
+complex compositing schemes for occlusion [Chao et al. 2025; Choi
+et al. 2025a; Matsushima et al. 2014], often reintroducing significant
+latency. To address this, learning-based variants use neural net-
+works to predict holograms directly from 3D inputs [Shi et al. 2021;
+Yang et al. 2022], though often at the cost of high memory usage
+or training overhead. This highlights the need for direct algorithms
+that operate on structurally efficient representations to maximize
+throughput. Please refer to Table 1 for a detailed comparison of
+CGH algorithms based on different 3D representations.
+In this work, we develop a direct CGH pipeline that transforms
+multiplane images (MPIs) 3D representations into complex holo-
+grams, offering a practical balance between quality and efficiency.
+We distinguish this algorithm from phase- or amplitude-encoding
+techniques that map complex holograms to phase-only or amplitude-
+only patterns for standard SLMs, including double-phase amplitude
+coding (DPAC) [Hsueh and Sawchuk 1978], single-sideband encod-
+ing [Bryngdahl and Lohmann 1968], stochastic optimization [Peng
+et al. 2020], and learned phase-retrieval networks [Shi et al. 2021].
+3D Scene Representations. The selection of a 3D scene rep-
+resentation for CGH is governed by an explicit trade-off between
+reconstruction fidelity and computational efficiency. Simple repre-
+sentations favor efficiency but compromise on quality. For example,
+point clouds [Maimone et al. 2017] are fast to process but inher-
+ently sparse, resulting in holes in reconstruction. On the other hand,
+RGBD images [Choi et al. 2021; Peng et al. 2020] enable rapid holo-
+gram synthesis but lack continuous volumetric information, leading
+to severe artifacts at occlusion boundaries.
+Other geometric primitive representations prioritize visual qual-
+ity at the expense of runtime. While Gaussian splats [Chao et al.
+2025; Choi et al. 2025a] provide more geometric accuracy and pho-
+torealism, they incur massive computational costs due to the need
+to process millions of individual primitives and handle their occlu-
+sions. Other formats, such as densely-sampled light fields [Choi et al.
+2022; Kim et al. 2024; Schiffers et al. 2023], offer high fidelity but
+face fundamental spatio–angular resolution tradeoffs and immense
+data requirements. Consequently, identifying a representation that
+bridges the gap between the efficiency of sparse and layered inputs
+and the visual quality of densely populated primitives remains an
+open challenge.
+To address this trade-off between efficiency and quality, we pro-
+pose leveraging multiplane images (MPIs) as an effective 3D represen-
+tation for CGH. MPIs combine the efficiency of layered RGBD-style
+depth rendering with the continuous volumetric expressiveness
+of Gaussian representations. Each slice of an MPI is a plane with
+RGBA information. Novel views can be rendered by applying planar
+homographies to each layer and compositing the warped RGBA
+images using alpha blending [Zhou et al. 2018].
+MPIs have been shown to reconstruct front-facing scenes and
+moderate parallax with high fidelity using only a small number of
+layers (typically fewer than 100), and can be synthesized in real time
+with feed-forward neural networks [Flynn et al. 2019; Han et al. 2022;
+Khan et al. 2023; Luvizon et al. 2021; Pu et al. 2023; Srinivasan et al.
+2019; Tucker and Snavely 2020; Zhao et al. 2022; Zhou et al. 2018].
+This characteristic is particularly well suited for holographic near-
+eye displays, which only require accurate reconstruction of front-
+facing views over a limited eyebox size rather than full 360° scene
+coverage as in Gaussian splatting. These properties position MPIs
+as an ideal intermediate representation for computer-generated
+holography. We demonstrate that MPIs achieve the best of both
+worlds, matching the visual fidelity of Gaussian-based holograms
+while maintaining the efficiency of RGBD-based approaches.
+Layer-based 3D Displays and Scene Representations. There
+has been extensive prior research on layer-based, glasses-free 3D
+displays that aim to reconstruct light fields directly to the user’s
+eyes [Huang et al. 2015; Lanman et al. 2010; Lee et al. 2016; Maimone
+et al. 2013; Wetzstein et al. 2011, 2012b,a]. These systems typically
+employ either (1) a stack of attenuating layers that modulate a
+backlight panel, known as multiplicative displays, where the final
+image corresponds to the product of all layer transmittances, or (2)
+a stack of diffusive or emissive layers, known as additive displays,
+where the resulting image is formed by summing the contributions
+from each layer. The display patterns for each layer are determined
+by solving a nonnegative tensor factorization problem such that
+the combined emission or transmission of all layers reproduces a
+target light field. As the viewer moves laterally, the layered stack
+generates different angular views, thereby reconstructing a full 4D
+light field.
+In computer graphics and, more recently, neural rendering, simi-
+lar layered 3D representations have been proposed to achieve efficient
+light field synthesis. Notably, the multiplane images (MPIs) repre-
+sentation [Zhou et al. 2018] models a scene as a set of RGBA images
+positioned at discrete depth planes. MPIs are compact, differentiable,
+and renderable in real time using simple planar homographies and
+alpha compositing. Their fronto-parallel structure enables high-
+fidelity reconstruction of forward-facing light fields with moderate
+parallax using only a handful of depth layers [Flynn et al. 2019;
+Han et al. 2022; Khan et al. 2023; Luvizon et al. 2021; Pu et al. 2023;
+Srinivasan et al. 2019; Tucker and Snavely 2020; Zhao et al. 2022].
+These characteristics are particularly advantageous for holographic
+near-eye displays, which primarily require accurate reconstruction
+of front-facing views in a small eyebox rather than full 360° viewing
+coverage, while also demanding real-time CGH computation.
+Motivated by these insights, we propose CGH algorithms that
+extend layered representations such as MPIs into the wave-optics
+domain. Our method converts such layered 3D representations into
+complex holograms that reconstruct full 4D light fields. Layered
+formats are inherently well-suited for efficient hologram synthe-
+sis: they require only a limited number of depth planes (typically
+fewer than 100) to be propagated, in contrast to the thousands or
+millions of primitives processed in Gaussian- or polygon-based
+holography. This structural sparsity leads to orders-of-magnitude
+acceleration in computation. We demonstrate that optimized lay-
+ered representations enable hologram synthesis with up to 250, 000×
+111:4
+•
+Chao et al.
+(a) Multiplane images representation Eq. (1)
+(b) MPI view space to hologram space
+(c) Sequential wave propagation and compositing Eq. (2)
+(d) Time multiplexing Eq. (3)
+𝒄! ∈ℝ"×$×%
+𝜶! ∈ℝ"×$
+𝑢&
+(() = 𝑢*+,
+(()
+𝑢!-.
+(()
+𝑢!
+(()
+𝜙!
+(()
+𝑢*+,
+(/)
+𝑢*+,
+(.)
+apply 
+random 
+phase
+Fig. 2. The MPI CGH pipeline. Our MPI-based CGH pipeline consists
+of 4 steps. We start with a set of (a) camera frustum-aligned multiplane
+images defined by Eq. 1, and (b) transform them into complex wavefronts
+aligned with the SLM plane by applying a random phase map to each RGBA
+image slice. The complex MPI wavefronts are (c) sequentially propagated
+and composited at each MPI depth plane using our novel wave compositing
+procedure defined by Eq. 2 to get a single-frame MPI hologram at the SLM
+plane. Finally, multiple MPI holograms with different random phase patterns
+are (d) time multiplexed as shown in Eq. 3.
+speedup compared to state-of-the-art primitive-based CGH algo-
+rithm, Random-phase Wave Splatting (RPWS) [Chao et al. 2025],
+while maintaining excellent light field reconstruction quality.
+Complex-valued Holographic Radiance Fields. In a concur-
+rent work, Zhan et al. [2025] proposed Complex-valued Radiance
+Fields that optimizes a scene-specific complex representation in
+which Gaussian primitives carry complex features and are compos-
+ited along a set of discrete planes during rendering. This yields a
+layered, plane-wise accumulation procedure reminiscent of multi-
+plane formulations, but the underlying parameterization is a com-
+pletely new, learned complex scene model. In contrast, our approach
+operates directly on off-the-shelf layered inputs (e.g., existing multi-
+plane images) and targets hologram synthesis with full 2𝜋random
+phase and time multiplexing for both focal stack and light-field
+reconstruction and wide-eyebox viewing.
+3
+MPI-based Computer-generated Holography
+Our approach converts existing multiplane images to random-phase
+holograms that accurately reconstruct 3D focal stacks and 4D light
+fields. We first describe the MPI image representation in Section
+3.1, and present our MPI-based CGH rendering pipeline in 3.2. The
+overall MPI-based CGH pipeline is outlined in Fig. 2.
+3.1
+Multiplane Image Representation
+Given a reference camera viewpoint (camera extrinsics defined by
+the camera translation vector t ∈R3 and rotation matrix R ∈R3×3)
+and the camera intrinsics K ∈R3×3, the multiplane images (MPIs)
+with respect to the given camera viewpoint are a set of 𝐿of RGBA
+images (c𝑖, 𝜶𝑖) defined at different depths 𝑑𝑖∈R, 1 ≤𝑖≤𝐿from
+the camera:
+{(c𝑖, 𝜶𝑖) | c𝑖∈R𝐻×𝑊×3, 𝜶𝑖∈R𝐻×𝑊, 𝑖= 1, . . . , 𝐿}.
+(1)
+as shown in Fig. 2.
+It has been shown in prior work that optimized MPIs can recon-
+struct local, front-facing light fields around the reference camera
+viewpoint exceptionally well [Zhou et al. 2018]. To render a novel
+view from a new target camera viewpoint t′, R′ given the MPIs
+with respect to a reference camera viewpoint t, R, each MPI layer is
+warped to the target viewpoint using simple planar homography.
+The warped MPI layers (c′
+𝑖, 𝜶′
+𝑖), 1 ≤𝑖≤𝐿are then alpha-composited
+from back-to-front using the standard over operation [Porter and
+Duff 1984].
+3.2
+Wave Optics Rendering of MPI Images
+Given a set of multiplane images aligned with the center camera
+viewpoint and parallel to the SLM plane in the holographic display,
+we transform MPIs to holograms by modulating RGBA images with
+random phase masks and sequentially propagate and blend them
+from back to front to get the final composited complex wavefront
+on the SLM plane.
+We formulate the rendering process recursively in Eq. 2, where
+𝑢𝑖(x) represents the accumulated complex field emerging from layer
+𝑖after integrating all background layers from 𝑁. Given the opac-
+ity channel 𝜶𝑖(x) of the current slice, we propagate the resulting
+wavefront across the inter-layer gap Δ𝑧= 𝑧𝑖−1 −𝑧𝑖to the subse-
+quent plane 𝑖−1 using the angular spectrum method [Goodman
+2005] and composite them using a recently proposed wave optics
+alpha blending formulation for random-phase wavefronts [Chao
+et al. 2025]:
+𝑢(𝑡)
+𝑖−1(x) = P
+√︁
+1 −𝜶𝑖(x) 𝑢𝑖(x) + √𝑐𝑖
+√︁
+𝜶𝑖(x) 𝑒𝑖𝜙(𝑡)
+𝑖
+(x); Δ𝑧
+
+(2)
+We define 𝑡∈{1, . . . ,𝑇} as the frame index of a time-multiplexed
+MPI hologram with 𝑇frames. For each layer 𝑖in frame 𝑡, a unique
+random phase profile 𝜙(𝑡)
+𝑖
+is applied. The recursion terminates at
+the display plane (𝑧0 = 0), where the target complex field is given
+by 𝑢(𝑡)
+SLM(x) = 𝑢(𝑡)
+0 (x).
+We compute the time-averaged intensity 𝐼(x) of the final time-
+multiplexed MPI hologram by accumulating the intensity of the
+reconstructed field under a generalized operator O(·; ·):
+𝐼(x) = 1
+𝑇
+𝑇∑︁
+𝑡=1
+O
+
+𝑢(𝑡)
+SLM(x); ·
+
+2
+,
+(3)
+This formulation is agnostic to the operator O(·; ·), which may rep-
+resent standard free-space propagation for 2D imaging or 3D focal
+stacks, the Short-time Fourier Transform (STFT) for 4D light field
+reconstruction [Choi et al. 2022], or even pupil masking functions
+for synthesizing specific angular views [Schiffers et al. 2023; Shi
+et al. 2024], which we show in Section 4.
+With this MPI-based CGH rendering pipeline, we transform MPIs,
+which are traditionally limited to ray-optics-based rendering of
+viewpoint-dependent 2D images, into complex-valued holograms
+that accurately reconstruct 3D focal stacks and 4D light fields under
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays
+•
+111:5
+23
+25
+27
+29
+Number of Layers
+21.5
+22.0
+22.5
+23.0
+23.5
+PSNR (dB)
+PSNR
+23
+25
+27
+29
+Number of Layers
+0.45
+0.46
+0.47
+0.48
+0.49
+0.50
+0.51
+0.52
+SSIM
+SSIM
+23
+25
+27
+29
+Number of Layers
+10 1
+100
+101
+102
+103
+104
+Runtime (seconds)
+Computation Time (log scale)
+MPI
+RGBD
+RPWS
+Fig. 3. Runtime and image quality analysis of different CGH algorithms. We compare runtime and light field reconstruction quality across CGH
+algorithms with varying numbers of depth planes for RGBD- and MPI-based methods. We report average metrics on holograms generated from selected scenes
+of the Mip-NeRF 360 [Barron et al. 2022] dataset. RPWS achieves the highest image fidelity but is computationally expensive, being more than 2000× slower
+than layer-based approaches (MPI and RGBD), whose runtime scales approximately linearly with the number of depth layers. Crucially, the computational
+cost is dictated solely by the layer count, being nearly identical for both MPI and RGBD representations, represented by the overlaid blue and green lines
+in the runtime plot. RGBD holograms exhibit low image quality that improves with more depth planes yet remains inferior to MPI holograms. In contrast,
+MPI-based CGH attains a favorable tradeoff, rendering up to 250, 000× faster while matching RPWS in SSIM and surpassing RGBD in overall visual quality.
+a full wave-optics image formation model, as demonstrated in the
+following section.
+4
+Experiments and Analysis
+In this section, we describe implementation details including the
+data preparation pipeline and hardware configurations in Section 4.1
+and show simulated and experimentally captured results in Section
+4.2.
+4.1
+Implementation Details
+4.1.1
+Evaluation Datasets. We demonstrate the effectiveness of
+our method on a wide collection of scenes from the NeRF Blender
+synthetic dataset [Mildenhall et al. 2020] and the Mip-NeRF 360
+[Barron et al. 2022] dataset.
+4.1.2
+Baseline 3D Scene Representations. We compare MPI-based
+CGH with conventional layer-based CGH [Peng et al. 2020; Shi et al.
+2021, 2022] using RGBD images, and the state-of-the-art primitives-
+based random-phase CGH method, Random-phase Wave Splatting
+(RPWS) with 2D Gaussians [Chao et al. 2025].
+For the RPWS baseline, we use the gsplat software library to op-
+timize 2DGS representations for Gaussian-based CGH. As described
+in RPWS [Chao et al. 2025], we optimize Gaussians to reconstruct
+the square of the target image, and extract the square root of the
+optimized Gaussian colors of CGH calculation.
+There are many ways to generate an MPI representation of a
+3D scene. Prior methods include training a feed-forward neural
+network to predict the MPIs of a 3D scene given a stereo image pair
+[Zhou et al. 2018] or from a single image [Han et al. 2022; Khan et al.
+2023; Pu et al. 2023; Tucker and Snavely 2020].
+Since our goal is to demonstrate the potential of MPIs for CGH,
+we do not focus on how to acquire the MPI representation itself as
+there has already been extensive research in such area and that our
+method is agnostic of the MPI generation process. Instead, we simply
+extract MPIs from a set of pre-optimized Gaussian splats by binding
+the Gaussians to predetermined depth planes. Specifically, given a
+set of depth-sorted Gaussian splats, we define the color image 𝑐𝑑𝑘
+and alpha image 𝛼𝑑𝑘at depth plane 𝑑𝑘, 1 ≤𝑘≤𝐷to be
+𝑐𝑑𝑘=
+Í𝑠𝑘+𝑁𝑘
+𝑖=𝑠𝑘
+𝛼𝑖𝑐𝑖
+Î
+𝑗<𝑖(1 −𝛼𝑗)
+1 −Î𝑁𝑘
+𝑖=𝑠𝑘(1 −𝛼𝑖)
+, 𝛼𝑑𝑘= 1 −
+𝑁𝑘
+Ö
+𝑖=𝑠𝑘
+(1 −𝛼𝑖)
+(4)
+We partition the depth planes such that they are uniformly dis-
+tributed within (𝑧min,𝑧max), which are the nearest and farthest depth
+planes of the 3D hologram volume, respectively.
+Most importantly, this data generation pipeline allows us to flexi-
+bly control the number of layers in the MPI representation, which is
+not supported for current data-driven MPI generation networks as
+they all generate MPIs with a fixed number of layers. This flexibility
+allows for extensive ablation studies and benchmarking experiments
+in Section 4 to help investigate the effect of the number of MPI layers
+on image quality and CGH runtime. We addtionally demonstrate
+that MPI-based CGH is independent of how MPIs are acquired in Fig.
+6, where we show qualitative results of MPI holograms generated
+using a representative neural-network-based MPI predictor, Stereo
+Magnification [Zhou et al. 2018].
+111:6
+•
+Chao et al.
+Ground truth
+RPWS
+RGBD (4 layers)
+RGBD (64 layers)
+RGBD (512 layers)
+MPI (4 layers)
+MPI (64 layers)
+MPI (512 layers)
+(a) Focal 
+slices
+(b) Light 
+field views
+Fig. 4. Defocus and occlusion behaviours of different CGH algorithms at depth transitions. We show zoom-in crops of 3D focal stacks and 4D light
+fields reconstructed using different CGH algorithms. RPWS, a state-of-the-art primitives-based CGH method, produces the most natural defocus blur and
+accurate occlusion behavior. In contrast, RGBD holograms exhibit light leakage and halo artifacts in defocus regions, as well as dark occlusion boundaries in
+light field views. Increasing the number of RGBD depth layers does not alleviate these issues. Our MPI holograms, on the other hand, reconstruct natural
+defocus blur and accurate occlusion effects using as few as four depth layers.
+To generate RGBD images of a given view, we use DepthAnything
+[Yang et al. 2024] to predict its depth and partition the scene into
+different depth bins to generate corresponding depth masks and
+masked RGB images. We use the same uniform depth partitioning
+scheme as MPIs.
+4.1.3
+Algorithm Implementations. We implement MPI-based CGH
+and all baseline methods in PyTorch. Please refer to the supplemen-
+tary materials for pseudocode and implementation details.
+4.1.4
+Experimental Hardware Setup. MPI-based CGH generates
+complex-valued holograms. We perform SGD [Peng et al. 2020]
+with a complex field supervision loss [Chen et al. 2021] to synthe-
+size phase-only holograms that accurately reconstruct the target
+complex wavefront at a fixed propagation distance (4cm) from the
+phase-only SLM. We use a 1080p HOLOEYE Pluto-2.1 phase-only
+SLM with 8𝜇𝑚pixel pitch and a FISBA READYBeam Ind2 fiber-
+coupled laser module as the illumination source. We use a FLIR
+GS3-U3-123S6C-C color camera placed on a z-axis translation stage
+(Thorlabs MTS25-Z8 50mm) to capture focal slices at different dis-
+tances from the SLM. For horizontal parallax and light field capture,
+we place an adjustable pupil on a motorized horizontal translation
+stage (Newport Optics CONEX-AGP) at the Fourier plane. We re-
+fer readers to the supplementary materials for more details on the
+experimental setup.
+4.2
+Simulation and Experimental Results
+4.2.1
+Baseline Comparisons with Simulation Results. We compare
+our method (MPI) with prior layer-based RGBD CGH and a state-
+of-the-art primitives-based CGH algorithm, Random-phase Wave
+Splatting (RPWS) with 2D Gaussians [Chao et al. 2025]. For RGBD-
+based CGH and our MPI-based CGH method, we also ablate the
+number of depth layers. We use 24 frames time multiplexing (𝑇= 24)
+for all baselines.
+In Fig. 4 and 7, we see that RPWS achieves the best quantitative
+3D focal stack and 4D light field reconstruction quality at the cost
+of slow runtime. On the other hand, RGBD-based CGH achieves
+fast runtime yet results in poor reconstruction quality. Our MPI-
+based CGH pipeline gets the best of both worlds, achieving both fast
+runtime and high image quality. RGBD holograms reconstruct some-
+what plausible focal stacks and light fields, yet severe halo, leakage,
+and dark border artifacts, often appearing as “depth-tearing” near
+depth discontinuities, remain prominent. RPWS holograms achieve
+high image quality through dense 2D Gaussian representations with
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays
+•
+111:7
+Front focus
+Middle focus
+Back focus
+Left view
+Center view
+Right view
+Zoom-in crops
+Fig. 5. Experimentally captured light field parallax at different focused depths. We capture light field parallax at different depth planes by translating
+both the pupil horizontally at the Fourier plane and the camera along the optical axis. As expected, the parallax shift of objects increases as they move farther
+away from the focused depth, as seen from the red zoom-in crops for the front-focus results, and the blue zoom-in crops from the back-focus results. The
+objects that are at the focused depth, i.e. light field plane, don’t move. These results collectively demonstrate that our MPI holograms reconstruct accurate
+light fields that respect standard ray optics geometry.
+millions of primitives, but incur extremely slow runtimes. In con-
+trast, our MPI holograms reconstruct both focal stacks and light
+fields with perceptually similar quality to RPWS while simultane-
+ously achieving fast runtime.
+Additionally, Fig. 3 presents runtime and image quality compar-
+isons across various CGH baselines. Both RGBD-based CGH and
+MPI-based CGH reconstruction quality improve with an increas-
+ing number of depth layers, but their runtime scales approximately
+linearly with layer count. While this reflects an inherent trade-off
+between quantitative image quality and computational cost, we
+observe that perceptual quality saturates beyond roughly 30 lay-
+ers, suggesting that MPI-based CGH offers a favorable balance for
+interactive display applications.
+4.2.2
+Experimentally Captured Focal Stack Results. In Fig. 8, we
+show experimentally captured 3D focal stacks of holograms synthe-
+sized using different CGH algorithms. The captured results closely
+follow the trend observed in our simulations. MPI holograms re-
+construct focal stacks with accuracy comparable to RPWS, whereas
+RGBD holograms struggle to reproduce realistic defocus blur even
+with additional depth layers.
+4.2.3
+Experimentally Captured Light Field Parallax Results. In Fig.
+8, we show experimentally captured horizontal parallax-only light
+fields of holograms synthesized using different CGH algorithms
+when the camera is focused at the hologram plane, or middle depth
+Back
+focus
+Front 
+focus
+Fig. 6. MPI-based CGH works with MPIs produced by off-the-shelf
+neural networks. We use MPIs generated by Stereo Magnification [Zhou
+et al. 2018], a representative neural-network–based MPI predictor, for holo-
+gram synthesis. Our MPI-based CGH algorithm is agnostic to the MPI gen-
+eration process and reconstructs accurate 3D focal stacks.
+plane. We also capture the parallax effects at different focal planes
+(rear, middle, and front planes), which is shown in Fig. 5 and the
+supplemental materials. The captured light field results also closely
+follow the trend observed in our simulations, where we see clear
+parallax shifts in the zoom-in crops.
+5
+Discussion
+Limitations and Future Work. Currently, our method achieves
+up to 250, 000× speedup over state-of-the-art primitives-based CGH
+methods, but is still not real-time. Combining MPI-based CGH with
+111:8
+•
+Chao et al.
+recent real-time random phase hologram synthesis networks [Chu
+et al. 2025] could be an interesting direction. The use of random
+phase leads to lower contrast in the reconstructed images. A promis-
+ing solution to this issue are learning-based calibration methods
+[Choi et al. 2022, 2025b; Jang et al. 2024; Peng et al. 2020]. Please
+refer to the supplemental materials for more discussions on contrast
+loss in random phase holograms.
+Conclusion. We propose MPI-based CGH, a novel CGH pipeline
+based on multiplane images (MPIs) that achieves high focal stack
+and light field reconstruction quality on par with state-of-the-art
+primitives-based CGH methods while greatly speeding up CGH
+runtime by up to 250, 000×. This significant advance in rendering
+efficiency paves the way for future real-time computer-generated
+holography for interactive AR and VR experiences.
+References
+Jonathan T. Barron, Ben Mildenhall, Dor Verbin, Pratul P. Srinivasan, and Peter Hedman.
+2022. Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields. In CVPR.
+Olof Bryngdahl and Adolf Lohmann. 1968. Single-Sideband Holography∗. J. Opt. Soc.
+Am. 58, 5 (May 1968), 620–624. https://doi.org/10.1364/JOSA.58.000620
+Praneeth Chakravarthula, Yifan Peng, Joel Kollin, Henry Fuchs, and Felix Heide. 2019.
+Wirtinger holography for near-eye displays. ACM Transactions on Graphics (TOG)
+38, 6 (2019), 1–13.
+Chenliang Chang, Kiseung Bang, Gordon Wetzstein, Byoungho Lee, and Liang Gao.
+2020. Toward the next-generation VR/AR optics: a review of holographic near-eye
+displays from a human-centric perspective. Optica 7, 11 (2020), 1563–1578.
+Brian Chao, Manu Gopakumar, Suyeon Choi, Jonghyun Kim, Liang Shi, and Gordon
+Wetzstein. 2024. Large Étendue 3D Holographic Display with Content-adaptive
+Dynamic Fourier Modulation. In SIGGRAPH Asia 2024 Conference Papers. 1–12.
+Brian Chao, Jacqueline Yang, Suyeon Choi, Manu Gopakumar, Ryota Koiso, and Gor-
+don Wetzstein. 2025. Random-phase Wave Splatting of Translucent Primitives for
+Computer-generated Holography. arXiv:2508.17480 [cs.GR] https://arxiv.org/abs/
+2508.17480
+Chun Chen, Byounghyo Lee, Nan-Nan Li, Minseok Chae, Di Wang, Qiong-Hua Wang,
+and Byoungho Lee. 2021. Multi-depth hologram generation using stochastic gradient
+descent algorithm with complex loss function. Opt. Express 29, 10 (May 2021), 15089–
+15103. https://doi.org/10.1364/OE.425077
+Rick H.-Y. Chen and Timothy D Wilkinson. 2009. Computer generated hologram from
+point cloud using graphics processor. Applied optics 48, 36 (2009), 6841–6850.
+Suyeon Choi, Brian Chao, Jacqueline Yang, Manu Gopakumar, and Gordon Wetzstein.
+2025a. Gaussian Wave Splatting for Computer Generated Holography. ACM Trans-
+actions on Graphics (TOG) 44, 4 (2025), 1–11.
+Suyeon Choi, Manu Gopakumar, Yifan Peng, Jonghyun Kim, Matthew O’Toole, and
+Gordon Wetzstein. 2022. Time-multiplexed neural holography: a flexible frame-
+work for holographic near-eye displays with fast heavily-quantized spatial light
+modulators. In ACM SIGGRAPH 2022 Conference Proceedings. 1–9.
+Suyeon Choi, Manu Gopakumar, Yifan Peng, Jonghyun Kim, and Gordon Wetzstein.
+2021. Neural 3d holography: Learning accurate wave propagation models for 3d
+holographic virtual and augmented reality displays. ACM Transactions on Graphics
+(TOG) 40, 6 (2021), 1–12.
+Suyeon Choi, Changwon Jang, Douglas Lanman, and Gordon Wetzstein. 2025b. Syn-
+thetic aperture waveguide holography for compact mixed-reality displays with large
+étendue. Nature Photonics (28 July 2025). https://doi.org/10.1038/s41566-025-01718-
+w
+Victor Chu, Oscar Pueyo-Ciutad, Ethan Tseng, Florian Schiffers, Grace Kuo, Nathan
+Matsuda, Albert Redo-Sanchez, Lanman Douglas, Oliver Cossairt, and Felix Heide.
+2025. Artifact-Resilient Real-Time Holography. ACM Trans. Graph. 44, 6, Article
+219 (Dec. 2025), 13 pages. https://doi.org/10.1145/3763361
+JR Fienup. 1980. Iterative method applied to image reconstruction and to computer-
+generated holograms. Optical Engineering 19, 3 (1980), 297–305.
+John Flynn, Michael Broxton, Paul Debevec, Matthew DuVall, Graham Fyffe, Ryan
+Overbeck, Noah Snavely, and Richard Tucker. 2019. Deepview: View synthesis with
+learned gradient descent. In CVPR. 2367–2376.
+Ralph W Gerchberg. 1972. A practical algorithm for the determination of plane from
+image and diffraction pictures. Optik 35, 2 (1972), 237–246.
+Joseph W Goodman. 2005. Introduction to Fourier optics. Roberts and Company pub-
+lishers.
+Manu Gopakumar, Gun-Yeal Lee, Suyeon Choi, Brian Chao, Yifan Peng, Jonghyun Kim,
+and Gordon Wetzstein. 2024. Full-colour 3D holographic augmented-reality displays
+with metasurface waveguides. Nature (2024), 1–7.
+Yuxuan Han, Ruicheng Wang, and Jiaolong Yang. 2022. Single-view view synthesis in
+the wild with learned adaptive multiplane images. In SIGGRAPH. 1–8.
+C. K. Hsueh and A. A. Sawchuk. 1978. Computer-generated double-phase holograms.
+Appl. Opt. 17, 24 (Dec 1978), 3874–3883. https://doi.org/10.1364/AO.17.003874
+Fu-Chung Huang, Kevin Chen, and Gordon Wetzstein. 2015. The light field stereoscope:
+immersive computer graphics via factored near-eye light field displays with focus
+cues. ACM Trans. Graph. 34, 4, Article 60 (July 2015), 12 pages. https://doi.org/10.
+1145/2766922
+Changwon Jang, Kiseung Bang, Minseok Chae, Byoungho Lee, and Douglas Lanman.
+2024. Waveguide holography for 3D augmented reality glasses. Nature Communica-
+tions 15, 1 (2024), 66.
+Bahram Javidi, Artur Carnicer, Arun Anand, George Barbastathis, Wen Chen, Pietro
+Ferraro, JW Goodman, Ryoichi Horisaki, Kedar Khare, Malgorzata Kujawinska, et al.
+2021. Roadmap on digital holography. Optics Express 29, 22 (2021), 35078–35118.
+Numair Khan, Lei Xiao, and Douglas Lanman. 2023. Tiled multiplane images for
+practical 3D photography. In CVPR. 10454–10464.
+Dongyeon Kim, Seung-Woo Nam, Suyeon Choi, Jong-Mo Seo, Gordon Wetzstein, and
+Yoonchan Jeong. 2024. Holographic parallax improves 3D perceptual realism. ACM
+Transactions on Graphics (TOG) 43, 4 (2024), 1–13.
+Jonghyun Kim, Manu Gopakumar, Suyeon Choi, Yifan Peng, Ward Lopes, and Gordon
+Wetzstein. 2022. Holographic Glasses for Virtual Reality. In ACM SIGGRAPH 2022
+Conference Proceedings (Vancouver, BC, Canada) (SIGGRAPH ’22). Association for
+Computing Machinery, New York, NY, USA, Article 33, 9 pages. https://doi.org/10.
+1145/3528233.3530739
+Douglas Lanman, Matthew Hirsch, Yunhee Kim, and Ramesh Raskar. 2010. Content-
+adaptive parallax barriers: optimizing dual-layer 3D displays using low-rank light
+field factorization. In ACM SIGGRAPH Asia 2010 Papers (Seoul, South Korea) (SIG-
+GRAPH ASIA ’10). Association for Computing Machinery, New York, NY, USA,
+Article 163, 10 pages. https://doi.org/10.1145/1866158.1866164
+Seungjae Lee, Changwon Jang, Seokil Moon, Jaebum Cho, and Byoungho Lee. 2016.
+Additive light field displays: realization of augmented reality with holographic
+optical elements. ACM Trans. Graph. 35, 4, Article 60 (July 2016), 13 pages. https:
+//doi.org/10.1145/2897824.2925971
+Diogo C Luvizon, Gustavo Sutter P Carvalho, Andreza A dos Santos, Jhonatas S Con-
+ceicao, Jose L Flores-Campana, Luis GL Decker, Marcos R Souza, Helio Pedrini,
+Antonio Joia, and Otavio AB Penatti. 2021. Adaptive multiplane image generation
+from a single internet picture. In CVPR. 2556–2565.
+Andrew Maimone, Andreas Georgiou, and Joel S Kollin. 2017. Holographic near-eye
+displays for virtual and augmented reality. ACM Transactions on Graphics (Tog) 36,
+4 (2017), 1–16.
+Andrew Maimone, Gordon Wetzstein, Matthew Hirsch, Douglas Lanman, Ramesh
+Raskar, and Henry Fuchs. 2013. Focus 3D: Compressive accommodation display.
+ACM Trans. Graph. 32, 5, Article 153 (Oct. 2013), 13 pages. https://doi.org/10.1145/
+2503144
+Kyoji Matsushima. 2005. Computer-generated holograms for three-dimensional surface
+objects with shade and texture. Applied optics 44, 22 (2005), 4607–4614.
+Kyoji Matsushima and Sumio Nakahara. 2009. Extremely high-definition full-parallax
+computer-generated hologram created by the polygon-based method. Applied optics
+48, 34 (2009), H54–H63.
+Kyoji Matsushima, Masaki Nakamura, and Sumio Nakahara. 2014. Silhouette method
+for hidden surface removal in computer holography and its acceleration using the
+switch-back technique. Optics express 22, 20 (2014), 24450–24465.
+Kyoji Matsushima and Noriaki Sonobe. 2018. Full-color digitized holography for large-
+scale holographic 3D imaging of physical and nonphysical objects. Applied Optics
+57, 1 (2018), A150–A156.
+Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ra-
+mamoorthi, and Ren Ng. 2020. NeRF: Representing Scenes as Neural Radiance Fields
+for View Synthesis. In ECCV.
+Jae-Hyeung Park. 2017. Recent progress in computer-generated holography for three-
+dimensional scenes. Journal of Information Display 18, 1 (2017), 1–12.
+Yifan Peng, Suyeon Choi, Nitish Padmanaban, and Gordon Wetzstein. 2020. Neural
+holography with camera-in-the-loop training. ACM Transactions on Graphics (TOG)
+39, 6 (2020), 1–14.
+Dapu Pi, Juan Liu, and Yongtian Wang. 2022. Review of computer-generated hologram
+algorithms for color dynamic holographic three-dimensional display. Light: Science
+& Applications 11, 1 (2022), 231.
+Thomas Porter and Tom Duff. 1984. Compositing digital images. SIGGRAPH Comput.
+Graph. 18, 3 (Jan. 1984), 253–259. https://doi.org/10.1145/964965.808606
+Guo Pu, Peng-Shuai Wang, and Zhouhui Lian. 2023. Sinmpi: Novel view synthesis from
+a single image with expanded multiplane images. In SIGGRAPH. 1–10.
+Florian Schiffers, Praneeth Chakravarthula, Nathan Matsuda, Grace Kuo, Ethan Tseng,
+Douglas Lanman, Felix Heide, and Oliver Cossairt. 2023. Stochastic light field
+holography. In 2023 IEEE International Conference on Computational Photography
+(ICCP). IEEE, 1–12.
+Liang Shi, Beichen Li, Changil Kim, Petr Kellnhofer, and Wojciech Matusik. 2021.
+Towards real-time photorealistic 3D holography with deep neural networks. Nature
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays
+•
+111:9
+591, 7849 (2021), 234–239.
+Liang Shi, Beichen Li, and Wojciech Matusik. 2022. End-to-end learning of 3d phase-
+only holograms for holographic display. Light: Science & Applications 11, 1 (2022),
+247.
+Liang Shi, DongHun Ryu, and Wojciech Matusik. 2024. Ergonomic-Centric Holography:
+Optimizing Realism, Immersion, and Comfort for Holographic Display. Laser &
+Photonics Reviews n/a, n/a (2024), 2300651. https://doi.org/10.1002/lpor.202300651
+Pratul P Srinivasan, Richard Tucker, Jonathan T Barron, Ravi Ramamoorthi, Ren Ng, and
+Noah Snavely. 2019. Pushing the boundaries of view extrapolation with multiplane
+images. In CVPR. 175–184.
+Richard Tucker and Noah Snavely. 2020. Single-view view synthesis with multiplane
+images. In CVPR. 551–560.
+Gordon Wetzstein, Douglas Lanman, Wolfgang Heidrich, and Ramesh Raskar. 2011.
+Layered 3D: tomographic image synthesis for attenuation-based light field and
+high dynamic range displays. In ACM SIGGRAPH 2011 Papers (Vancouver, British
+Columbia, Canada) (SIGGRAPH ’11). Association for Computing Machinery, New
+York, NY, USA, Article 95, 12 pages. https://doi.org/10.1145/1964921.1964990
+Gordon Wetzstein, Douglas Lanman, Matthew Hirsch, Wolfgang Heidrich, and Ramesh
+Raskar. 2012b. Compressive Light Field Displays. IEEE Computer Graphics and
+Applications 32, 5 (2012), 6–11. https://doi.org/10.1109/MCG.2012.99
+Gordon Wetzstein, Douglas Lanman, Matthew Hirsch, and Ramesh Raskar. 2012a.
+Tensor displays: compressive light field synthesis using multilayer displays with
+directional backlighting. ACM Trans. Graph. 31, 4, Article 80 (July 2012), 11 pages.
+https://doi.org/10.1145/2185520.2185576
+Daeho Yang, Wontaek Seo, Hyeonseung Yu, Sun Il Kim, Bongsu Shin, Chang-Kun
+Lee, Seokil Moon, Jungkwuen An, Jong-Young Hong, Geeyoung Sung, et al. 2022.
+Diffraction-engineered holography: Beyond the depth representation limit of holo-
+graphic displays. Nature Communications 13, 1 (2022), 6012.
+Lihe Yang, Bingyi Kang, Zilong Huang, Zhen Zhao, Xiaogang Xu, Jiashi Feng, and
+Hengshuang Zhao. 2024. Depth Anything V2. In NeurIPS.
+Fahri Yaraş, Hoonjong Kang, and Levent Onural. 2010. State of the art in holographic
+displays: a survey. Journal of display technology 6, 10 (2010), 443–454.
+Yicheng Zhan, Dong-Ha Shin, Seung-Hwan Baek, and Kaan Akşit. 2025. Complex-
+Valued Holographic Radiance Fields. arXiv:2506.08350 [cs.GR] https://arxiv.org/
+abs/2506.08350
+Jingzhao Zhang, Nicolas Pégard, Jingshan Zhong, Hillel Adesnik, and Laura Waller.
+2017. 3D computer-generated holography by non-convex optimization. Optica 4, 10
+(2017), 1306–1313.
+Xiaoming Zhao, Fangchang Ma, David Güera, Zhile Ren, Alexander G Schwing, and
+Alex Colburn. 2022. Generative multiplane images: Making a 2d gan 3d-aware. In
+ECCV. 18–35.
+Tinghui Zhou, Richard Tucker, John Flynn, Graham Fyffe, and Noah Snavely. 2018.
+Stereo magnification: learning view synthesis using multiplane images. ACM Trans.
+Graph. 37, 4, Article 65 (July 2018), 12 pages.
+https://doi.org/10.1145/3197517.
+3201323
+111:10
+•
+Chao et al.
+Front
+focus
+Back 
+focus
+Zoom-in 
+crops
+Front
+focus
+Back 
+focus
+Zoom-in 
+crops
+Left 
+view
+Right 
+view
+Epipolar
+image
+Left 
+view
+Right 
+view
+Epipolar
+image
+Ground truth
+RPWS
+RGBD (4 layers)
+RGBD (64 layers)
+RGBD (512 layers)
+MPI (4 layers)
+MPI (64 layers)
+MPI (512 layers)
+(a)
+(b)
+Fig. 7. Simulated 3D focal stacks and 4D light fields of holograms generated using different CGH algorithms. RPWS achieves state-the-of-art focal
+stack and light field reconstruction quality among primitive-based CGH methods. RGBD holograms, despite being efficient to render, suffer from light leakage
+and halo artifacts in the reconstructed focal stacks and incorrect occlusion in the reconstructed light fields at depth transitions. Increasing the depth layers
+slightly improves visual quality, but the artifacts cannot be fully eliminated. Our MPI holograms achieve image quality comparable to RPWS, while offering up
+to 250, 000× faster rendering speed (for 4 MPI layers), with the exact speedup being proportional to the number of MPI layers.
+Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays
+•
+111:11
+RPWS
+RGBD (4 layers)
+RGBD (64 layers)
+RGBD (512 layers)
+MPI (4 layers)
+MPI (64 layers)
+Ground Truth
+MPI (512 layers)
+Front 
+focus
+Back 
+focus
+Front 
+focus
+Back 
+focus
+Zoom-in 
+crops
+Zoom-in 
+crops
+(a)
+(b)
+Left 
+view
+Right 
+view
+Left 
+view
+Right 
+view
+Zoom-in 
+crops
+Zoom-in 
+crops
+Fig. 8. Experimentally captured 3D focal stacks and 4D light fields of holograms generated using different CGH algorithms. We capture 3D focal
+stacks and horizontal parallax results of holograms generated using different CGH algorithms on our benchtop holographic display setup. The trend in the
+captured results well match the simulated experiments. Both RPWS and our MPI holograms reconstruct natural defocus blur and parallax. RGBD holograms
+suffer from artifacts at depth transitions, as shown in the garden table zoom-in crops of RGBD holograms in (a).

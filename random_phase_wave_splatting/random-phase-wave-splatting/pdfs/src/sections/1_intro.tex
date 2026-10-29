@@ -1,0 +1,49 @@
+
+Holographic near-eye displays offer eyeglasses-like device form factors with unprecedented compactness for virtual and augmented reality display systems~\cite{maimone2017holographic,kim:HolographicGlasses,jang2024waveguide,gopakumar2024full, Choi:2025:HolographicMR}, yet require advanced computer-generated holography (CGH) algorithms to convert a target image or 3D scene into the interference pattern that can be displayed on a spatial light modulator (SLM) \cite{pi2022review,matsushima2020introduction}. Gaussian Wave Splatting (GWS) \cite{choi2025gaussian} recently introduced the idea of direct hologram synthesis from Gaussian primitives \cite{kerbl3Dgaussians, huang20242d}, showing for the first time that neural scene representations can be rendered using wave optics.
+
+However, GWS, as the name suggests, only works with Gaussian primitives, and assumes the phase distribution over the surfaces of the primitives to be near constant or \emph{smooth}, an assumption common in the CGH literature as it typically leads to high in-focus image quality (e.g.,~\cite{maimone2017holographic,shi2021towards}). This fundamentally restricts its ability to reproduce natural defocus, parallax, and view-dependent effects. These simplifications leave a crucial gap: the holographic rendering of random-phase distributions on arbitrary primitive surfaces remains unsolved, even though it is well known that natural reflectance properties of real objects in holography can only be achieved with random phase distributions~\cite{goodman_statistical_optics_2nd,matsushima2020introduction,st1995phase}. Neglecting these phase distributions results in an under-utilization of the inherent space--bandwidth product, or \'etendue, of an SLM, resulting in a small eyebox that leads to poor user experiences~\cite{kim2022accommodative,kim2024holographic}. %Thus, the use of non-smooth phase distributions has been proposed by many works~\cite{pi2022review} including those using polygon primitives \cite{matsushima2020introduction}, although these approaches can only model fully diffuse surfaces. 
+%However, random-phase distributions often lead to an increased amount of objectionable speckle. Fortunately, this can often be mitigated using time multiplexing~\cite{choi2022time}.
+
+%The use of random phase in coherent optics is directly analogous to microfacet models in computer graphics~\cite{pharr2023physically}, where the microscopic surface structure is captured by a corresponding phase distribution in the hologram. 
+
+% limitations of GWS figure or table?
+GWS briefly mentioned a high-level sketch in its supplementary materials on how to apply random phase to a \textbf{single Gaussian primitive} to mimic non-diffuse reflectance. However, no strategy was presented for how to \textbf{composite thousands or millions of such random-phase primitives} into a coherent hologram from standard primitive-based scene representations. A na\"ive extension---simply modulating each primitive wavefront with random phase and then running GWS as is (we refer to this \textit{N}a\"ive \textit{R}andom-\textit{P}hase extension as GWS-NRP onwards), which is suggested in the GWS supplementary materials---provably fails, as we demonstrate in Table~\ref{tab:gws_limitations}, Fig.~\ref{fig:teaser}, Section ~\ref{sec:awb_random}, and throughout the paper, resulting in incorrect color reproduction as well as broken parallax and defocus. Moreover, as its name implies, GWS is restricted to Gaussian primitives. How to extend this paradigm to work with other emerging translucent primitives used for novel-view synthesis, such as soft-edged triangles~\cite{sheng20252dtrianglesplattingdirect,burgdorfer2025radianttrianglesoupsoft,Held2025Triangle}, remains unclear. These rapid advances in neural rendering call for a generalizable CGH framework that can convert such primitives into holograms viewable on a 3D display, rather than only producing rendered 2D images.
+
+
+
+In this work, we propose Random-phase Wave Splatting (RPWS), a unified computer-generated holography (CGH) framework that converts \textit{3D representations based on translucent primitives}, such as Gaussians~\cite{kerbl3Dgaussians,huang20242d} and soft-edged triangles~\cite{Held2025Triangle,sheng20252dtrianglesplattingdirect,burgdorfer2025radianttrianglesoupsoft}, into random-phase holograms that accurately reconstruct parallax and natural defocus blur.  At the core of RPWS are two key innovations: (1) a novel wave compositing procedure and (2) an intensity-domain alpha blending rule specifically designed to composite millions of random-phase primitives with continuous alpha values across their surfaces. This sharply diverges from prior silhouette-based polygon CGH methods that assume binary alpha values, and it generalizes Gaussian Wave Splatting (GWS) to support arbitrary translucent primitives. Furthermore, we prove that time-multiplexing in RPWS is not a mere heuristic for speckle reduction but the \emph{mathematically exact mechanism} that enables physically correct alpha blending of random-phase wavefronts. These advances collectively lead to high-quality hologram synthesis from state-of-the-art primitive-based 3D scene representations, as we validate through extensive simulation and experimental results of 3D focal stacks and 4D light fields.
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+\setlength{\tabcolsep}{4pt} 
+\setlength{\textfloatsep}{10pt}
+\begin{table}[t!]
+    \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+    {\footnotesize 
+    \caption{\textbf{Limitations of Gaussian Wave Splatting (GWS) \cite{choi2025gaussian}.} GWS ($1^{\text{st}}$ row) generates smooth-phase holograms, resulting in unnatural defocus blur, little-to-no parallax, and small eyebox (1, 3). Na\"ively applying GWS on random-phase primitives ($2^{\text{nd}}$ row, GWS-NRP) results in incorrect color reproduction and erroneous defocus and parallax reconstruction (2, 3). Furthermore, GWS only works with Gaussians, and it is unclear if recent advances in primitive-based representations can also benefit from this wave-splatting paradigm (4). Our random-phase wave splatting (RPWS) framework tackles all these issues. }
+    \label{tab:gws_limitations}
+    \begin{tabularx}{\linewidth}{m{2.4cm}|YYYY}
+        \textbf{Algorithm} & \textbf{1. Large eyebox} & \textbf{2. Correct color} & \textbf{3. Defocus \& parallax} & \textbf{4. Other primitives} \\
+        \hline
+        GWS \cite{choi2025gaussian} & \redxcell & \greenvcell & \yellowtrcell & \redxcell \\
+        \hline
+        GWS-NRP & \greenvcell & \redxcell & \yellowtrcell & \redxcell \\
+        \hlineB{3}
+        RPWS (ours) & \greenvcell & \greenvcell & \greenvcell & \greenvcell \\
+        \hline
+    \end{tabularx}
+    }
+\end{table}
+
+
+
+
+Specifically, our contributions include:
+\begin{itemize}
+    \item Unified \textbf{wave-splatting} (Sec. \ref{subsec:gws_rp}) and \textbf{alpha-blending} algorithms (Sec. \ref{sec:awb_random}) that composite thousands to millions of translucent \textit{random-phase} primitives (including Gaussians and soft-edged triangles), enabling hologram synthesis from a broad class of emerging scene representations.
+    \item A rigorous formulation of \textbf{time multiplexing} as the exact alpha-blending mechanism for translucent wavefronts, extending far beyond prior uses as an ad-hoc speckle-reduction heuristic, and statistical optics analysis on \textbf{optimal phase distributions} for accurate random-phase alpha blending (Sec. \ref{sec:awb_random} and supplementary materials).
+    \item Extensive experiments, including \textbf{experimental parallax} demonstrations, showing that RPWS achieves superior image quality, perceptually correct defocus blur, and wide parallax reconstructions in both simulation and hardware (Sec. \ref{sec:results}).
+\end{itemize}
+
+Source code and example datasets will be made public.

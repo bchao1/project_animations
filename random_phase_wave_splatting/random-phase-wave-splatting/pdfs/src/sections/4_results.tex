@@ -1,0 +1,61 @@
+\subsection{Implementation Details}
+We generate 3D holograms of scenes from the Blender~\cite{mildenhall2020nerf} and MipNeRF-360~\cite{barron2022mipnerf360} datasets using 2D Gaussians, textured meshes, and translucent triangles. Following GWS~\cite{choi2025gaussian}, we prepare 3D scene representations with the open-source \texttt{gsplat} library~\cite{ye2024gsplat} for 2DGS, NeRF2Mesh models~\cite{tang2022nerf2mesh} for textured meshes, and Triangle Splatting models~\cite{Held2025Triangle} for translucent triangles. Additional data preparation details are provided in the supplemental materials.
+
+We implement our algorithms in PyTorch and build a benchtop holographic display for experimental validation. Please refer to the supplementary materials for detailed pseudocode and hardware specifications.
+
+\subsection{Simulation and Experimental Results}
+\label{subsec:results}
+\subsubsection{Baseline Comparisons with Simulation Results. }
+
+We compare RPWS against several primitive-based CGH baselines, including random-phase polygon-based CGH (Polygons-RP) via the silhouette method~\cite{matsushima2003fast, matsushima2005exact, matsushima2009extremely} and its time-multiplexed variants (1 and 8 frames), as well as Gaussian Wave Splatting (GWS)~\cite{choi2025gaussian}. For all quantitative and qualitative baseline comparisons, we restrict RPWS to 2DGS representations (RPWS-GS), where the number of Gaussians can be matched directly to the number of polygon primitives (using 3DGS-MCMC \cite{kheradmand20243dgsmcmc}) for fair comparisons, similar to GWS. For RPWS with soft-edged triangle primitives \cite{burgdorfer2025radianttrianglesoupsoft, Held2025Triangle, sheng20252dtrianglesplattingdirect}, which we denote as RPWS-$\Delta$, we pick triangle splatting \cite{Held2025Triangle} as the representative method. Since triangle splatting does not allow for exact primitive count control, we only show qualitative results of RPWS-$\Delta$.
+
+
+Fig.~\ref{fig:sim_fs}-(a) and ~\ref{fig:triangle_splats}-(a) compare simulated focal stacks of the synthesized holograms. GWS produces smooth-phase holograms with little depth-dependent variation, yielding unnatural coherent blur with ringing artifacts. Single-frame random-phase holograms (Polygon-RP, RPWS) exhibit strong speckle, but quality improves with time multiplexing (8, 24 frames). Polygon-RP produces more natural defocus blur, but its in-focus fidelity is limited by the low-quality per-face textured mesh representation. Both RPWS-GS and RPWS-$\Delta$ achieves the most natural defocus blur, closely matching incoherent blur, while maintaining in-focus quality comparable to GWS.
+
+
+\begin{table}[t!]
+   \footnotesize
+   \centering
+   \renewcommand{\arraystretch}{1.2} 
+   \begin{tabular}{@{}P{0.3\linewidth}P{0.31 \linewidth}P{0.31 \linewidth}@{}}
+   \toprule
+   \makecell[l]{CGH Algorithm} &
+   Blender &
+   Mip-NeRF 360 \\
+   \midrule
+   \makecell[l]{\scalebox{0.95}{Polygons-RP (1 frame)} \\ \cite{matsushima2005computer}} & 17.02 / 0.14 / 0.75 & 12.77 / 0.14 / 0.76 \\
+   \makecell[l]{\scalebox{0.95}{Polygons-RP (8 frames)} \\ \cite{matsushima2005computer}} & 20.27 / 0.30 / 0.65 & 15.63 / 0.27 / 0.69 \\
+   \makecell[l]{\scalebox{0.95}{RPWS-GS (1 frame)}} & 18.11 / 0.15 / 0.76 & 14.17 / 0.17 / 0.76 \\
+   \makecell[l]{\scalebox{0.95}{RPWS-GS (8 frames)}} & 23.42 / 0.36 / 0.64 & 19.65 / 0.36 / 0.65 \\
+   \makecell[l]{\scalebox{0.95}{RPWS-GS (24 frames)}} & \textbf{24.87} / \textbf{0.49} / \textbf{0.56} & \textbf{21.21} / \textbf{0.48} / \textbf{0.58} \\
+   \noalign{\vskip 0.5ex}
+   \hline
+   \noalign{\vskip 0.5ex}
+    \makecell[l]{\scalebox{0.95}{GWS \cite{choi2025gaussian}}} & 14.35 / 0.18 / 0.63 & 10.50 / 0.17 / 0.60 \\
+   \bottomrule
+   \end{tabular}
+\caption{\textbf{Quantitative light-field reconstruction performance of different CGH algorithms. } We evaluate the image quality of $10\times10$ dense light fields reconstructed from the simulated holograms generated using different CGH methods in terms of PSNR $(\uparrow)$ / SSIM $(\uparrow)$ / LPIPS $(\downarrow)$. The best performing metrics for all CGH baselines are boldfaced. Our method achieves the best image light-field reconstruction performance and eyebox uniformity among all CGH baselines.}
+\label{tab:quan_metrics_lf}
+\end{table}
+
+\begin{figure*}[!ht]
+    \centering
+    \includegraphics[width=\textwidth]{figures/alpha_blending_ablation.pdf}
+    \caption{\textbf{Ablation study on random-phase CGH rendering algorithms. } We compare our RPWS algorithm with three other alpha blending methods on random-phase primitives. (a) Na\"ively applying random phase to GWS fails to reconstruct accurate appearance. (b) GWS with our square root alpha blending formulation generates somewhat accurate appearance. However, incorrect occlusion handling at depth discontinuities manifests as light leakage and halo artifacts in focal stacks and black holes near occlusion borders. This is an artifact frequently observed in conventional multifocal displays \cite{narain2015multi, mercier2017fast, chang2020toward}. (c) RPWS without square root-based blending also fails to reconstruct accurate colors. (d) Our full RPWS model reconstructs accurate color, natural defocus blur, and physically-correct parallax. Please refer to the supplementary materials for equations and pseudocodes of all alpha-blending formulations.}
+    \label{fig:alpha_blending_comparison}
+\end{figure*}
+
+Fig.~\ref{fig:sim_fs}-(b) and ~\ref{fig:triangle_splats}-(b) compare simulated light fields of the synthesized holograms using individual views and epipolar images. For smooth-phase GWS, wavefront energy concentrates near the eyebox center, causing severe degradation at the periphery. In contrast, RPWS-GS and RPWS-$\Delta$ distribute energy evenly across the eyebox, enabling accurate view reconstruction at all pupil positions. Random-phase polygon-based CGH again suffers from the coarse per-face textured mesh representation. Quantitative results for dense $10 \times 10$ light-field reconstructions, measured with standard image quality metrics, are reported in Table~\ref{tab:quan_metrics_lf} where RPWS clearly outperforms all methods.
+
+Despite belonging to fundamentally different algorithmic classes, we delineate the key distinctions between RPWS and STFT-based light field CGH methods \cite{choi2022time, kim2024parallax} and perform additional baseline comparisons in the supplementary materials.
+
+
+
+\subsubsection{Experimentally Captured Focal Stack and Parallax Results. } We experimentally capture reconstructed focal stacks and \textit{light fields} of RPWS and other CGH baselines to demonstrate real-world refocusing capabilities and parallax effects. Individual frames and color channels are captured independently and merged in post-processing. The experimentally captured results well match the simulation results, as shown in Fig. \ref{fig:fs_captured}. Our method (both RPWS-GS and RPWS-$\Delta$) achieves the best balance between high in-focus image quality and natural defocus blur, while correctly reconstructing parallax.
+
+
+
+\label{subsubsec:alpha_blending}
+\subsubsection{Ablation Study on Alpha-Blending Operations. } To our knowledge, no effective method was ever presented to alpha-blend \textit{complex, translucent wavefronts}. We thus extend GWS \cite{choi2025gaussian} to support random-phase alpha blending by simply modulating each Gaussian with random phase and running GWS as is, and ablate the wave splatting and intensity-based alpha blending designs in Fig. \ref{fig:alpha_blending_comparison}. Na\"ively adding random phase to GWS (GWS-NRP) fails to reconstruct accurate appearance. With square root alpha blending, GWS yields somewhat plausible results. However, the resulting focal stacks exhibit prominent dark halo and light leakage artifacts at depth discontinuities. In light field reconstruction, this manifests as dark borders around foreground occluders.
+
+Our final RPWS algorithm, which combines the square root alpha-blending formulation \textit{and} the back-to-front wave compositing procedure, achieves the most accurate focal stack reconstruction and parallax rendering results, completely eliminating artifacts at depth discontinuities and occlusion borders while accurately reconstructing image content. Please refer to the supplemental materials for intuitive visual illustrations and explanations of each alpha blending method and why all fail except for ours.

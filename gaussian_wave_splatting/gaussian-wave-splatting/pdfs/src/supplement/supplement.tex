@@ -1,0 +1,374 @@
+ %%
+%% This is file `sample-authordraft.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `authordraft')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-authordraft.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%% The first command in your LaTeX source must be the \documentclass command.
+\documentclass[acmtog,nonacm]{acmart}
+%% NOTE that a single column version may be required for 
+%% submission and peer review. This can be done by changing
+%% the \doucmentclass[...]{acmart} in this template to 
+%% \documentclass[manuscript,screen,review]{acmart}
+%% 
+%% To ensure 100% compatibility, please check the white list of
+%% approved LaTeX packages to be used with the Master Article Template at
+%% https://www.acm.org/publications/taps/whitelist-of-latex-packages 
+%% before creating your document. The white list page provides 
+%% information on how to submit additional LaTeX packages for 
+%% review and adoption.
+%% Fonts used in the template cannot be substituted; margin 
+%% adjustments are not allowed.
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+\usepackage{listings}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+
+% Define the style for Python code
+\lstset{language=Python,
+    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\tiny,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+}
+
+\usepackage[ruled]{algorithm2e} % For algorithms
+\usepackage{wrapfig}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\renewcommand{\algorithmcfname}{ALGORITHM}
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmlicensed}
+\acmJournal{TOG}
+\acmYear{2025} \acmVolume{44} \acmNumber{4} \acmArticle{} \acmMonth{8}\acmDOI{10.1145/3731163}
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{TOG}
+\acmVolume{44}
+\acmNumber{4}
+\acmArticle{111}
+\acmMonth{8}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+\acmSubmissionID{525}
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+\citestyle{acmnumeric}
+%\citestyle{acmauthoryear}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\SetAlgoLined
+\SetKwProg{Fn}{Function}{ is}{end}
+\newcommand{\redsc}[1]{\textcolor{red}{sc: #1}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thesection}{S\arabic{section}}
+% \renewcommand{\thesubsection}{S\arabic{section}.\arabic{subsection}}
+\usepackage[font=scriptsize]{caption}
+\usepackage{colortbl}
+\usepackage{multirow}
+\usepackage{varwidth} %for the varwidth minipage environment
+\usepackage{pifont} %for the varwidth minipage environment
+\usepackage{boldline}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage[ruled]{algorithm2e} % For algorithms
+\usepackage{wrapfig}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{arydshln}
+\usepackage[utf8x]{inputenc}
+\usepackage{siunitx}
+\usepackage{graphicx}  % Add this to the preamble
+\usepackage{algpseudocode}
+\usepackage{float}
+
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+\include{definitions}
+\begin{document}
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+% \title{Gaussian \textit{wave} splatting: Computer-generated holography using Gaussian splats}
+\title{Gaussian Wave Splatting for Computer-Generated Holography --- Supplementary Material}
+\begin{abstract}
+    This document serves as supplementary material to the paper ``\textit{Gaussian Wave Splatting for Computer-Generated Holography}''. The sections of this supplementary material are organized as follows. 
+    
+    In Section~\ref{sec:holographics}, we elaborate on the transformations of between various spaces, starting from the space where the collection of optimized Gaussians reside, to the space where the SLM is defined. We then explain in detail how Gaussian Wave Splatting takes into account all the aforementioned transformation parameters and splats a single Gaussian onto the SLM plane. 
+    
+    In Section~\ref{sec:software}, we describe in detail how to splat a collection of Gaussians using different occlusion-handling techniques to generated a hologram. We also elaborate on the optimization of 2DGS and 2DGS-OIT models used for GWS.
+
+    In Section ~\ref{sec:hardware}, we describe the experimental holographic display setup and its corresponding calibration process we used to validate our algorithm.
+
+    In Section ~\ref{sec:simulation}, we provide extensive simulated experiments to validate our method, including extended quantitative and qualitative baseline comparisons, runtime analysis, additional discussion on view-dependent effects, and occlusion-handling techniques.
+
+    In Section ~\ref{sec:experiments}, we show an extensive set of experimentally captured results. 
+
+    In Section ~\ref{sec:misc}, we provide additional details of prior methods, including tilted plane propagation and deriving spectrums of triangles in polygon-based CGH.
+    
+\end{abstract}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%%% Standard 
+\author{Suyeon Choi}
+\email{suyeon@stanford.edu}
+\authornote{denotes equal contribution.}
+\orcid{0000-0001-9030-0960}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Brian Chao}
+\email{brianchc@stanford.edu}
+\orcid{0000-0002-4581-6850}
+\authornotemark[1]
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Jacqueline Yang}
+\email{jyang01@stanford.edu}
+\orcid{0009-0002-3101-3026}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Manu Gopakumar}
+\email{manugopa@stanford.edu}
+\orcid{0000-0001-9017-4968}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Gordon Wetzstein}
+\email{gordon.wetzstein@stanford.edu}
+\orcid{0000-0002-9243-6885}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+
+
+
+% \author{Suyeon Choi}
+% \email{suyeon@stanford.edu}
+% \authornote{denotes equal contribution.}
+% \orcid{0000-0001-9030-0960}
+% \author{Brian Chao}
+% \email{brianchc@stanford.edu}
+% \orcid{0000-0002-4581-6850}
+% \authornotemark[1]
+% \author{Jacqueline Yang}
+% \email{jyang01@stanford.edu}
+% \orcid{0009-0002-3101-3026}
+% \author{Manu Gopakumar}
+% \email{manugopa@stanford.edu}
+% \orcid{0000-0001-9017-4968}
+% \author{Gordon Wetzstein}
+% \email{gordon.wetzstein@stanford.edu}
+% \orcid{0000-0002-9243-6885}
+% \affiliation{
+%   \institution{Stanford University}
+%   \country{USA}
+% }
+
+
+
+\graphicspath{ {../} }
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Choi, Chao et al.}
+
+\begin{teaserfigure}
+  \centering
+	\includegraphics[width=0.85\columnwidth]{supplement/figures/holographics_ver8.pdf}
+   \caption{\textbf{The \textit{Holographics} pipeline. } We devise a graphics pipeline tailored for primitive-based CGH, dubbed the \textit{holographics} pipeline. This pipeline takes in a set of optimized primitives from off-the-shelf neural rendering frameworks as input and converts them into primitives suitable for CGH calculation through a sequence of coordinate transformations. Our Gaussian Wave Splatting algorithms then use the transformed primitives as input to compute the complex-valued wavefront of the hologram. }
+  \label{fig:holographics}
+\end{teaserfigure} 
+
+\maketitle
+
+
+% \sy{we can also populate the symbols and acronyms we used in the main paper and supplement here as a table.}
+\section{Holographics Pipeline}
+\label{sec:holographics}
+\input{supplement/sections/holographics}
+
+\clearpage
+\newpage
+\section{Additional Details on Software}
+\label{sec:software}
+
+% \input{supplement/sections/software}
+\input{supplement/sections/algorithm_implementation}
+
+\clearpage
+\newpage
+\section{Additional Details on Hardware}
+\label{sec:hardware}
+\input{supplement/sections/hardware}
+
+%\clearpage
+%\newpage
+\section{Additional Simulation Results}
+\label{sec:simulation}
+\input{supplement/sections/simulation}
+
+
+\clearpage
+\newpage
+\section{Additional Experimental Results}
+\label{sec:experiments}
+\input{supplement/sections/experiment}
+
+\clearpage
+\newpage
+\section{Polygon-based methods}
+\label{sec:misc}
+\input{supplement/sections/derivation}
+
+
+
+
+% \section{Introduction and potential contributions}
+% We
+% \begin{itemize}
+%     \item derive an analytical solution for CGH using (3D) anisotropic Gaussian primitives (with spherical harmonics);
+%     \item validate it using numerical simulations; and compare it against baselines (PC, polygons);
+%     \item implement it using a custom CUDA kernel (that rasterize each pixel in a hologram) and demonstrate the real-time performance for up to XXX elements;
+%     \item it should be demonstrating the whole pipeline from the assets from the off-the-shelf neural rendering framework (e.g. Nerfstudio~\cite{tancik2023nerfstudio}) to the hologram to the retinal reconstruction that matches the target assets;
+%     \item validate it in limited experimental setups;
+% \end{itemize}
+
+% \section{Previous work}
+
+
+
+
+
+
+
+% \begin{CCSXML}
+
+% \end{CCSXML}
+% While remaining as one of the classical challenges in optics and photonics, it also could offer a solution to bring synthesized content to life, drawing a lot of attention from the computer graphics community as well. 
+
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+% \keywords{Augmented reality, Virtual reality, Holography, Computer graphics}
+
+\newpage
+% % \bibliographystyle{ACM-Reference-Format}
+\bibliographystyle{acm}
+\bibliography{bibs}
+
+% \begin{figure*}[h!]
+% \centering
+% \includegraphics[width=\textwidth]{figure1_new.pdf}
+% \caption{\scriptsize (A) Experimental holographic display setup. (B) Experimental results. {\sl Left}: Current CGH techniques using the simulated wave propagation model is generally noisy and exhibits limited contrast. {\sl Center left}: CITL optimization using camera feedback instead of the simulated model, noticeably removes artifacts and speckle noise while preserving image contrast and detail. The image quality is further improved with higher contrast using 2 SLMs ({\sl Center right}), or with less speckle using partially a coherent light source such as a superluminescent LED ({\sl Right}). Quantitative evaluations for each result are included as PSNR/SSIM.}
+% \label{fig:citl}
+% \end{figure*}
+% \begin{figure*}[h!]
+% \centering
+% \includegraphics[width=0.96\textwidth]{figure2_comp.pdf}
+% \caption{\scriptsize (A) Visualization of calibrated model parameters. {\sl Left}: Learned voltage-to-phase mapping on the spatial light modulator (SLM) is close to linear, but shows nonlinear behavior in the lower part. We show the mean curves in bold and the variation over the SLM pixels in light blue. {\sl Right}: The Learned phase distortions reveal a small amount of phase curvature as well as some tilt in the setup. (B) Visualization of wave propagation model gradients. We show simulated gradients for the simulated model (ASM) and the calibrated model as well as a gradient of the physical optical system captured using the finite differences method. Trained model provides the accurate approximation to the physical gradient. (C) Experimental results. Our model-based approach achieves even higher image quality than CITL optimization. Quantitative evaluations for each result are included as PSNR/SSIM.}
+% \label{fig:params}
+% \end{figure*}
+
+% \begin{figure*}[h!]
+% \centering
+%  \begin{minipage}[c]{0.65\textwidth}
+% \includegraphics[width=\textwidth]{figure3.pdf}
+%   \end{minipage} \,\,
+%   \begin{minipage}[l]{0.3\textwidth}
+%     \caption{
+%     {\scriptsize
+%       \\
+%       (A) Achieved image quality versus algorithm runtime in simulation. Our neural network (HoloNet) achieves real-time frame rates at a higher quality than previous CGH algorithms.\\ (B) Experimental results of double phase-amplitude coding, Wirtinger Holography, and our Holonet. Quantitative evaluations for each result are included as PSNR.}
+%     } \label{fig:holonet}
+%   \end{minipage}
+% \end{figure*}
+\end{document}
+\endinput
+%%
+%% End of file `sample-authordraft.tex'.

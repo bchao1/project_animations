@@ -1,0 +1,64 @@
+\section{Additional Frequency-based Image Editing Details}
+\label{sec:image_editing}
+
+\paragraph{Detailed Procedure of Frequency-based Image Editing.} In our frequency-based editing pipeline, we perform the following operations given an input image $\mathbf{x}_\text{in}$, resolution scales $s_{1:S}$, and transition times $t_{1:S-1}$. We assume that the image editing process starts from transition time $t_k$, with $k \in \{1, 2, \ldots, S-1\}$.
+
+\begin{enumerate}
+    \item Compute the spectrum of the input image $\boldsymbol{\xi}_\text{in} = T_\Phi(\mathbf{x}_\text{in})$.
+    \item Extract the low-frequency part of $\boldsymbol{\xi}_\text{in}$ corresponding to the representable spectrum $\Omega_{s_k}$ at scale $s_k$. 
+    \item Fill the spectrum $\Omega_{s_{k+1}} \setminus \Omega_{s_k}$ with $t_k\epsilon$, where $\epsilon \sim \mathcal{N}(0, 1)$.
+    \item Convert the expanded spectrum $\Omega_{s_{k+1}}$ back to the spatial domain $\mathbf{x}_{t_k}^{s_{k+1}}$ via $T^{-1}_\Phi$ and continue denoising starting from the transition time $t_k$.
+\end{enumerate}
+
+The total time of denoising is thus $1-t_k$.
+
+We conduct image editing experiments using Z-Image \citep{zimage} as the backbone, evaluating our frequency-domain image editing pipeline against the SDEdit baseline \citep{meng2022sdedit}. We set $S=2$ and  $\delta=0.01$.
+
+\paragraph{Extended Qualitative Results.} We show extended image editing results on two tasks: \textit{texture editing} and \textit{artistic stylization}. We configure our method with $\delta=0.01$ and $S=2$, which corresponds to a resolution transition at step 26 of the default 50-step denoising trajectory. We set $T_\Phi=\text{DCT}$, and evaluate the effect of different spectral transforms in the next section. For the SDEdit baseline, we initialize the process by corrupting the clean source image to the equivalent noise level at step 26 and subsequently proceed with the denoising schedule. This setting accurately reflects the editing method's capability to inject textural or style information, which are considered high-frequency details, in later denoising steps. 
+
+As shown in Figures \ref{fig:texture_edit_1} to \ref{fig:art_stylization}, our frequency-based editing method achieves superior prompt alignment and geometric consistency compared to SDEdit, successfully changing the texture and artistic style of the input image while retaining the topological structure of the input. While SDEdit-style editing at earlier timesteps (higher noise levels at step 17) can facilitate stylistic changes, it introduces significant structural drift and geometric divergence from the source image. Furthermore, starting from early timesteps incurs substantial computational overhead and requires a brittle renoising to a specific, difficult-to-tune initialization timestep to balance editability with structural fidelity.
+
+\paragraph{Effect of $T_\Phi$ on Image Editing.} As shown in Fig. \ref{fig:T_comparison_editing}, FFT-, DCT- and DWT-based editing achieve similar editing quality.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/image_editing_supp_1.pdf}
+    \caption{\textbf{Texture editing results.} Our frequency-based editing framework outperforms SDEdit, enabling high-fidelity texture transfer while preserving the geometric structure of the input image.}
+    \label{fig:texture_edit_1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/image_editing_supp_2.pdf}
+    \caption{\textbf{Texture editing results.} Our frequency-based editing framework outperforms SDEdit, enabling high-fidelity texture transfer while preserving the geometric structure of the input image.}
+    \label{fig:texture_edit_2}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/image_editing_supp_3.pdf}
+    \caption{\textbf{Texture editing results.} Our frequency-based editing framework outperforms SDEdit, enabling high-fidelity texture transfer while preserving the geometric structure of the input image.}
+    \label{fig:texture_edit_3}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/image_editing_supp_4.pdf}
+    \caption{\textbf{Texture editing results.} Our frequency-based editing framework outperforms SDEdit, enabling high-fidelity texture transfer while preserving the geometric structure of the input image.}
+    \label{fig:texture_edit_4}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/artistic_supp.pdf}
+    \caption{\textbf{Artistic stylization results.} Aside from texture editing, our frequency-based editing approach also supports artistic stylization given stylistic descriptions and a representative artist. }
+    \label{fig:art_stylization}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/image_editing_T_comparison.pdf}
+    \caption{\textbf{Effect of $T_\Phi$ on image editing.} FFT-, DCT- and DWT-based editing achieve similar editing quality.}
+    \label{fig:T_comparison_editing}
+\end{figure}

@@ -1,0 +1,41 @@
+In summary, we develop CGH algorithms that encode Gaussian-based scene representations into holograms. To this end, we derive an alpha wave blending formulation as well as analytical expressions that map Gaussian primitives to a complex-valued wavefronts. Unlike conventional Gaussian splatting, where the rendered image can be rasterized per pixel, the wave nature of holographic rendering increases computational cost, because each SLM pixel is affected by an extended sub-hologram region on another, parallel plane. However, we observe that our analytical expression can be efficiently implemented per frequency in the Fourier domain and implement custom CUDA kernels that accelerate this process, achieving a $30\times$ speedup. We validate our framework through simulations and experiments, demonstrating photorealistic image quality using off-the-shelf and widely used novel-view synthesis datasets. % used in the neural rendering literature~\cite{mildenhall2020nerf, barron2022mipnerf360}.
+% \vspace{-4pt}
+
+\noindentparagraph{\bf{\revision{Limitations and Future Work.}}}
+%\subsection{\revision{Limitations and Future Work}}
+
+% original submission
+% \noindentparagraph{\bf{Limitations and Future Work.}} Our work is a first step towards seamlessly connecting emerging neural graphics pipelines to CGH algorithms, leaving many exciting future directions to be explored. 
+
+\revision{Our work is a first step towards seamlessly connecting emerging neural graphics pipelines to CGH algorithms, leaving many exciting future directions to be explored.}
+
+\revision{
+First, our work focuses on encoding a collection of Gaussians into a complex wavefront while placing less emphasis on the phase distribution of the Gaussians, which governs defocus behavior. As a result, our method, except Fig.~\ref{fig:occlusion}, only ensures correct in-focus imagery, exhibiting unnatural defocus blur and a limited eyebox. In contrast, \textit{random-phase holograms} can maximize the bandwidth utilization of the SLM and have been demonstrated to achieve accurate occlusion and parallax, synthesize natural defocus blur, reduce the depth of field, and enlarge the eyebox~\cite{amako1995speckle, lohmann1967binary, yoo2021optimization}. Extending GWS to generate random-phase holograms is therefore an interesting future direction. We note that DPAC typically provides good image quality for \textit{smooth-phase holograms} with certain filtering in the Fourier domain. Thus, alternative phase encoding methods, such as a learned phase encoder~\cite{peng2020neural} that accounts for optical setup imperfections, or a gradient-descent-based method to encode complex GWS wavefronts into a phase-only pattern, need to be developed to potentially improve image quality, bandwidth utilization, and compactness~\cite{Gopakumar2021unfiltered, Chen2021complex}. }
+
+\revision{
+Next, although our CUDA implementation demonstrates a significant speedup over a na\"ive implementation, it does not yet achieve real-time hologram generation. Incorporating priors from closed-form solutions of other CGH methods could further accelerate runtimes~\cite{im2015accelerated, wang2023high}, for example, by reducing the region of interest for propagation~\cite{matsushima2014silhouette} or by developing efficient CUDA implementations that directly handle non-localized convolutions in the Fourier domain. Furthermore, integrating neural networks~\cite{shi2021towards}, leveraging custom hardware~\cite{Yamamoto2022, Makowski2022}, or designing end-to-end holographic camera systems~\cite{Wang2024liquidholo, Yu2023holocam} could also facilitate real-time CGH.}
+
+\revision{
+Finally, our current holographic display hardware supports only a limited \'etendue due to the small diffraction angle of the SLM~\cite{kuo2020high}. This limitation motivates our current approximation of view-dependent effects using only the zeroth order of spherical harmonics. Demonstrating higher-order spherical harmonics with partially coherent, \'etendue-expanded hardware systems represents another exciting direction for future work.
+} 
+
+% , and our experimental results most focuses on smooth-phase profile holograms~\cite{maimone2017holographic, shi2021towards, choi2021neural}. This types of holograms are known to achieve superior image quality \cite{shi2021towards, maimone2017holographic}. However, 
+% speed
+% \subparatitle{Speed.}
+
+
+% phase encoding
+% \subparatitle{Phase Encoding.}
+% GWS outputs complex value fields like other primitives-based CGH methods and uses DPAC for complex-to-phase-only conversion. 
+
+% etendue
+% \subparatitle{\'Etendue.}
+% Our current holographic display hardware supports a limited \'etendue due to the small diffraction angle of the SLM, motivating us to approximate the view-dependent effects only using the zeroth order of spherical harmonics, but demonstrating higher-order spherical harmonics with partially coherent, \'etendue-expanded hardware systems would be an exciting direction for future work. \bc{cite papers here?}
+
+
+% \subparatitle{Smooth Phase v.s. Random Phase.} GWS inherently generates smooth-phase holograms, which are known to achieve superior image quality \cite{shi2021towards, maimone2017holographic}. However, smooth-phase holograms concentrate energy near the origin of the angular spectrum, resulting in a very small eye box, large depth of field (small blur variation across depths), unnatural defocus blur with ringing artifacts, and increased sensitivity to pupil position---ultimately leading to a poor user experience~\cite{kim2024holographic}. On the other hand, \textit{random-phase holograms} maximally utilizes the bandwidth of the SLM and have been demonstrated to achieve accurate occlusion and parallax, synthesize natural defocus blur, reduce depth of field, and achieve a larger eyebox. \bc{cite papers here}. Extending GWS to generated random-phase holograms is therefore an interesting future direction.
+
+
+\noindentparagraph{\bf{\revision{Conclusion.}}}
+% \section{\revision{Conclusion}}
+By integrating emerging neural rendering techniques with holographic display technology, our algorithms pave the way toward efficient holographic rendering with photorealistic content.

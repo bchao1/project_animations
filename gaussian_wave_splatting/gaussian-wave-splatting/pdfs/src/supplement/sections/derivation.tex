@@ -1,0 +1,151 @@
+% \subsection{Tilted plane propagation}
+
+In this section, we discuss how our Gaussian Wave Splatting method generalize well and are compatible with the pioneering works in polygon-based CGH. Here, we assume that we would transform their geometric parameters following our holographics pipeline, and discuss how their geometric parameters can be described in terms of the rotation matrix $\rot$, scaling matrix $S$, and translation $\centergaussian$ in Gaussian Wave Splatting. For more background, we refer to the review papers and the well-curated textbook on these methods~\cite{park2017recent, zhang2022polygon, matsushima2020introduction}.
+
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{supplement/figures/fig_supp_coord.pdf}
+    \caption{Illustration of three coordinate systems. The left figure is adapted from~\cite{matsushima2020introduction}. On the left, we show the canonical coordinates $\coordinate_\canonicalspace = (x_\canonicalspace, y_\canonicalspace)$ and the tilted local coordinates (or object space) $\coordinate_\objectspace = (x_\objectspace, y_\objectspace)$, which lie on the same plane and are defined by a 2D affine transformation: $\coordinate_\canonicalspace = \mathbf{A}\coordinate_\objectspace$. On the right, we show the parallel coordinate $\coordinate$ and the tilted local coordinate, which are related by a rotational transformation and translation: $\coordinate_\objectspace = \rot \coordinate + \vertice_1$. } %Note that we set the parameters $\mathbf{A}$, $\mathbf{b}$, and $\mathbf{C}$ to align with the parameters of the Gaussian $\mathbf{G_i}$, such that $\coordinate = \sca_\idx \rot_\idx \coordinate_\canonicalspace + \coordinate_i$.
+    \label{fig:coord}
+\end{figure}
+
+Unlike Gaussians whose angular spectrums are also elegantly Gaussians, the angular spectrums of polygons are more complicated. In classic fully analytic polygon-based CGH, the reference triangle is assumed to be in the canonical space with vertices at $\mathbf{P}_n = \{[0,0]^\mathsf{T}, [1, 0]^\mathsf{T}, [1,1]^\mathsf{T}\}$ (see Fig.~\ref{fig:coord}). Its angular spectrum can be derived as in~\cite{kim2008mathematical, ahrenberg2008computer, zhang2022polygon}:
+\begin{align}
+    {\footnotesize
+\angularspectrum_\canonicalspace\left(k_x, k_y, k_z\right) = \begin{cases}
+    \frac{1}{2}, & \text{if } k_x = k_y = 0 \\
+    \frac{1 - e^{jk_y}}{k_y^2} + \frac{j}{k_y}, & \text{if } k_x = 0, k_y \neq 0 \\
+    \frac{e^{jk_x} - 1}{k_x^2} - \frac{je^{jk_x}}{k_x}, & \text{if } k_x \neq 0, k_y = 0 \\
+    \frac{1 - e^{jk_y}}{k_y^2} - \frac{j}{k_y}, &  \text{if } k_x = -k_y, k_y \neq 0 \\
+    \frac{e^{jk_x} - 1}{k_x k_y} + \frac{1 - e^{j(k_x + k_y)}}{k_y (k_x + k_y)}, & \text{elsewhere}, \\
+\end{cases}}
+    \label{eq:ref_polygon}
+\end{align}
+Here, we assume our polygons are already in the hologram space after appropriate transformations, with vertices at $V = [\vertice_1, \vertice_2, \vertice_3] \in \mathbb{R}^{3 \times 3}$. Note that the tilted local coordinates in \ref{fig:coord} is a jargon used in classic polygon-based CGH methods, and is the same as the \textit{object space} used in our holographics pipeline.
+
+We can also obtain the normal vector of the triangle primitive $\mathbf{n}$ from these vertices. A common practice in polygon-based methods is to have the first vertex $\vertice_1$ be at the origin of the object space, where the $z$-axis is parallel to the normal vector $\mathbf{n}$. Thus, this is equivalent to having a translation $\bm{\mu} = \vertice_1$, and a rotation matrix $R = R_x(\theta)R_y(\phi)$, with $\theta = \tan^{-1}(\normal_x / \normal_z)$ and $\phi = \tan^{-1}(\normal_y / \sqrt{\normal_z^2 + \normal_x^2})$, where the subscript denotes the component of the vector or the axis of rotation. By applying these translation and rotation transformations, we move from hologram space to object space. There, we have three vertices at $\mathbf{V}_o = [\mathbf{0}, R(\vertice_2 - \vertice_1), R(\vertice_3 - \vertice_1)]$, whose third row is zero. Thus, we consider the upper $2\times2$ matrix as $\mathbf{V}_0$ in the following for brevity. Then, we can map these vertices to the reference vertices $\mathbf{P}_n$ with a 2D affine transform $A$ that satisfies $\begin{bmatrix} 1 & 1 \\
+    0 & 1 \end{bmatrix} = A \mathbf{V}_o$. This corresponds to our 2D affine transform theorem in Eq.~8 in the manuscript. Thus, we can replace $S$ in our equation with $A=\begin{bmatrix} 1 & 1 \\
+    0 & 1 \end{bmatrix} \mathbf{V}_o^{-1}$.
+
+
+  In summary, we demonstrate how our formulation can encompasses classic polygon-based methods by following their well-established practices. We implement these methods by simply dialing in the parameters $R, S, \centergaussian$ as described in this section in \texttt{PyTorch} for polygon-based CGH baselines following the same implementation details provided in Sec.~\ref{subsec:details}. We also open-source the code for polygon-based CGH along with \texttt{hsplat}\footnote{\href{https://github.com/computational-imaging/hsplat}{https://github.com/computational-imaging/hsplat}}.
+
+
+
+
+
+
+% \noindentparagraph{\textbf{Rotational transform}.}
+% At the core of polygon-based methods (and also our method) is the tilted wave propagations, or rotational wavefront transform~\cite{matsushima2005exact, matsushima2003fast, matsushima2020introduction, park2017recent}, where the field profile $u_l$, under a plane reference wave, is first specified on the tilted (local) coordinate $\coordinate_l = [\xlocal, \ylocal, \zlocal=0]^\mathsf{T}$ and then propagated to the hologram space $\coordinate= [x, y, z]^\mathsf{T}$, with a rotational transform $\rotc$ governing two coordinates as $\rlocal = \rotc\mathbf{r} $~\cite{matsushima2003fast} (See Fig.~\ref{fig:coord} left). Since the wave vectors of two coordinates are also related by the same rotational transform as $\mathbf{k}_l = \rotc \mathbf{k}$, a plane wave with direction $\mathbf{k}= [k_x, k_y, k_z]^\mathsf{T}$ at the parallel coordinate corresponds to a plane wave with a rotated wave vector in the other coordinate $\mathbf{k}_l = [k_{l_x}, k_{l_y}, k_{l_z}]^\mathsf{T}$. Therefore, the angular spectrum~\cite{goodman2005introduction} at the parallel coordinate, representing the plane wave decomposition of the wavefront, can be obtained by remapping the angular spectrum at the local coordinate\footnote{The angular spectrum $\angularspectrum$ typically takes two-dimensional Fourier coordinates as input, but we use a three-dimensional $k$-vector here as input just for mathematical brevity. The $k_z$ component is disregarded when querying the spectrum at $z=0$.}. 
+
+% \begin{align}
+%     \angularspectrum(\mathbf{k}) = \angularspectrum_l\left( \rotc \mathbf{k} \right) \textrm{det }( \mathbf{J}), \,\, \angularspectrum_l \left(\mathbf{k}_l \right)= \fourier \left( u_l(\rlocal)\right),
+%     \label{eq:tilted_plane}
+% \end{align}
+% where $\angularspectrum$ and $\angularspectrum_l$ represent the angular spectrum in the parallel and local coordinates, respectively, $\fourier$ is the Fourier transform operator, and $\textrm{det } (\mathbf{J}) = \frac{k_{lz}}{k_z}$ is the Jacobian determinant of the transformation of Fourier coordinates. 
+
+
+
+
+% % Since the wave vectors of two coordinates are also governed by the same transform as $\mathbf{k}_l = \rotc \mathbf{k}$, a plane wave with direction $\mathbf{k}$ corresponds to a plane wave at rotated wave vector at the other coordinate. Thus, the angular spectru which is the plane wave decomposition of the wavefront can be obtained as remapping of the angular spectrum at the other coordinate~\cite{goodman2005introduction}.
+% \paragraph{\bf Fully analytic method}
+% Instead of numerically calculating the angular spectrum using FFT in the local coordinate, we can derive its analytical solution, as any arbitrary triangle can be represented as a 2D affine transform of a predefined triangle in the canonical coordinate (see Fig.~\ref{fig:coord} right), $\rref = [\xref, \yref]^\mathsf{T} = \mathbf{A}\rlocal + \mathbf{b}$,  whose angular spectrum $\angularspectrum_0$ can be obtained analytically~\cite{kim2008mathematical, ahrenberg2008computer}. From the canonical triangle with uniform amplitude and phase within three predefined vertices in the canonical coordinate $\mathbf{P}_n = \{[0,0]^\mathsf{T}, [1, 0]^\mathsf{T}, [1,1]^\mathsf{T}\}$, $\angularspectrum_l$ can be derived as:
+% % The fully analytic polygon-based methods~\cite{kim2008mathematical, ahrenberg2008computer} directly calculate the angular spectrum at the (mid)-hologram plane using an analytical solution. From a polygon with vertices $V = [v_1, v_2, v_3]$,  one can calculate the wavefront contribution of the polygon at the (mid)-hologram plane as the inverse Fourier transform of the angular spectrum, which is analytically derived from a unit triangle. %(Since the Fourier spectrum is analytic, it is truly a fully analytic method.)
+% \begin{align}
+% \angularspectrum_l \left( \mathbf{k}_l \right) = \frac{1}{ \textrm{det}\mathbf{A}} \angularspectrum_0 \left( \mathbf{A}^{-\mathsf{T}} \left(\mathbf{k}_l - |\mathbf{k}|\rotc\hat{z}\right)\right) e^{j \mathbf{k}_l \cdot \mathbf{b}},
+%     \label{eq:polygon_analytic} \\
+%     {\footnotesize
+% \angularspectrum_0\left(k_x, k_y, k_z\right) = \begin{cases}
+%     \frac{1}{2}, & \text{if } k_x = k_y = 0 \\
+%     \frac{1 - e^{jk_y}}{k_y^2} + \frac{j}{k_y}, & \text{if } k_x = 0, k_y \neq 0 \\
+%     \frac{e^{jk_x} - 1}{k_x^2} - \frac{je^{jk_x}}{k_x}, & \text{if } k_x \neq 0, k_y = 0 \\
+%     \frac{1 - e^{jk_y}}{k_y^2} - \frac{j}{k_y}, &  \text{if } k_x = -k_y, k_y \neq 0 \\
+%     \frac{e^{jk_x} - 1}{k_x k_y} + \frac{1 - e^{j(k_x + k_y)}}{k_y (k_x + k_y)}, & \text{elsewhere}, \\
+% \end{cases}}
+%     \label{eq:ref_polygon}
+% \end{align}
+% where $\angularspectrum_0$ denotes the closed-form solution of the angular spectrum of the canonical triangle~\cite{zhang2022polygon}. The frequency shift of $|\mathbf{k}|\rotc\hat{z}$ arises from the plane wave along the $z$-axis incident on the triangle (see Fig.~\ref{fig:coord} left). Combining Eqs.~\ref{eq:tilted_plane}--\ref{eq:ref_polygon}, we can fully analytically calculate the angular spectrum at the parallel coordinate; thus, this method is called the fully analytic method. See the Supplement for the full derivation of Eq.~\ref{eq:polygon_analytic} and~\ref{eq:ref_polygon}.
+% % % where $\fourier^{-1}$ is the inverse Fourier transform operator, 
+% % Since the Fourier transform is a linear operation, it can be performed at the very end after linearly adding up the angular spectrum for each element, thus drastically reducing the computation time. 
+
+% \subsection*{From a 2D Gaussian to wavefront}
+% Here, we are interested in the fringe pattern generated by a set of 2D Gaussians. To formulate this problem, we first define three coordinate systems, as illustrated in Figure~\ref{fig:geometry}:
+
+% \begin{description} 
+% \item[1.] The reference coordinate $\rref = ( \xref , \yref )$, where the unit reference shape is defined. 
+
+% \item[2.] The local coordinate $\rlocal = (\xlocal , \ylocal , \zlocal )$, where the object lies in the $\xlocal-\ylocal$ plane (i.e., $\zlocal = 0$, and the normal vector of the surfel aligns with $\zlocal$ axis.), with the relation $\rref = \mathbf{A} \rlocal + \mathbf{b}$. 
+
+% \item[3.] The world coordinate $\mathbf{r} = (x, y, z)$, where the wavefront we aim to calculate lies in the $z=0$ plane. Here we assume there is no rotation around $z$ axis, and $\rlocal = \mathbf{B} \mathbf{r} + \mathbf{c}.$
+% \end{description}
+
+% % These coordinate systems are related by an 3D affine transform --- basically rotation and translation. The wavefront calculation between tilted planes is well established~\cite{matsushima2003fast}. The main intuition behind it is the remapping of the angular spectrum, as the Fourier coordinates follows the same affine transform between coordinates~\cite{goodman2005introduction}. We are interested in obtaining the angular spectrum $F(k_x)$ at uniformly sampled spatial frequency grid $k_x, k_y$.:
+% % \begin{align}
+% %     \mathbf{G} = F(),
+% %     \label{eq:world2local}
+% % \end{align}
+% % With Eq.\ref{eq:world2local}, we can obtain the angular spectrum at the world coordinate from the local coordinate angular spectrum $F_l$ using nonlinear remapping of the coordinates. This approach represents traditional mesh-based methods\cite{matsushima2003fast, matsushima2009extremely, matsushima2014silhouette}. However, this requires nonlinear sampling and may introduce numerical errors~\cite{matsushima2020introduction}. Instead, we can calculate $F_l$ analytically using an affine transformation between the reference coordinate and the local coordinate. The angular spectrum of a Gaussian intensity distribution (here assuming a constant phase) can be calculated as follows:
+% While inspired by mesh-based CGH methods~\cite{matsushima2003fast, ahrenberg2008computer, kim2008mathematical}, here we focus on the formulation for Gaussians. Gaussians are represented in each coordinate as
+% \begin{align} 
+% g_0 \left( \rref \right)= e^{-\frac{1}{2}\rref^\mathsf{T} \rref} \Leftrightarrow G_0 \left( \mathbf{k_0} \right) = \sqrt{2\pi} e^{-\frac{1}{2} (2\pi \mathbf{k_0})^2} \label{eq:ref_gaussian}\\
+% g_l \left( \rlocal \right)= e^{-\frac{1}{2}\rlocal^\mathsf{T} \Sigma_l^{-1} \rlocal} \\
+% g \left( \mathbf{r} \right)= e^{-\frac{1}{2}(\mathbf{r} - \mathbf{r_k})^\mathsf{T} \Sigma^{-1} (\mathbf{r} - \mathbf{r_k})}
+% \label{eq:ref} 
+% \end{align}
+
+% \begin{align} 
+% \Sigma &= \rot \sca\sca^\mathsf{T} \rot^\mathsf{T} = (\rot\sca) (\rot\sca)^\mathsf{T} \\
+% \Sigma^{-1} &= {(\rot\sca)^\mathsf{T}}^{-1} (\rot\sca)^{-1} \\
+% \rref &= \sca^{-1} \rot^{-1} (\mathbf{r} - \mathbf{r_k}), ,
+% \label{eq:} 
+% \end{align}
+% where $\mathbf{r_k}$ is the center of each Gaussian. Using Euler angles in ZYX order $(\rot = \rot_z \rot_y \rot_x)$, we obtain:
+
+% \begin{align} 
+% \rref &= \sca^{-1} (\rot_x \rot_y \rot_z)^{-1} (\mathbf{r} - \mathbf{r_k})  \\
+% &= \sca^{-1} \rot_z^{-1} \underbrace{(\rot_y^{-1} \rot_x^{-1}(\mathbf{r} - \mathbf{r_k}))}_{\rlocal} \\
+% &= \mathbf{A} \rlocal , \,\, (\mathbf{A} \in \mathbb{R}^{2 \times 2}) \\
+% \rlocal &= \rot_y^{-1} \rot_x^{-1}(\mathbf{r} - \mathbf{r_k}) \\
+% &= \mathbf{B} \mathbf{r} + \mathbf{c}. \,\, (\mathbf{B} \in \mathbb{R}^{3 \times 3}, \mathbf{c} \in \mathbb{R}^{3})
+% \end{align}
+% We are interested in the wavefront contribution of each Gaussian splat to the hologram plane, $u \left(\mathbf{r} \right)$. This can be represented in the local coordinate as 
+% \begin{align}
+%     u (\mathbf{r} ) &= u_l ( \mathbf{B} \mathbf{r} + \mathbf{c} ) \\
+%     &= \iint U_l \left( \mathbf{k_{l_{x, y}}}\right) e^{j 2\pi \mathbf{k_l}^\mathsf{T} ( \mathbf{B} \mathbf{r} + \mathbf{c} )} d \mathbf{k_{l_{x, y}}} \\
+%     &= \iint U_l \left( \mathbf{k_{l_{x, y}}}\right) e^{j 2\pi \mathbf{k_l}^\mathsf{T} ( \mathbf{B} \mathbf{r} + \mathbf{c} )} d \mathbf{k} \frac{k_{l_z}}{k_z} \,\,\,\, (\because \text{Jacobian determinant}) \\
+%     &= \iint U_l \left( \mathbf{k_{l_{x, y}}}\right) e^{j 2\pi \mathbf{k_l}^\mathsf{T} \mathbf{B} \mathbf{r}} e^{j 2\pi \mathbf{k_l}^\mathsf{T} \mathbf{c}} d \mathbf{k} \frac{k_{l_z}}{k_z} \\
+%     &= \iint U_l \left( \mathbf{k_{l_{x, y}}}\right) e^{j 2\pi \mathbf{k}^\mathsf{T} \mathbf{r}} e^{j 2\pi \mathbf{k_l}^\mathsf{T} \mathbf{c}} d \mathbf{k} \frac{k_{l_z}}{k_z} \,\,\,\, (\because \mathbf{k_l} = \mathbf{B} \mathbf{k}, \mathbf{B}^\mathsf{T} = \mathbf{B}^{-1}) \\
+%     &= \iint U \left( \mathbf{k_{{x, y}}}\right) e^{j 2\pi \mathbf{k}^\mathsf{T} \mathbf{r}} d \mathbf{k} \,\,\,\, (\because \text{basic angular spectrum}), \\
+%      U \left( \mathbf{k_{{x, y}}}\right) &= U_l \left( \mathbf{k_{l_{x, y}}}\right)  e^{j 2\pi \mathbf{k_l}^\mathsf{T} \mathbf{c}}  \frac{k_{l_z}}{k_z} 
+% \end{align}
+% Now, the task boils down to calculating the angular spectrum in the local coordinates $U_l \left( \mathbf{k_{l_{x, y}}}\right)$. Traditional methods, such as the one proposed by Matsushima~\cite{matsushima2009extremely}, directly sample the angular spectrum in local coordinates and remap it to the angular spectrum of world coordinates. However, this approach may suffer from numerical errors due to nonuniform sampling and incorrect occlusion handling of tilted triangles~\cite{matsushima2020introduction, matsushima2014silhouette}. To address this issue, Kim et al. and Ahrenberg et al.~\cite{kim2008mathematical, ahrenberg2008computer} proposed obtaining the angular spectrum in local coordinates using analytical solutions from the reference coordinates. Following them, we calculate the wavefront contribution of the reference Gaussian (Eq.~\ref{eq:ref_gaussian}) in the local coordinates.
+% \begin{align}
+%     u_l(\rlocal) = u_0(\rref) e^{j\phi_0}, \,\,    \phi_0 = \frac{2\pi}{\lambda} \mathbf{(Bn)_{x, y}}^\mathsf{T} \mathbf{r_{l_{x, y}}},
+% \end{align}
+% $\phi_0$ is phase offset due to the carrier wave along the slanted plane. This phase offset essentially shifts the angular spectrum:
+% \begin{align}
+%         U_l ( \mathbf{k_{l_{x, y}}}) = \frac{1}{\textrm{det}(\mathbf{A})} G_0 (\mathbf{A}^{-\mathsf{T}} ( \mathbf{k_{l_{x, y}}} - \mathbf{(Bn)_{x, y})}).
+% \end{align}
+
+% Putting everything together, we obtain
+% \begin{align}
+%      U \left( \mathbf{k_{{x, y}}}\right) &= \frac{1}{\textrm{det}(\mathbf{A})} G_0 \left(\mathbf{A}^{-\mathsf{T}} (\mathbf{B( \mathbf{k} - \mathbf{n})_{x, y}}) \right) e^{j 2\pi (\mathbf{B}\mathbf{k})^\mathsf{T} \mathbf{c}}  \frac{k_{l_z}}{k_z}.
+% \end{align}
+% Note that sampling coordinates are represented in that of the world coordinates.
+
+% + Note that the relationship between the position vectors in the reference coordinate and the world coordinate can also be derived in a single step~\cite{pan2013fast}, though it requires handling singular values~\cite{zhang2022polygon}. Our derivation, however, provides a more intuitive explanation.
+
+% \subsection*{Occlusion handling using convolutions in Fourier domain}
+% \subsection*{Alpha wave blending}
+% In ray-based volumetric rendering~\cite{mildenhall2021nerf, kopanas2022neural}, the color $C$ is given by volumetric rendering along a ray:
+% \begin{align} C = \sum^N_{i=1} T_i \alpha_i \mathbf{c}_i, T_i = \prod^{i-1}_{j=1} (1 - \alpha_j)
+% \end{align}
+
+
+% Write the derivation from 2D disks~\cite{huang20242d}, but with isotropic radiance
+% \paragraph{2D Gaussians with anisotroic emission}
+% Write the derivation from 2D disks~\cite{huang20242d}, supporting spherical harmonics
+% \paragraph{3D Gaussians}
+% Write the derivation from 3D Gaussians~\cite{kerbl20233d}
+% \paragraph{3D Gaussians with anisotroic emission}

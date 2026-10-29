@@ -1,0 +1,122 @@
+% baseline, ablation studies, 
+
+\newcommand{\fl}{g}
+
+\subsection{Optical System Analysis}
+The \textit{\'etendue} $G$ of a display is defined as the product of the display area with the solid angle of emitted light:
+\begin{equation}
+    G = 4A\text{sin}^2\theta,
+\end{equation}
+where $A$ is the display area and $2\theta$ is the solid angle of the emission cone of each display pixel. \'Etendue is conserved through reflections, refractions, and free space propagation in an optical system. When illuminated with a normal incidence light of wavelength $\lambda$, the diffraction angle $\theta_\text{SLM}$ of an SLM with pixel pitch $p$ can be expressed as $\theta_\text{SLM} = \pm \text{sin}^{-1}\frac{\lambda}{2p}$.
+   
+For an SLM of physical size $L_x \times L_y$, its \'etendue $G_\text{SLM}$ can be expressed as:
+\begin{equation}
+    \begin{gathered}
+    G_\text{SLM} = 4L_x L_y\text{sin}^2\theta_\text{SLM} = \lambda^2 N_x N_y    
+    \end{gathered}
+\end{equation}
+where $N_x \times N_y$ is the pixel resolution of the SLM. This means that the \'etendue of a holographic display is directly proportional to the number of pixels of the SLM.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{./figures/fov_eyebox_tradeoff.pdf}
+    \caption{\textbf{Tradeoff between 2D field of view (FoV) and eyebox size}. Each white line represents the fixed \'etendue of a holographic display system illuminated by a grid of $\alpha \times \alpha$ sources with different $\alpha$ values. We show the \'etendue of the systems in log-scaled color maps. As the number of sources increase, the \'etendue of the system also increases.}
+    \label{fig:fov_eyebox_tradeoff}
+\end{figure}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\linewidth]{./figures/baseline.pdf}
+    \caption{\textbf{Illustration of baseline display configurations.} Single-source configurations (I, II) trade image quality off for \'etendue expansion factor (II). Multi-source approaches that use all sources simultaneously (III, IV) benefit from a high-\'etendue ``backlight'' but operate within limited effective degrees of freedom, which also makes it challenging to achieve a high image quality. Steered illumination approaches (VI, VII) sequentially illuminate the system from different directions and require high-speed SLMs. Without a Fourier mask, the image quality achieved by these systems is also limited by high diffraction orders (VI). We illustrate our design following the style of the schematic in \cite{grace2023multi} for easier comparison.}
+    \label{fig:baseline}
+\end{figure*}
+
+In a Fresnel holography display system, the 1D field-of-view (FoV) and eyebox size $w$ can be expressed as follows:
+\begin{equation}    
+        \text{FoV} = 2\text{tan}^{-1} \left(\frac{L}{2 \fl} \right) = 2\text{tan}^{-1} \left(\frac{Np}{2 \fl} \right), \quad \,\,
+        \text{w} = \frac{\fl \lambda}{p},
+\end{equation}
+where $L, N$ are the size of the SLM and the number of SLM pixels in the $x$ or $y$ axis, respectively, and $\fl$ is the eyepiece focal length. Under paraxial assumptions ($\theta \approx \text{sin}\theta \approx \text{tan}\theta)$, we see that the product of the 2D FoV and eyebox of a holographic display system is exactly the \'etendue of the system:
+\begin{equation}
+\begin{gathered}
+    \text{FoV}_x \cdot \text{FoV}_y \cdot w^2 = \\
+    2\text{tan}^{-1} \left(\frac{N_xp}{2 \fl} \right) \cdot 2\text{tan}^{-1} \left(\frac{N_yp}{2 \fl} \right) \cdot \frac{\fl^2\lambda^2}{p^2} \approx \lambda^2 N_x N_y = G_\text{SLM}
+\end{gathered}
+\end{equation}
+This implies that there is an inherent tradeoff between the FoV and the eyebox of a holographic display.
+
+When the SLM is illuminated with a grid of $\alpha \times \alpha$ off-axis, directional illuminations, the system eyebox is expanded due to shifted copies of the original spectrum. Specifically, if the directional illumination is selected such that the illumination direction matches the higher-order diffraction angles, the system 1D eyebox is exactly expanded by $\alpha$ while the FoV remains the same, resulting in an expanded 1D eyebox size of $\text{w} = \frac{\alpha f\lambda}{p}$. Therefore, the 2D \'etendue of the system is expanded by a factor of $\alpha^2$. 
+
+We show how the FoV and eyebox size relates to the required number of sources in Fig. \ref{fig:fov_eyebox_tradeoff}. We assume an SLM pixel pitch of $10.8 \; \mu$m and resolution of $1000 \times 1000$ and laser wavelength of $632.8$ nm. The FoV and eyebox size move along each white line in opposite directions as we vary the eyepiece focal length $\fl$ while the system \'etendue remains fixed. As we increase the number of sources, the \'etendue of the system also increases, as the white lines move further towards to upper-right of the plot.
+
+\subsection{Baseline Configurations}
+
+We next discuss a number of holographic display system configurations that serve as baselines to our proposed design shown in Fig. \ref{fig:schematic_conceptual}. Illustrations of these baselines are shown in Fig.~\ref{fig:baseline}.
+
+\paragraph{I. Single Source with Fourier Filter.} The conventional holographic display setup with a single laser source and a Fourier filter to block HDOs, including \cite{peng2020neural, shi2021neural, choi2022flex, maimone2017holo}. Such systems suffer from small \'etendue and non-uniform brightness across the eyebox.
+
+\paragraph{II. Single Source with Phase Mask.} A high-res\-o\-lu\-tion phase mask is placed in front of the SLM to increase the diffraction angle of the SLM and therefore increase the \'etendue of the system. The phase masks can be random \cite{kuo2020mask, buckley2006mask, park2019photon, yu2017speckle} or optimized \cite{tseng2023neural,monin2022mask}. These approaches have been shown to expand the \'etendue at the cost of decreased image quality and contrast.
+
+
+\paragraph{III. Multiple Sources.} Multiple mutually incoherent lasers illuminate the SLM from different angles \emph{simultaneously}. Due to the absence of a Fourier filter, the frequency spectrum contains multiple shifted, potentially overlapping copies of the same hologram. These constraints limit this system's capability to perfectly reconstruct a light field.
+
+% same number of time-multiplexed frames
+
+\paragraph{IV. Multiple Sources with Fixed Random Fourier Mask} Multiple lasers illuminate the SLM from different angles \emph{simultaneously} while a fixed random mask is placed at the Fourier plane to break the correlation between the image copies, as demonstrated by Jo et al.~\shortcite{jo2022binary}. Time multiplexing and content-adaptive filtering are not feasible since the random masks are custom-printed and fixed.
+
+
+
+
+\paragraph{V. Multiple Sources with Dynamic Fourier Filter (ours).} Multiple lasers illuminate the SLM from different angles \emph{simultaneously} while an amplitude SLM is placed at the Fourier plane. The amplitude SLM can be dynamically refreshed and is synchronized with the phase SLM, allowing for time-multiplexed and content-adaptive Fourier modulation. We additionally compare with a generalized configuration $\text{V}^*$ where the amplitude of the laser sources are controllable rather than fixed. More discussions on this generalized configuration can be found in the supplement.
+
+\paragraph{VI. Steered Illumination.} Multiple individually controllable sources or a single, swept source illuminate the SLM from different angles without Fourier filtering, including \cite{chang2019maxweillian, an2020slim, jang2018hoe, reichelt2010holo, xia2023steer}. Reduced image quality due to HDOs remains an issue due to the lack of filtering. Furthermore, such methods only apply to very high-speed SLMs, because each source is sequentially turned on or steered in sequence.
+
+\paragraph{VII. Steered Illumination with Shifting Fourier Filter.} Multiple individually controllable sources or a single, swept source illuminate the SLM from different angles while a synchronizable, dynamic filter is placed at the Fourier plane to filter out the HDOs. One example is the steered illumination system described in \cite{lee2020wide}. This method is still sequential in nature, as each source is turned on one at a time, and requires a very high-speed SLM.
+
+
+
+
+\iffalse
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{paper/figures/spectrum_comparison_new.pdf}
+    \caption{\textbf{Comparison of the expanded eyebox spectrum coverage of single-source and multi-source configurations.} \rebuttal{For the single source case, energy is restricted to the center part of the expanded eyebox, resulting in limited overlap of the spectrum for peripheral pupils such as a pupil in the position indicated by the white dashed circle. This creates undesirable non-uniform brightness across the eyebox. For the multi-source case, energy is filled in the whole expanded eyebox through spectrum copies created by the multiple sources, resulting in uniform brightness across the eyebox.}}
+    \label{fig:eyebox}
+\end{figure}
+\fi
+
+
+\subsection{Assessment}
+
+
+Table \ref{tab:baseline_comparison_recon} and Figure~\ref{fig:simulation} shows the light field reconstruction performance of different baseline configurations in simulation. For configurations with multiple sources (III, IV, V, V*, VI, and VII), we consider a $3\times3$ grid of sources. We simulate a $800 \times 1280$ phase SLM for single-SLM configurations (I, II, III, VI, VII) and an additional $20 \times 20$ Fourier display for configurations IV, V, and $\text{V}^*$. We run our optimization algorithm on all configurations to reconstruct a $9 \times 9$ light field. Additionally, we optimize the single source configuration to reconstruct a smaller, $3 \times 3$ light field in Table \ref{tab:baseline_comparison_recon}. Time multiplexing is not used for configurations I, II, III, and IV. Please refer to the supplemental material for additional discussions on the optimization parameters, degrees of freedom of the system, and ablation studies on the resolution of the Fourier display.
+
+The naive single-source configuration (I) is able to reconstruct a small $3 \times 3$ light field, but fails to reconstruct a larger-baseline $9 \times 9$ light field and cannot support uniform brightness across the expanded eyebox (Fig.~\ref{fig:teaser}, b--d). Mask-based \'etendue expansion techniques (II) reconstruct low-contrast and speckly images. By using multiple sources (III), the eyebox is expanded but the light field reconstruction quality is poor due to copies created by multiple sources and HDOs. Introducing a fixed random mask at the Fourier plane (IV) improves image quality, although the improvement is limited due to the lack of time multiplexing and content-adaptive Fourier mask optimization. Steered illumination options (VI, VII) achieve decent image quality, however both configurations reconstruct speckly images due to HDOs and can only be implemented using high-speed SLMs due to the large number of required time-multiplexed frames.
+
+Our methods (V, $\text{V}^*$) achieves the best image reconstruction quality when using one frame and is better than the steered illumination baseline (VII) while using fewer frames (6 vs. 9). This is achieved through time multiplexing and our novel content-adaptive Fourier modulation optimization framework. Our method successfully removes the copies created by multiple sources and HDOs, reconstructing clean and speckless light field views. More importantly, a minimal increase in degrees of freedom in the Fourier plane (a low-resolution $20 \times 20$ Fourier display) is sufficient to achieve good image quality, and we perform extensive experiments to validate this claim in the supplemental material. Finally, although our generalized configuration $\text{V}^*$ with amplitude-controllable sources achieves the best quantitative image quality, the improvement is marginal (<0.5 dB in terms of PSNR) and suffers from a much higher system complexity. Hence, we opted for configuration V for our hardware implementation.
+
+
+\begin{table}[t]
+   \footnotesize
+  \centering
+  \renewcommand{\arraystretch}{2}
+  \begin{tabular}{@{}P{0.60 \linewidth}P{0.35 \linewidth}@{}}
+    \toprule
+    \makecell[l]{Configuration} & \makecell[l]{Image Quality (PSNR/SSIM)} \\
+    \midrule
+    \makecell[l]{I. Single Source with Fourier Filter \\ 
+    \cite{peng2020neural, choi2022flex, shi2021neural}} & \makecell[l]{46.23 / 0.97 (2D image) \\ 22.43 / 0.46 ($3 \times 3$ light field) \\ 16.60/ 0.23 ($9 \times 9$ light field)} \\
+    \makecell[l]{II. Single Source with  Phase Mask \cite{kuo2020mask}} & \makecell[l]{14.61 / 0.15} \\
+    \makecell[l]{III. Multiple Sources} & \makecell[l]{13.35 / 0.24} \\
+    \makecell[l]{IV. Multiple Sources with Fixed Random Fourier \\ Mask \cite{jo2022binary}} & \makecell[l]{18.63 / 0.26} \\
+    \makecell[l]{V. Multiple Sources with Dynamic Fourier Filter \\(ours)} &  \makecell[l]{21.05 / 0.39 (1 frame) \\ 24.65 / 0.66 (6 frames) \\ 25.17 / 0.71 (9 frames)} \\
+    \makecell[l]{$\text{V}^*$. Multiple Sources with Dynamic Fourier Filter \\ with Laser Amplitude Control} &  \makecell[l]{ 21.43 /  0.42 (1 frame) \\ 25.02 / 0.69 (6 frames) \\ 25.66 / 0.74 (9 frames)} \\
+    \makecell[l]{VI. Steered Illumination} & \makecell[l]{20.02 / 0.43 (9 frames)}  \\
+    \makecell[l]{VII. Steered Illumination with Shifting Fourier Filter \\ \cite{lee2020wide}} & \makecell[l]{23.95 / 0.51 (9 frames)} \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Baseline comparisons in simulation.} Light field reconstruction performance of different baseline configurations in terms of PSNR/SSIM. We run our optimization algorithm on all configurations and six test scenes to reconstruct $9 \times 9$ light fields and report the average reconstruction performance. We run additional optimizations on the single source configuration to reconstruct a 2D image and a smaller $3\times 3$ light field. Our method achieves the best reconstruction quality for the full light field while using fewer frames. Per-scene PSNR/SSIM can be found in the supplemental materials.}
+  \label{tab:baseline_comparison_recon}
+\end{table}
+
+

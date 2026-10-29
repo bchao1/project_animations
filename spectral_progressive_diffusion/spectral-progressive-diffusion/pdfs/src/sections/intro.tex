@@ -1,0 +1,67 @@
+\section{Introduction}
+\label{sec:intro}
+
+
+Computational demands for visual generative models are increasing rapidly as image resolutions and video sequence lengths continue to grow. This trend reveals a fundamental scaling crisis: while scaling model and data sizes consistently yields better generation quality, the underlying cost of self-attention in Diffusion Transformers (DiTs)~\citep{dit} scales quadratically with the number of generated tokens. This creates a growing conflict between the desire for high-fidelity, long-duration content and the compute cost of existing architectures. A shift toward token-efficient representations offers a flexible and broadly compatible path for further scaling image and video generation.
+
+Rissanen et al.~\citep{rissanen2023generative} and Dieleman~\citep{dieleman2024spectral} observed that diffusion models implicitly learn to generate visual content autoregressively in the frequency domain, where low-frequency components are generated earlier in the denoising process while high-frequency details emerge only in later timesteps.  While this observation has motivated a variety of frequency-domain designs for diffusion models \cite{wavediff, spectral-reg, fourierspace, frecas}, they either do not support existing pretrained models or provide limited efficiency gains. A natural way to exploit spectral autoregression is through progressive resolution growth, since the frequency content representable by a signal is intrinsically tied to its spatial resolution. However, prior progressive resolution approaches \cite{pyrflow, scalespace, ralu, lssgen} either require significant modifications to the model architecture or rely heavily on heuristics for when and how to upsample, limiting their compatibility with state-of-the-art pretrained models \cite{zimage, flux-2, wan, cogvideox}.
+
+In this paper, we propose \emph{Spectral Progressive Diffusion}: a general framework for progressive-resolution generation, guided by the spectral structure of the denoising process. Motivated by the spectral autoregression property of diffusion models \cite{dieleman2024spectral}, we expand the resolution only at the timesteps where high-frequency content begins to emerge from noise (see Fig.~\ref{fig:method}). This keeps early denoising steps in a reduced token space and avoids redundant computation on noise-dominated frequencies. 
+To achieve this, we introduce a spectral noise expansion mechanism that uses a spectral transformation to inject high-frequency noise at the correct level while preserving the partially-denoised low-frequency content. We further derive optimal resolution transition times directly from the model's power spectrum, determined by a single error-tolerance hyperparameter. 
+
+Our framework applies directly to state-of-the-art pretrained diffusion and flow-matching models without architectural modifications. We demonstrate the flexibility of our framework across three visual generation modalities: latent-space image generation~\cite{black2024flux, zimage}, pixel-space image generation~\cite{pixelgen}, and latent-space video generation~\cite{wan}. In a training-free setting, our method delivers immediate speedups on existing pretrained models. We additionally introduce a fine-tuning recipe that further improves efficiency and quality, a direction previously unexplored for progressive-resolution generation. Extensive experiments show speedups of up to $7\times$ on image generation and $2.5\times$ on video generation, outperforming prior spatial acceleration methods in both runtime and visual fidelity.
+
+To summarize: \vspace{-3pt}
+\begin{itemize}
+\item We propose a progressive-resolution generation framework guided by the spectral autoregression of diffusion models, that applies directly to pretrained models and improves efficiency.
+\item We introduce a principled spectral noise expansion mechanism and derive optimal resolution transition times from the model's power spectrum.
+\item We demonstrate our framework on both image and video generation models, supporting both training-free inference and fine-tuning while maintaining high generation quality.
+\end{itemize}
+
+
+
+% The resulting frequency-growing process significantly reduces the effective number of tokens processed within the denoising trajectory.
+
+
+% In a related line of work, seminal discussions by \citet{dieleman2024spectral} and \citet{fourierspace} motivated substantial subsequent research on spectral analysis of diffusion models. Most notably, diffusion models exhibit an implicit autoregressive structure in the frequency domain, recovering low-frequency components early in denoising and high-frequency details only at later timesteps. This perspective aligns with cascaded diffusion approaches, where progressively increasing resolution corresponds to generating increasingly higher-frequency content. However, prior methods do not leverage this spectral autoregressive structure to accelerate generation \textit{within a single denoising trajectory}, leading to suboptimal efficiency improvements as they require low-resolution images to be fully denoised first. 
+
+%%%%%%%%%%%%% old begin %%%%%%%%%%%%%%%%%
+% Computational demands for visual generative models are increasing rapidly as image resolutions and video sequence lengths continue to grow. This challenge is exacerbated in modern generative model architectures based on Diffusion Transformers (DiTs) \cite{dit}, where the cost of attention scales quadratically with the number of generated tokens, leading to significant memory and latency constraints. Prior progressive or cascaded diffusion approaches \cite{cdm, relaydiff, pyrflow, matryoshka, pyrdiff, cogview3, lssgen, scalespace} improve efficiency by conditioning high-resolution synthesis on low-resolution images. However, they require significant modifications to the model architecture or the diffusion process, rendering them incompatible with existing, powerful pretrained models \cite{zimage, flux-2, wan2025, cogvideox}.
+
+% In a related line of work, seminal discussions by \citet{dieleman2024spectral} and \citet{fourierspace} motivated substantial subsequent research on spectral analysis of diffusion models. Most notably, diffusion models exhibit an implicit autoregressive structure in the frequency domain, recovering low-frequency components early in denoising and high-frequency details only at later timesteps. This perspective aligns with cascaded diffusion approaches, where progressively increasing resolution corresponds to generating increasingly higher-frequency content. However, prior methods do not leverage this spectral autoregressive structure to accelerate generation \textit{within a single denoising trajectory}, leading to suboptimal efficiency improvements as they require low-resolution images to be fully denoised first. 
+
+%Furthermore, there is no approach that exploits frequency-ordered generation to improve efficiency while remaining compatible with existing pretrained diffusion models.
+
+% this can just be explained later to save space. We start from a detailed analysis of the power spectral density of noisy pixels and latents along the diffusion denoising trajectory. Our analysis reveals a stark disparity in signal-to-noise ratio (SNR) evolution: low-frequency structural components are robust to high noise, whereas high-frequency details remain completely swamped by noise during the early denoising steps.
+
+%%%%%%%%%%%%% old end %%%%%%%%%%%%%%%%%
+\iffalse
+In this paper, we propose \emph{Spectral Progressive Diffusion}: a token-efficient generation framework driven by progressive frequency processing. Motivated by the spectral autoregression structure of diffusion models \cite{fourierspace, dieleman2024spectral}, we directly integrate spectral transformations into a single denoising trajectory for progressive resolution growing within a single diffusion pass. By isolating the low-frequency components with spectral transformations, we restrict early denoising steps to a heavily compressed token space, bypassing redundant computation on noise-dominated high-frequency tokens. We introduce a principled spectral noise expansion mechanism and derive optimal resolution transition times to progressively introduce high-frequency noise without corrupting the partially-denoised low-frequency content. This frequency-growing process significantly reduces the effective number of tokens processed within a single denoising trajectory. %We also design an optional fine-tuning procedure to further enhance image quality. Extensive experiments on pretrained image and video generation models demonstrate that our method achieves an X times speedup compared to na\"ive high-resolution generation, and outperforms existing acceleration methods in both runtime and visual fidelity. 
+
+Our approach neither changes diffusion trajectories nor requires a specialized model architecture; therefore, it is backward-compatible with state-of-the-art pretrained diffusion and flow-matching models in a plug \& play manner. We demonstrate this capability by fine-tuning several pretrained latent and pixel-space image and video generation models into more efficient spectrally progressive variants of themselves. A comparable fine-tuning strategy has, to our knowledge, not been demonstrated to date. 
+
+Extensive experiments on pretrained image and video generation models demonstrate that our method achieves an X times speedup compared to na\"ive high-resolution generation, and outperforms existing acceleration methods in both runtime and visual fidelity. 
+
+%Furthermore, we demonstrate novel applications uniquely enabled by our spectral-transform-based diffusion framework, including X.
+
+
+%motivate the need for efficient generation, for diffusion and flow models  
+
+% motivate spectral autoregression (blog post etc.); this is based on the insight that the frequency distribution of natural images follow a power law; convince people here that some of the latent representations follow the same power power law
+
+% outline desirable properties of any specific method that might implement the idea of ``efficient multi-scale generation''; review existing methods, such as scale-space diffusion, casceaded pixel-level diffusion, a possible naive Fourier representation, and others based on these criteria and convince people that these do not match your criteria. possible includes: (1) pretrained models and fine-tuning; (2) diffusion vs. flow; (3) ``distillability'' into few-step; (4) ... other arguments
+
+% now describe idea of wavelet diffusion and define what this means and how it's implemented; why is this the right approach, i.e., why do we need wavelets, and others not? make it super intuitive! be able to convince a skeptical person here
+
+% discuss the experiments we show and what the insights are we validate; also discuss some practical benefits we show in terms of speedup factors we show
+
+To summarize,
+\begin{itemize}
+    \item We propose a token-efficient, spectral-transformation-based progressive generation framework, compatible with training-free inference and LoRA fine-tuning across pretrained image and video model backbones.
+    \item We derive optimal resolution transition times from the resolution schedule and error thresholds, enabling training-free speedups with minimal hyperparameter tuning of just one parameter.
+    \item
+    We demonstrate that our framework significantly accelerates pretrained diffusion models with negligible quality degradation, achieving up to \hx{Y$\times$} and \hx{Z$\times$} speedups on image and video generation, respectively.
+\end{itemize}
+\fi
+
+\input{figures/method}

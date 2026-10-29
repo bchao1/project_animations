@@ -1,0 +1,141 @@
+Our work builds on recent progress in holographic displays~\cite{yaracs2010state,park2017recent,chang2020toward,javidi2021roadmap}, but focuses on developing a new CGH algorithm inspired by recent advances in neural scene representations and rendering. We review these methods in the following.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{\bf{CGH Algorithms.}}
+% \gw{Suyeon to draft. Reference table somewhere in this paragraph.}
+CGH refers to an algorithm that converts a target scene into a 2D amplitude, phase, or complex field to be displayed on an SLM, i.e., the hologram, which optically synthesizes the desired target intensity distribution. These algorithms have been developed to accommodate various types of scene representations. One of the classic algorithms is the point-based method~\cite{maimone2017holographic, h2009computer, lucente1993interactive}, where the target content is represented as a collection of points, each propagated to the SLM plane and digitally interfered with a reference wave. The propagation of all points toward the SLM is equivalent to a spatially varying convolution of a point cloud with a depth-dependent point spread function (PSF) and is computationally prohibitive. Moreover, point clouds require an excessive number of primitives to represent a scene with high fidelity and are inherently limited in their ability to model occlusions and view-dependent effects, although look-up table approaches and ray-based occlusion methods have been proposed to partially address these limitations~\cite{kim2008effective, lucente1993interactive, h2009computer, shi2021towards}.
+
+To support view-dependent effects, polygon-based methods \cite{ahrenberg2008computer, kim2008mathematical, matsushima2003fast, matsushima2009extremely, matsushima2014silhouette} and holographic stereograms (HS)~\cite{kang2008accurate, benton1983survey, padmanaban2019holographic, halle1991ultragram} have been proposed. Polygon-based methods convert a mesh into a complex-valued wavefront. However, the wavefront footprint of triangles varies with their orientation, position, and size, requiring substantial memory for look-up table approaches and these methods are often slow~\cite{wang2021acceleration}. Furthermore, numerical stability issues often arise when calculating wavefronts of arbitrarily oriented triangles. Finally, \revision{these methods struggle to render highly detailed appearances unless an excessive number of tiny triangles are used. On the other hand,} holographic stereograms encode densely sampled light fields into holograms and typically result in low image quality because of their heuristic choices of phase distributions of objects~\cite{kang2016fast, padmanaban2019holographic}. %Furthermore, all aforementioned methods use heuristic algorithms to enforce the phase-only constraints imposed by current SLMs, which are suboptimal for recovering the high-quality images~\cite{gerchberg1972practical, hsueh1978computer, maimone2017holographic}.\sy{probably we can omit the last sentence. Because ours would fall into this limitation as well.} % and ~\cite{}
+% In practice, however, they fail to recover full directional effects due to heuristic choices in phase distributions. 
+
+Recent advances in machine learning have shown promise in tackling these challenges, either by accelerating the CGH algorithm using deep neural networks or by providing more numerically accurate procedures that can adapt to flexible target representations. Several works proposed using convolutional neural networks (CNNs) to approximate the spatially varying convolution, demonstrating real-time performance~\cite{peng2020neural, shi2021towards, shi2022end, yang2022diffraction, horisaki2021three}. While promising, these CNN-based methods rely on RGB, RGB-D, or layered-depth-image (LDI) inputs, which all suffer from depth discontinuity artifacts when rendering from arbitrary viewpoints. Furthermore, such methods require re-training neural networks for different hardware configurations. Gradient-descent-based methods offer more flexibility, accepting custom loss functions and various targets such as RGB and RGB-D images, focal stacks, and light fields~\cite{kuo2023multisource, zhang20173d, chakravarthula2019wirtinger, peng2020neural, choi2021neural, choi2022time, gopakumar2024full, kavakli2023realistic, Chakravarthula2022pupil}. Light field holograms generated via gradient descent~\cite{choi2022time, kim2024holographic, schiffers2023stochastic, chao2024large}, in particular, have shown great potential for reconstructing photorealistic content with view-dependent effects, but increased rendering, memory, input/output (IO), and data streaming costs for light fields as well as their iterative nature make them impractical for real-time applications. Moreover, densely sampled light fields are not readily available, so content has to be specifically curated in this format.
+
+% \newcolumntype{M}{>{\begin{varwidth}{3cm}}l<{\end{varwidth}}}
+\renewcommand{\arraystretch}{1.1}
+
+% \setlength{\abovecaptionskip}{1000pt} % increase space above caption
+% \setlength{\belowcaptionskip}{2pt}  % decrease space below caption
+\setlength{\tabcolsep}{4pt} 
+\setlength{\textfloatsep}{10pt}
+\begin{table}[t!]
+    \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+    {\footnotesize 
+    
+    \caption{Comparison of CGH algorithms w.r.t. efficiency and visual quality. We compare our GWS with the point-based method (PBM), convolutional neural network (CNN) methods using RGB, RGB-depth (RGB-D), and stochastic gradient descent-based (SGD) methods using focal stacks and light fields (LF), as well as the polygon-based method. Our approach uses readily available input data, such as a few photographs of a real scene, does not require pre-training any networks tied to a specific hardware configuration, and naturally supports occlusions and view-dependent effects (VDEs). %A variant of our algorithm also runs in real time. %\sy{elaborate on how efficiency and quality are defined, (BW), Specific criteria for each category should also be added.} %\gw{need to end with a short sentence on how yours is better than existing methods} 
+    }
+    \label{tab:cgh_comp_table}
+    
+    \begin{tabular}{ m{2.2cm}|ccc|cc}
+        \multirow{3}{*}{{\centering Methods}} & \multicolumn{3}{c|}{Efficiency} & \multicolumn{2}{c}{Visual quality} \\ %\cline{2-7}
+                              & {\headfontsize  efficient}   & {\headfontsize data } & \headfontsize pretraining & \multirow{2}{*}{VDE} & {\headfontsize photorealistic } \\ %\hline
+                                 &               \headfontsize inference                       & \headfontsize  availability    & \headfontsize required &   & \headfontsize  content    \\ %\hline}
+                                 
+        
+         \hline
+        PBM \tablerefsize{~\cite{h2009computer, maimone2017holographic}}  & \yellowtrcell  & \greenvcell & \greenxcell & \redxcell & \redxcell \\
+         % & \ccr & \ccg & \ccg & \ccr & \ccr \\
+        % \hline
+        % OA-PBM~\shortcite{shi2021towards} & \ccr slow & \greenvcell & \greenvcell & \greenxcell & \redxcell & \ccg high & \ccr \xmark \\
+        \hline
+        RGB-D, CNN  \tablerefsize{~\cite{peng2020neural, shi2021towards, shi2022end}} & \greenvcell & \greenvcell & \redvcell & \yellowtrcell & \greenvcell \\
+        \hline
+        % RGB, CNN~\shortcite{peng2020neural} & \ccg fast & \greenvcell & \greenvcell & \redvcell & \redxcell & \ccg high & \greenvcell \\
+        % \hline
+        % RGBD, CNN~\shortcite{shi2021towards} & \ccg fast & \greenvcell & \greenvcell & \redvcell & \ccy partial & \ccg high & \greenvcell \\
+        % \hline
+        % LDI, CNN~\shortcite{shi2022end} & \ccg fast & \greenvcell & \ccr \xmark & \redvcell & \ccy partial & \ccg high & \greenvcell \\
+        % \hline
+        % RGBD, SGD  \tablerefsize{~\cite{choi2021neural}} & \redxcell & \greenvcell & \greenxcell & \yellowtrcell & \greenvcell \\
+        % \hline
+        focal stack, SGD   \tablerefsize{~\cite{choi2022time}} & \redxcell & \redxcell & \greenxcell & \yellowtrcell & \greenvcell \\
+        \hline
+        % LF  \tablerefsize{~\cite{}} & \redxcell & \redxcell & \greenxcell & \greenvcell & \greenvcell \\
+        % \hline
+        LF  \tablerefsize{~\cite{kang2008accurate, padmanaban2019holographic, choi2022time}} & \redxcell & \redxcell & \greenxcell  & \greenvcell & \greenvcell \\
+        \hline
+        Polygons  \tablerefsize{~\cite{matsushima2003fast, kim2008mathematical}} & \redxcell & \greenvcell & \greenxcell & \greenvcell & \redxcell \\
+        \hlineB{3}
+        GWS (efficient) & \yellowtrcell & \greenvcell & \greenxcell & \yellowtrcell & \greenvcell \\
+        \hline
+        GWS (exact) & \redxcell & \greenvcell & \greenxcell & \greenvcell & \greenvcell \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+%With respect to all prior works on CGH, our Gaussian wave splatting method is most similar to the polygon-based method in terms of the analytic image formation model, supporting view-dependent effects and streamlining computer graphics content into holograms. However, polygon-based methods suffer from the difficulty of obtaining target meshes for photorealistic content and, to the best of our knowledge, have not been demonstrated in real time. Our method is inspired by per-pixel rasterization algorithms of Gaussian splatting, which we translate into the Fourier domain, unlocking the full potential of an analytic approach. As a result, we are the first to demonstrate an efficient CGH algorithm that support view-dependent effects for photorealistic scenes or achieve real-time CGH rendering without pretraining of neural networks, as detailed in Table~\ref{tab:cgh_alg_comparisons}.
+
+Our Gaussian Wave Splatting method inherits benefits of Gaussian scene representations, including photorealistic and 3D-consistent view synthesis and an explicit primitives-based representation, allowing for the generation of holograms that support accurate 3D effects. A comparison with existing CGH methods is shown in Tab.~\ref{tab:cgh_comp_table}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{\bf{Neural Scene Representations and Rendering.}}
+
+Recent advances in neural rendering \cite{tewari2022advances} have made great strides in improving the quality of 3D reconstruction and novel-view rendering. 
+Neural rendering algorithms can be roughly classified by the underlying 3D representation, ranging from point clouds~\cite{KPLD21point, aliev2019point, xu2022point}, voxels~\cite{sitzmann2019deepvoxels,yu_and_fridovichkeil2021plenoxels, hu2023multiscale, yu2021plenoctrees}, meshes~\cite{neumesh, kato2018meshrenderer, Lombardi2018deepappearance, hu2021worldsheet, guo2023vmesh}, to implicit representations using MLPs~\cite{mildenhall2020nerf, mueller2022instant, sitzmann2019srns,sitzmann2020implicit}. However, it is non-trivial to convert these 3D representations to high-quality holograms for direct viewing on a 3D holographic display. Almost all of these 3D representations include neural networks, and thus an additional step of extracting RGB-D images, layered depth images (LDI), light fields, or meshes from these neural representations is required for CGH calculation. Among these converted explicit 3D representations, mesh representations retain the most 3D information since each primitive is continuously distributed in 3D space unlike the discrete depth partitioning in RGB-D or LDI representations. However, mesh optimization and extraction processes are either deeply embedded in neural representation training ~\cite{tang2022nerf2mesh, hanocka2020point2mesh} or are based on signed distance function optimization ~\cite{wang2021neus, yariv2021volume} and Marching Cubes \cite{marchingcubes} or Poisson Surface Reconstruction \cite{kazhdan2006poisson}, which all require careful tuning to obtain decent quality meshes.
+
+Recently, 3D Gaussian Splatting \cite{kerbl3Dgaussians} (3DGS) has emerged as the state-of-the-art novel-view synthesis and 3D reconstruction technique. 
+3DGS achieves high image quality for novel-view synthesis, is fast to optimize and render, and leverages an explicit Gaussian primitive representation which makes the method suitable for a wide variety of computer vision and graphics applications. The absence of neural networks in the Gaussians representation allows us to directly convert optimized Gaussians into 3D holograms without any preprocessing, eliminating possibilities of image fidelity loss throughout the conversion process. The highly parallelizable nature of splatting Gaussians\revision{~\cite{kerbl3Dgaussians}} is also desirable for building efficient CGH algorithms, as we demonstrate with our novel wave splatting of Gaussians in the Fourier domain. Among the plethora of 3DGS variants~\cite{chen2024survey}, 2DGS \cite{huang20242d} is especially suitable for CGH because an angular spectrum-based analysis of waves is defined on planes, and since 2D Gaussians and meshes are both flat-primitive representations, CGH from 2D Gaussians can therefore greatly benefit from insights made by the pioneering research on polygon-based CGH. Hence, we use 2DGS as our scene representation for CGH calculation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Our algorithmic framework is related to a wide body of computer-generated holography (CGH) algorithm research which we summarize below. CGH algorithms aim to generate complex-valued wavefront or phase (or amplitude) only phase patterns for spatial light modulators (SLMs). While recent progress on CGH focuses on 
+
+
+% \begin{table*}[ht!]
+%     \centering
+%     \begin{tabular}{c|c|c|c|c}
+%         \multirow{2}{*}{} & allowing multiple  & \multirow{2}{*}{retinal blur} & view-dependent\\
+%          & objects per ray &  & effect \\
+%          \hline
+%        2.5D (focal slab)  & \ccr no & \ccy approximated & \ccy approximated \\        \hline
+%         3D w/ RGB-D (focal stack) & \ccg yes & \ccy approximated & \ccy approximated \\ \hline
+%         3D w/ LF (focal stack from the light field) & \ccg yes & \ccg correct & \ccy approximated \\ \hline
+%         4D (light field) & \ccg yes & \ccg correct & \ccg correct \\ \hline
+%     \end{tabular}
+%     \caption{Assessment of data formats in terms of supported visual cues. Note that CGH supervisions, elaborated in Sec. S2, adhere to the same limitations outlined here. In 2.5D and 3D formats, the blur behavior is constrained by the phase profile or the pupil size used in rendering the focal stack. Conversely, the defocus behavior in light fields would be accurate, though blur size could be limited by the \'etendue supported by the display system. The light field format and supervision uniquely enable the display to render correct view-dependent effects, such as occlusion, parallax, and specular highlights. }
+%     \label{tab:data_formats}
+% \end{table*}
+% \newcolumntype{M}{>{\begin{varwidth}{3cm}}l<{\end{varwidth}}}
+% \renewcommand{\arraystretch}{1.2}
+% \begin{table*}[ht!]
+%     \centering
+%     \begin{tabular}{c|cccc|ccc}
+%         \multirow{3}{*}{Methods} & \multicolumn{4}{c|}{Efficiency} & \multicolumn{3}{c}{Visual quality} \\ %\cline{2-7}
+%                                  & rendering & data  &  data  & \multirow{2}{*}{pretraining} & view-dependent  & \multirow{2}{*}{image fidelity} & real-world \\ %\hline
+%                                  &               speed                   &  bandwidth       &  availability    & & effects &              & scenes     \\ %\hline
+        
+%          \hline
+%         PBM~\shortcite{h2009computer} & \ccy if parallelized & \ccg low & \greenvcell & \greenxcell & \ccr limited & \ccg high & \ccr \xmark \\
+%         \hline
+%         OA-PBM~\shortcite{shi2021towards} & \ccr slow & \ccg low & \greenvcell & \greenxcell & \ccr limited & \ccg high & \ccr \xmark \\
+%         \hline
+%         Polygons~\shortcite{matsushima2003fast, kim2008mathematical} & \ccr slow & \ccg low & \ccr \xmark & \greenxcell & \ccg supported & \ccy moderate & \ccr \xmark \\
+%         \hline
+%         RGB, CNN~\shortcite{peng2020neural} & \ccg fast & \ccg low & \greenvcell & \redvcell & \ccr limited & \ccg high & \greenvcell \\
+%         \hline
+%         RGBD, CNN~\shortcite{shi2021towards} & \ccg fast & \ccg low & \ccy estimation? & \redvcell & \ccy partial & \ccg high & \greenvcell \\
+%         \hline
+%         LDI, CNN~\shortcite{shi2022end} & \ccg fast & \ccg low & \ccr \xmark & \redvcell & \ccy partial & \ccg high & \ccy possible? \\
+%         \hline
+%         RGBD, SGD~\shortcite{choi2021neural} & \ccr slow & \ccg low & \ccy estimation? & \greenxcell & \ccy partial & \ccg high & \greenvcell \\
+%         \hline
+%         focal stack, SGD~\shortcite{choi2022time} & \ccr slow & \ccy medium & \ccy requires pupil & \greenxcell & \ccy partial & \ccg high & \greenvcell \\
+%         \hline
+%         LF, HS~\shortcite{kang2008accurate, padmanaban2019holographic} & \ccy medium & \ccr high & \ccr \xmark & \greenxcell & \ccg supported & \ccr low & \greenvcell \\
+%         \hline
+%         LF, SGD~\shortcite{choi2022time} & \ccr slow & \ccr high & \ccr \xmark & \greenxcell  & \ccg supported & \ccg high & \greenvcell \\
+%         \hlineB{3}
+%         Ours (efficient) & \ccg fast & \ccg low & \greenvcell & \greenxcell & \ccy partial & \ccg high & \greenvcell \\
+%         \hline
+%         Ours (full) & \ccr slow & \ccg low & \greenvcell & \greenxcell & \ccg supported & \ccg high & \greenvcell \\
+%         \hline
+%     \end{tabular}
+%     \caption{Assessment of various CGH algorithms in terms of efficiency and visual quality. We compare our proposed algorithms against the point-based method (PBM), the occlusion-aware point-based method (OA-PBM), the polygon-based method, the convolutional neural network (CNN)-based method using RGB, RGB-depth (RGBD), Layered Depth Image (LDI), and stochastic gradient descent-based methods using RGBD, focal stack, and light fields (LF), as well as traditional holographic stereograms (HS). Specific criteria for each category should also be added.}
+%     \label{tab:cgh_alg_comparisons}
+% \end{table*}
+
+
+

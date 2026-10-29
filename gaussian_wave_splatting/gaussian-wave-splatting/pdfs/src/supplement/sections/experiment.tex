@@ -1,0 +1,109 @@
+\subsection{Experimentally Captured Baseline Comparisons}
+
+We capture an extensive set of results of baseline methods and our Gaussian Wave Splatting algorithm applied to a wide variety of 3D scenes from the NeRF synthetic Blender \cite{mildenhall2020nerf} and Mip-NeRF 360 dataset \cite{barron2022mipnerf360}. Aside from point-based methods and polygon-based method shown in the main paper, we additionally show dense point cloud (RGBD) results.
+
+Experimentally captured baseline comparisons closely follow the trend of simulated experiments, as shown in Figs. \ref{fig:captured_baselines_1} to \ref{fig:captured_baselines_12}. Point-based methods fail to accurately recosntruct the target content. Polygon-based methods cannot reconstruct sharp details due to per-face colors. RGBD holograms achieve decent image quality since the representation is generated exactly from ground truth RGB images and depth maps. However, ringing artifacts are present at depth discontinuities. 
+
+Our Gaussian Wave Splatting method, both exact and fast, achieve significant image quality improvements over existing primitives-based CGH baselines. GWS achieves sharp reconstruction in focused regions and synthesizes more natural blur in defocused regions and does not have pronounced ringing artifacts like RGBD, well matching the simulated results. Fast GWS exhibits slight contrast reduction compared to exact GWS, but overall image quality and 3D refocusing effects are retained and achieves $30\times$ speedup as described in the main paper.
+
+\subsection{Experimentally Captured 3D Focal Stacks of Novel Views}
+
+Aside from the ``garden'' scene shown in the main paper, we additionally capture 3D focal stacks of exact GWS holograms generated from different novel views of the ``kitchen'' scene from the Mip-NeRF 360 dataset and ``materials'' scene from the Blender dataset in Fig. \ref{fig:nvs_fs_garden} and \ref{fig:nvs_fs_materials}, respectively. GWS achieves accurate 3D refocusing effects at \textit{all} novel views, demonstrating the robustness of our method to changing perspectives. Please refer to the supplemental videos for full novel view trajectory videos of optimized GWS holograms generated from different views of the underlying 2DGS models, as well as 3D focal stacks captured at selected frames. 
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_lego.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_1}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_chair.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_2}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_hotdog.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_3}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_mic.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_4}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_materials.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_5}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_ship.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_6}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_kitchen.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_7}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_counter.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_8}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_stump.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_9}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_room.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_10}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_garden.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_11}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/captured_bicycle.pdf}
+    \caption{\textbf{Experimentally captured baseline comparisons.} We experimentally capture 3D focal stacks of holograms generated using different baseline CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.}
+    \label{fig:captured_baselines_12}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_nvs_fs_kitchen.pdf}
+    \caption{\textbf{Experimentally captured focal stacks of exact GWS holograms from different novel viewpoints.} We generate exact GWS holograms from various novel viewpoints and capture the corresponding 3D focal stacks at each viewpoint. GWS achieves accurate 3D refocusing effects at all viewpoints, demonstrating the robustness of our method. }
+    \label{fig:nvs_fs_garden}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.9\textwidth]{supplement/figures/supp_nvs_fs_materials.pdf}
+    \caption{\textbf{Experimentally captured focal stacks of exact GWS holograms from different novel viewpoints.} We generate exact GWS holograms from various novel viewpoints and capture the corresponding 3D focal stacks at each viewpoint. GWS achieves accurate 3D refocusing effects at all viewpoints, demonstrating the robustness of our method. }
+    \label{fig:nvs_fs_materials}
+\end{figure*}

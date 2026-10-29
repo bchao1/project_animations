@@ -1,0 +1,162 @@
+In this section, we develop a method to compute holograms that faithfully represent the 3D scene, given a collection of 2D Gaussians representing this scene. To encode the Gaussian primitives as interference patterns based on the theory of wave optics, we need to propagate the wavefront contribution of each Gaussian, namely \revision{$u(\coordinate)$,} in free space to the SLM plane. The optical propagation over a distance $z$ can be described by a free-space wave propagation operator $\prop(\cdot; z)$, such as the angular spectrum method~\cite{goodman2005introduction, matsushima2009band}:
+% wave propagation
+% \begin{align}
+%     \prop\Big(u(\coordinate ); z\Big) = \iint \fourier \left( u(\coordinate )\right) \mathcal{H} \left( k_x, k_y \right) e^{j \left(k_x x + k_y y \right)} d k_x d k_y, \\
+%     \mathcal{H} \left( k_x, k_y \right) = \begin{cases}
+%         e^{jz\sqrt{(\frac{2\pi}{\lambda})^2 - k_x^2 - k_y^2}}, & \text{if} \sqrt{k_x^2 + k_y^2} < \frac{2\pi}{
+%         \lambda},\\
+%         0, & \text{otherwise},
+%     \end{cases}
+%     \label{eq:asm}
+% \end{align}
+\begin{align}
+    \prop\Big(u(\coordinate ); z\Big) = \iint \fourier \left( u(\coordinate )\right) \mathcal{H} \left( \mathbf{k}, z \right) e^{j \left(k_x x + k_y y \right)} d k_x d k_y, \\
+    \mathcal{H} \left( \mathbf{k}, z \right) = \begin{cases}
+        e^{j k_z z}, & \text{if} \sqrt{k_x^2 + k_y^2} < \frac{2\pi}{
+        \lambda},\\
+        0, & \text{otherwise},
+    \end{cases}, |\mathbf{k}| = \frac{2\pi}{\lambda}
+    \label{eq:asm}
+\end{align}
+where $\lambda$ is the wavelength, $\mathbf{k} = (k_x, k_y, k_z)$ is the wave vector, and $\fourier(\cdot)$ denotes the Fourier transform. Instead of integrating a radiance field along each ray, as in classic volume rendering~\cite{kajiya1984ray}, in our wave-based setting, we splat the wavefront contributions of Gaussians onto a common plane that is orthogonal to the optical axis by simulating their wave propagation through the volume from front to back
+%
+%~\gw{back to front??} \sy{doesn't really matter; the recursive equation would be different depending on the order, but the final equation should follow Eqs.~\ref{eq:gwsplat} and ~\ref{eq:gwsplat_T} to remain compatible with the alpha blending performed.} 
+%
+using alpha compositing. Note that this composition can be evaluated at any plane, such as the SLM where $z=0$. Therefore, we obtain the composited \revision{complex-valued} wavefront at the SLM, $u_{\textrm{SLM}}$, as  %  
+\begin{align}
+    u_{\textrm{SLM}} (\coordinate) = \sum_{\idx}^\maxidx \mathbf{c}_\idx o_\idx\mathcal{P}\Big(  u_\idx(\coordinate; z_\idx)T_\idx\left(\coordinate\right) ; -z_\idx\Big), \label{eq:gwsplat}\\
+    T_\idx\left(\coordinate\right) = \prod_{j=1}^{\idx-1} (1 - o_{j} |u_j(\coordinate; z_j)|),
+    \label{eq:gwsplat_T}
+\end{align} 
+where \revision{$u_\idx (\coordinate; z_\idx)$} denotes the wavefront contribution of the $i^{th}$ Gaussian at depth $z_i$ (see next subsection, Eq.~\ref{eq:exactgws}) and $o_i$ denotes the opacity of the $i^{th}$ Gaussian. \revision{$T_i(\coordinate)$ is the accumulated transmittance along the wave propagation, from the first Gaussian to the $i^{th}$ Gaussian~\cite{kerbl3Dgaussians, huang20242d}.} We refer to Eq.~\ref{eq:gwsplat} as \textit{alpha wave blending}. Our alpha wave blending technique inherits the advantages of Gaussian splatting, including smooth falloffs for each object opacity (Eq.~\ref{eq:opacity}), to seamlessly merge the Gaussians for high-quality reconstruction. This formulation simplifies to the original ray-based alpha blending if we ignore the wave propagation operator and the phase of all wavefronts (i.e., $u_\idx=\mathcal{G}_i$). %\bc{Note that this phase-matching assumption implies that our Gaussian Wave Splatting algorithm inherently generates \textit{smooth-phase holograms} \cite{maimone2017holographic, shi2021towards}, which we will discuss more in Section 6.} 
+
+Previous polygon-based CGH methods, such as silhouette-based approaches~\cite{matsushima2014silhouette}, are inherently slow due to their recursive nature that involves repeatedly masking out the occluded field from the back with a binary aperture. Additionally, the use of binary apertures with translucency to emulate alpha blending~\cite{matsushima2020introduction} results in artifacts, as we discuss and compare further in Sec. ~\ref{sec:results} (see Figs.~\ref{fig:blending} and~\ref{fig:occlusion}). Our alpha wave blending technique, on the other hand, performs exact alpha blending like its ray-based counterpart, and is also compatible with silhouette-based methods for meshes with binary opacity. 
+
+In alpha wave blending, the wavefronts of arbitrarily oriented 2D Gaussians need to be accurately propagated to planes parallel to the SLM plane. One way to achieve this is to place each 2D Gaussian disk on its local tilted plane and propagate it to a parallel plane using tilted propagation, which translates to remapping the angular spectrum~\cite{matsushima2003fast}. However, this approach is inherently slow as it requires performing a Fast Fourier Transform (FFT) for each primitive to compute the angular spectrum on the tilted plane. Additionally, it may introduce numerical errors due to the nonlinear remapping of Fourier coordinates~\cite{zhang2022polygon}. To overcome these limitations, we derive a closed-form solution for the angular spectrum of arbitrary 2D Gaussian disks at the SLM plane (Sec.~\ref{subsec:gaussian-wave-splatting}).
+
+To further speed up alpha wave blending, we develop an approximated alpha blending model inspired by order-invariant opacity \cite{mcguire2013weighted} in traditional computer graphics (Sec.~\ref{subsec:fast-alpha-wave-blending}). This approximated model can be efficiently parallelized in the Fourier domain, and we achieve a 30$\times$ speedup compared to na\"ive alpha wave blending using our custom CUDA CGH kernels.
+
+\subsection{Gaussian Wave Splatting}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{main_paper/figures_camera_ready/draft.pdf}
+    \caption{\revision{\textbf{Illustration of coordinate systems and Gaussian Wave Splatting.} \textit{Top:} We take a set of optimized primitives from off-the-shelf neural rendering frameworks in \textit{world space} and convert them into into \textit{hologram space} through a sequence of coordinate transformations. Each Gaussian in hologram space is represented by its own affine transformation from \textit{canonical space}. \textit{Bottom:} In hologram space, GWS computes the analytical solution of the wavefront footprint at the SLM generated by a Gaussian wavefront---with arbitrary rotation and position---illuminated by a plane wave.}}
+    \label{fig:diagram}
+\end{figure}
+
+
+\label{subsec:gaussian-wave-splatting} %\sy{I think probably better to move up this paragraph to the beginning of Section 4? or not?, because there we also need the notion of geometry / where we put SLM and propagate wavefronts towards it. It also flows better from Section 3.}
+In this section, we derive the closed-form solution for the wavefront contribution of a 2D Gaussian to the SLM. To focus on the relationship between the 2D Gaussian's position, rotation, and the SLM plane, we assume that the SLM lies centered on the $xy-$plane. The position, rotation, and scale of the 2D Gaussian, discussed in the following section, are defined in this \textit{hologram space} \revision{(see Fig.~\ref{fig:diagram})}. To render holograms of the optimized 2DGS model defined in \textit{world space} from any given viewpoint, we can simply rotate and project the 2D Gaussians with the corresponding \textit{view transform} and \textit{\revision{projective mapping}} as we would in the traditional graphics pipeline to transform the off-the-shelf Gaussians to the \textit{ray space}\revision{~\cite{zwicker2001ewa}}. The Gaussians in ray space are sequentially transformed into hologram space, based on the hardware setup geometry, including the relative position between eyepiece, SLM, and \revision{the target volume, as illustrated in Fig.~\ref{fig:diagram}. We refer interested readers to the Supplementary Materials for the complete holographics pipeline used to render holograms from optimized Gaussian splatting models.}
+%, which we coin \textit{holographics}.
+% .In our case, the SLM plane is exactly analogous to the camera sensor plane\sy{SLM plane would be a bit different from the camera sensor plane; SLM plane would be determined by the propagation distances; and we would see the images from any viewpoint through the eyepiece so it could be z-axis translated}.
+
+To calculate the wavefront of the $\idx^{th}$ Gaussian $u_i(\coordinate)$ in hologram space, we begin with a zero-mean, unit-variance standard Gaussian $u_\canonicalspace$ defined in the \textit{canonical space} $\coordinate_\canonicalspace = (x_\canonicalspace, y_\canonicalspace, \revision{z_\canonicalspace = 0})$. We note that Gaussians have the neat property for CGHs that their Fourier transform, $\angularspectrum_\canonicalspace$, is also a zero-mean Gaussian
+\begin{align}
+u_\canonicalspace(\coordinate_\canonicalspace) =e^{-\frac{1}{2}(x_\canonicalspace^2 + y_\canonicalspace^2)} & \xleftrightarrow{\fourier} \angularspectrum_\canonicalspace(\mathbf{k}_\canonicalspace) = 2 \pi e^{-2\pi^2 \mathbf{k}_\canonicalspace^\mathsf{T} \mathbf{k}_\canonicalspace}.\label{eq:ref_gaussian}  
+\end{align}
+% , for the $\idx$th Gaussian with a scaling matrix $\mathbf{S}_i$, a rotation matrix $\rot_\idx$, and a center located at $\coordinate_\idx$,
+
+From this canonical Gaussian, our Gaussian in hologram space is defined by its center $\bm{\mu}_i \in \arr{3}$ and covariance matrix $\cov_i = \rot_i \sca_i \sca_i^\mathsf{T} \rot_i^\mathsf{T} \in \mat{3}$, which can be factorized into a scaling matrix $\sca_i \in \mat{3}$ and a rotation matrix $\rot_i = \rot_x\rot_y\rot_z \in \mat{3}$. Since we work with 2D Gaussian disks, we assume that the $z$-scales of all Gaussians are zero. With these parameters, any 2D Gaussian can be transformed from the canonical space to the hologram space as $\coordinate = \rot_i \sca_i \coordinate_\canonicalspace + \bm{\mu}_i$. We are interested in how such a Gaussian contributes to the SLM plane in hologram space \revision{(see Fig.~\ref{fig:diagram})}, where they will be composited using alpha wave blending. To this end, we derive the closed-form solution for the angular spectrum of 2D Gaussian primitives $\angularspectrum_\idx (\mathbf{k})$ in hologram space. Note that, while we proceed with the angular spectrum in the following equations, this is equivalent to transformations between wavefronts, which can also be obtained using the Fourier transform.
+% (see Fig.~\ref{fig:coord} left) 
+First, we transform the wavefront in the canonical space to the \textit{object space}, which lies on the same plane as the canonical space and is defined by a 2D affine transform using the scaling matrix $ \coordinate_\objectspace = \sca_i \coordinate_\canonicalspace$. From the affine theorem for two-dimensional Fourier transforms~\cite{bracewell1993affine}, we obtain the angular spectrum in object space $\angularspectrum_\objectspace(\mathbf{k}_\objectspace)$ as% $\coordinate_\canonicalspace = \mathbf{A}\coordinate_l + \mathbf{b}$, where we set $\mathbf{A} = \sca_i^{-1} \rot_z^{-1}$ and $\mathbf{b} = -\sca_i^{-1} \rot_i^{-1} \coordinate_i$. 
+\begin{align}    
+u_\objectspace(\coordinate_\objectspace) = u_\canonicalspace(\sca_\idx^{-1} \coordinate_\objectspace) & \xleftrightarrow{\fourier} \angularspectrum_\objectspace(\mathbf{k}_\objectspace) = \det(\mathbf{\sca} )\,\angularspectrum_\canonicalspace(\mathbf{(\sca}_i^{-1})^{-\mathsf{T}} \mathbf{k}_\objectspace) .\label{eq:affine_2d}  
+%  (see Fig.~\ref{fig:coord}, right)
+\end{align} %e^{j \mathbf{b}^{\mathsf{T}}\mathbf{A}^{-\mathsf{T}} \mathbf{k}_l}
+
+Next, we propagate the wavefront in the object space to the \textit{hologram space}, which is translated and tilted relative to the object space: $\coordinate = \rot_\idx \coordinate_\objectspace + \centergaussian_\idx$. We observe that translation by $\centergaussian_\idx$ in the spatial domain is equivalent to applying a phase ramp $e^{j\mathbf{k} \cdot \centergaussian_\idx}$ in the Fourier domain, as observed in Eq.~\ref{eq:asm}. The propagation of wavefronts between tilted planes can be described by the rotational transform of the wavefield~\cite{matsushima2003fast}. The main insight behind this approach is that the wave vector also follows the same rotation, meaning a plane wave of wavenumber $\mathbf{k}$ in hologram space corresponds to a plane wave of wavenumber $\rot_\idx^{-1}\mathbf{k}$ in object space. Thus, the angular spectrum in hologram space can be obtained by remapping the angular spectrum in the local space, $\mathbf{k}_\objectspace = \rot_\idx^{-1} \mathbf{k}$:%that are rotated as $\coordinate = \rotc^{-1} \coordinate_l$ (we set $\rotc = \rot_y^{-1} \rot_x^{-1}$) 
+\begin{align}
+    \angularspectrum_i(\mathbf{k}) &=  \textrm{det}( \mathbf{J}) \textrm{det}(\mathbf{S}_\idx) \angularspectrum_\canonicalspace \left(\mathbf{S}_\idx \rot_\idx^{-1}\mathbf{k} \right) e^{j  \mathbf{k}\cdot \mean_\idx} \label{eq:gaussian_to_hologram_new} \\
+    &= 2 \pi \textrm{det}( \mathbf{J}) \textrm{det}(\mathbf{S}_\idx)  e^{-2\pi^2 \mathbf{k}^\mathsf{T} \cov_i \mathbf{k}}e^{j  \mathbf{k}\cdot \mean_\idx} \label{eq:exactgws} . %\angularspectrum_\canonicalspace \left(\mathbf{S}_\idx \rot_\idx^{-1}\mathbf{k} \right)
+\end{align} %{\tiny \begin{vmatrix} \frac{\partial k_{l_x}}{\partial k_x}  \frac{\partial k_{l_x}}{\partial k_y} \\ \frac{\partial k_{l_y}}{\partial k_x}  \frac{\partial k_{l_y}}{\partial k_y} \end{vmatrix}} = \frac{\partial k_{l_x}}{\partial k_x}\frac{\partial k_{l_y}}{\partial k_y} - \frac{\partial k_{l_x}}{\partial k_y} \frac{\partial k_{l_y}}{\partial k_x} 
+% &= \textrm{det}( \mathbf{J}) \angularspectrum_l\left( \rotc \mathbf{k} \right) , \label{eq:local_to_parallel}\\
+Here, $\textrm{det} (\mathbf{J}) = \frac{k_{\objectspace_z}}{k_z}$ is the Jacobian determinant of the transformation of Fourier coordinates. We dub Eq.~\ref{eq:exactgws} the \textit{\revision{G}aussian \revision{W}ave \revision{S}platting} equation, as it describes the exact angular spectrum of the splatted wavefront at the SLM plane. The wavefront profile at the SLM $u_\idx(\coordinate)$ can be obtained by applying the inverse Fourier transform to $\angularspectrum_i(\mathbf{k})$. \revision{Similarly, the wavefront profile at depth \( z_\idx \), \( u_\idx(\coordinate; z_\idx) \), can be obtained by setting the depth \( z \) component in \( \mean_\idx \) to zero in Eq.~\ref{eq:exactgws}, if we want to apply the attenuation factor \( T_\idx \) before splatting the wavefront onto the SLM plane.} Note that Eq.~\ref{eq:gaussian_to_hologram_new} is not limited to 2D Gaussians but can be generalized to any primitives that have a closed-form solution for the angular spectrum in canonical space~\cite{kim2008mathematical, ahrenberg2008computer}.
+
+
+%    &= \textrm{const} \cdot e^{-\frac{1}{2} \mathbf{k}^\mathsf{T} (\frac{1}{4\pi^2}\cov_i^{-1})^{-1} \mathbf{k}} \cdot e^{j  \mathbf{k}\cdot \mean_\idx}  
+% \bc{From Eq. \ref{eq:exactgws}, we see that the spectrum of the splatted wavefront is exactly a zero-mean Gaussian with covariance $\frac{1}{4\pi^2}\cov_i^{-1}$ and a linear phase ramp $\mean_i$, up to a constant scaling factor.}
+
+%\sy{Maybe appreciate and interpret this final formula a little bit. For example, the position of the Gaussian ultimately results in applying a phase ramp, as expected (this is consistent with Eq.~\ref{eq:asm}, which I intentionally wrote differently from Neural Holography for this purpose). The determinants arise from two coordinate transformations, } %Note that, the center of Gaussian $\mean$ is only involved in the phase term  $e^{j \mathbf{k} \cdot \mean}$ in Eq.~\ref{eq:gaussian_to_hologram_new}, as propagating the wavefront along the axis is simply equivalent to applying the phase ramp term in the Fourier domain.  
+
+This closed-form solution offers various benefits, including an efficient CUDA implementation in the Fourier domain as well as support for occlusions and view-dependent effects. Due to the bandwidth of the SLM, we assume all Gaussians are illuminated by a reference plane wave propagating in the direction of $\mathbf{k}_r$. This involves a shift in the angular spectrum by $\mathbf{k}_r$ in the Fourier domain.% (see Fig.~\ref{fig:coord} right).
+
+
+
+% given in Eq.~\ref{eq:gaussian_to_hologram_new} (see Supplement for the derivation).  %\sy{We could also elaborate on how it transitions from canonical to local, and from local to parallel, here (see Section~\ref{sec:candidates}). This would make our methods section a bit longer and is the reverse of how most polygon papers are written, but I think it could help reviews/readers understand how it is derived at a high level. In this case, we would want to move some of the paragraphs in Section~\ref{sec:candidates} to arrive Eq.~\ref{eq:gaussian_to_hologram_new}.} 
+% \begin{align}
+%     \angularspectrum_\idx(\mathbf{k}) 
+% \end{align}
+
+% \subsection{Equation candidates}
+% \label{sec:candidates}
+
+% For an anisotropic 2D Gaussian represented by the coordinate transformation from the canonical space, $\coordinate = \sca \rot \coordinate_0 + \coordinate_i$, we derive the angular spectrum of the Gaussian in the parallel coordinates as follows. 
+
+
+\subsection{Fast CUDA Implementation of Approximated Gaussian Wave Splatting using Order-Invariant Transparency}
+\label{subsec:fast-alpha-wave-blending}
+
+%Since the angular spectrum operator $\mathcal{P}$ is simply an inverse Fourier transform, w
+We can apply the Fourier transform to both sides of Eq. \ref{eq:gwsplat} and rewrite alpha wave blending in the Fourier domain:
+%
+\begin{align}
+    \angularspectrum_{\textrm{SLM}} (\mathbf{k}) 
+    & = \sum_{\idx}^\maxidx \mathbf{c}_\idx o_\idx\mathcal{F}\Big(  u_\idx(\coordinate)T_\idx\left(\coordinate\right)\Big)\mathcal{H}(\mathbf{k}, -z_\idx) \notag \\
+    & = \sum_{\idx}^\maxidx \mathbf{c}_\idx o_\idx \Big(  \angularspectrum_\idx(\mathbf{k})\ast \mathcal{F}\Big(T_\idx\left(\coordinate\right)\Big)\Big)\mathcal{H}(\mathbf{k}, -z_\idx),     
+    \label{eq:gwsplat_fourier}
+\end{align} 
+where $\ast$ denotes the convolution operator. The formulation of Eq. \ref{eq:gwsplat_fourier} is equivalent to the Gaussian splatting volume rendering equation in the spatial domain defined in Eq. \ref{eq:gs_volume_rendering}, the only difference being that Eq. \ref{eq:gwsplat_fourier} is defined for each frequency location $\mathbf{k}$ instead of pixel location $\coordinate$. However, unlike its spatial-domain counterpart, it is difficult to  utilize per-pixel parallelization to speed up the calculation of Eq. \ref{eq:gwsplat_fourier} due to the presence of a convolution, which cannot be efficiently calculated for each frequency location $\mathbf{k}$. This is an inherent computational challenge in CGH where a single pixel on a plane affects all pixels within its subhologram on other planes.
+
+To fully utilize CUDA parallelization for real-time CGH calculation, we design an approximated version of alpha wave blending to allow for efficient per-frequency parallelization. Specifically, we discard the transparency term, i.e., $T_i(\coordinate) \approx 1$, in Eq. \ref{eq:gwsplat_fourier} and therefore remove the costly convolution operation: 
+%
+\begin{align}
+    \angularspectrum_{\textrm{SLM}} (\mathbf{k}) 
+    & \approx \sum_{\idx}^\maxidx \mathbf{c}_\idx o_\idx\angularspectrum_\idx(\mathbf{k})\mathcal{H}(\mathbf{k}, -z_\idx).       
+    \label{eq:gwsplat_fourier_approx}
+\end{align} 
+
+It is now straightforward to parallelize the computation of this approximated CGH model since each term in Eq. \ref{eq:gwsplat_fourier_approx} can be independently calculated per-frequency location $\mathbf{k}$. Therefore, we implement custom CUDA kernels to perform efficient CGH calculation using this approximated alpha wave blending model.
+
+The spatial-domain counterpart of Eq. \ref{eq:gwsplat_fourier_approx} can be described as:
+\begin{align}
+    \mathbf{c} \approx \sum_{i=1}^N c_i \alpha_i = \sum_{i=1}^N c_i \mathcal{G}_i o_i,
+\label{eq:OIT}
+\end{align}
+where $\mathbf{c}$ is the final rendered pixel color, $c_i, \alpha_i, o_i \in \mathbb{R}$ are the color, alpha, and opacity of the $i^\text{th}$ Gaussian, respectively, and $\mathcal{G}_i$ is the splatted 2D Gaussian value evaluated at the location of the pixel currently being rendered. Note that the transparency term is omitted compared to the original volume rendering equation (Eq.~\ref{eq:gs_volume_rendering}). Interestingly, this image formation model is known as order-invariant transparency (OIT) in traditional computer graphics \cite{mcguire2013weighted}, and is mainly designed for speeding up alpha compositing operations. As the name suggests, OIT ignores the ordering of primitives, discards the front-to-back alpha compositing procedure in Eq. \ref{eq:gs_volume_rendering}, and represents the final composited color simply as a weighted sum of the Gaussian colors and opacities. 
+
+Since this image formation model is different from the alpha compositing model in 2DGS, we cannot directly apply the efficient alpha wave blending method to the optimized 2DGS models. Therefore, we replace the volume rendering equation (Eq. \ref{eq:gs_volume_rendering}) used by 2DGS with Eq. \ref{eq:OIT}, and refer to this 2DGS variant as \textit{2DGS-OIT}. We optimize 2DGS-OIT models for the efficient version of our alpha wave blending algorithm, implement custom CUDA kernels to perform forward and backward passes of Eq. \ref{eq:OIT}, and integrate them with existing 2DGS libraries. Please refer to the supplemental materials for mathematical derivations and implementation details.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{main_paper/figures_camera_ready/fig2_oit.pdf}
+    \caption{
+    %\textbf{Effect of view-dependent opacity.} 
+    \textbf{Order-invariant transparency with view-dependent opacity.} 
+    We ablate novel-view synthesis of our 2DGS-OIT model using view-agnostic opacity (clamping opacity to $(0, 1)$ using a sigmoid function as in naive Gaussian splatting) and view-dependent opacity represented with spherical harmonics. The na\revision{\"i}ve OIT model suffers from severe color leakage or even complete disappearance of objects. Conversely, the OIT model with view-dependent opacity greatly mitigates such artifacts, achieving image quality comparable to 2DGS.}
+    \label{fig:OIT_reconstruction}
+\end{figure}
+
+A problem with Eq.~\ref{eq:OIT} is that, although easily parallelizable in the Fourier domain, the absence of ordering information among primitives prevents the Gaussian splatting model from accurately representing occlusion. This is illustrated in Fig. \ref{fig:OIT_reconstruction}, where the rendered colors from two opposite viewpoints along the same line of sight are exactly the same, yet intuitively the rendered color from each viewpoint should be more similar to the color of the closer Gaussian. In order to re-introduce occlusion modeling and ordering information back to Eq. \ref{eq:OIT}, we leverage \textit{view-dependent opacity} by defining the opacity of each Gaussian as a set of spherical harmonics (SH) coefficients $\mathbf{o}_\idx \in \mathbb{R}^K$: $\alpha_\idx = \mathcal{G}_\idx \cdot \text{SH}(\mathbf{o}_\idx, \mathbf{d})$, where $K$ is the number of SH coefficients, $\text{SH}$ is the linear spherical harmonics operator and $\mathbf{d}\in \mathbb{R}^3$ is the viewing direction. This leads to significant improvements in 3D reconstruction quality, as shown in Fig.~\ref{fig:OIT_reconstruction}.
+
+% talk about the CGH computation - derive formula from eq.11
+
+
+
+
+
+% previous occlusion-based method
+\if 
+Hence, to fully utilize CUDA parallelization for real-time CGH calculation, we enforce additional constraints on 2DGS optimization such that the final optimized 2DGS models are well-suited for CUDA-parallelizable CGH calculation. Specifically, we introduce an additional opacity regularization term (Eq. \ref{eq:opacity_reg}) in 2DGS to enforce the Gaussians to become either fully transparent or opaque, and clamp the opacity values to 0 or 1 after optimization. This regularization term and its variants are also widely used in prior surface reconstruction from Gaussians works ~\cite{Dai2024GaussianSurfels, jiang2024gaussianshader, xu2024texturegs, guedon2024sugar}, where low-opacity Gaussians are pruned and opaque Gaussians are optimized to be well-aligned with object surfaces for efficient mesh extraction.
+
+\begin{align}
+    \mathcal{L}_\text{o} = \frac{1}{N} \sum_{i=1}^N (\ln(o_i) + \ln(1 - o_i))
+    \label{eq:opacity_reg}
+\end{align}
+Here, $N$ is the number of Gaussians and $o_i \in (0, 1) $ is the opacity of the $i^\text{th}$ Gaussian.
+
+When calculating holograms from an optimized 2DGS model and a specific viewpoint, we first quantize the Gaussian opacities to zero and one and prune the transparent Gaussians. Next, we perform back-face culling to remove Gaussians on the opposite side of the viewpoint using normals of the 2D Gaussian disks and the viewing direction. Finally, we simply add up the wavefront contributions of the remaining 2D Gaussians at the hologram plane, which can be easily parallelized over Gaussians and pixels in the Fourier domain based on Eq.~\ref{eq:gwsplatting}. Please refer to the supplemental materials for more details on the CUDA kernel implementation and 2DGS optimization.
+\fi
+% talk about vanilla 2DGS optimization, MCMC strategies for controlling number of Gaussians, and handling opacities
+

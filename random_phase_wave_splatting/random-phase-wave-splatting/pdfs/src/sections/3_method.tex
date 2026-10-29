@@ -1,0 +1,147 @@
+Our approach takes as input a set of multi-view images that are turned into \textit{translucent} 2D primitives (primitives with continuous alpha values ranging from 0 to 1) representing a 3D scene. These primitives are then converted to time-multiplexed holograms through random-phase sampling. We briefly review the relevant background on emerging primitive-based scene representations (e.g. Gaussian splats \cite{kerbl3Dgaussians, huang20242d}) and existing work on \emph{smooth-phase} Gaussian wave splatting, before introducing our \emph{random-phase} wave splatting algorithm, which uniquely leverages a time-multiplexed image formation for accurate alpha blending of arbitrary geometric primitives. 
+
+%Moreover, we derive bounds on the achieved bandwidth utilization and defocus behavior to formalize the benefits of our approach.
+
+\subsection{Background}
+\label{sec:background}
+
+\subsubsection{Primitive-based Scene Representations}
+
+Since the advent of 3DGS \cite{kerbl3Dgaussians}, significant research has focused on developing alternative geometric primitives for 3D scene reconstruction.
+%including generalized exponential kernels \cite{Hhamd2024ges}, deformable beta kernels \cite{liu2025beta}, quadric surfaces \cite{zhang2025quadric}, and 3D convexes \cite{Held20243DConvex}. %Such primitive-based scene representations have become a standard in modern neural rendering, as they can be efficiently distilled from a small set of unstructured photographs or scene renderings. 
+Among these emerging primitive-based representations, 2D translucent primitives are notable for their local manifold structures, which enable explicit normal computation and surface extraction. Their flat-surface formulation integrates naturally with rasterization pipelines and aligns well with silhouette-based methods for polygonal CGH, allowing us to draw inspiration from prior work \cite{matsushima2003fast, matsushima2005computer, matsushima2014silhouette, matsushima2020introduction}. 
+
+Examples of such 2D translucent primitives include 2D Gaussians \cite{huang20242d} and soft-edged triangles \cite{Held2025Triangle, sheng20252dtrianglesplattingdirect, burgdorfer2025radianttrianglesoupsoft}. For 2D Gaussians, the geometry of each of these $i=1 \ldots N$ Gaussians is described by its mean $\mean_i \in \mathbb{R}^3$, 3D covariance $\cov_i=\rot_i \sca_i \sca_i^\mathsf{T} \rot_i^\mathsf{T} \in \mat{3}$ that can be factorized into a rotation matrix $R_i \in \mat{3}$ and a scaling matrix $S_i \in \mat{3}$. For triangles \cite{Held20243DConvex}, the geometry of the $i^{\text{th}}$ triangle is defined by its three vertices $\mathbf{V}_i \in \mat{3}$ and a smoothness factor $\sigma_i\in \mathbb{R}$ that describes the transparency falloff from the edges of the triangle. All of these primitives typically also include two additional parameters: opacity $o_i \in \mathbb{R}$ that determines its global transparency and color $c_i \in \mathbb{R}$ (for a single color channel). Please refer to these papers for more details on the definitions of the primitives.
+
+
+% holographics
+Any primitive-splatting approach requires the $N$ primitives representing a scene to be depth sorted from \textit{front to back} based on the $z$ value with respect to the camera position, or in a holographic display setup, the SLM plane. We closely follow the \textit{holographics} pipeline described in GWS \cite{choi2025gaussian} that transforms these primitives into an adequate hologram space for CGH calculation.
+
+\subsubsection{Gaussian Wave Splatting}
+Gaussian Wave Splatting (GWS) \cite{choi2025gaussian} is a CGH method capable of computing holograms that accurately represent 3D scenes from collections of 2D Gaussians \cite{huang20242d} extracted from any off-the-shelf optimized 2DGS models, e.g., models optimized using the \texttt{gsplat} library~\cite{ye2024gsplat}. GWS first analytically determines the spectrum of each Gaussian described by its mean $\mean_i$ and 3D covariance $\cov_i$ and computes the wavefront  $u_i(\coordinate)=a_i(\coordinate)e^{ikz_i}$, where $z_i = (\mean_i)_z$ is the Gaussian object depth and $k = \frac{2\pi}{\lambda}$. Then, each wavefront $u_i(\coordinate)$ is propagated using the angular spectrum propagation operator $\prop(\cdot; z)$~\cite{goodman2005introduction, matsushima2009band} and alpha blended from \textit{front to back} using the opacity $o_i$ and color $c_i$ associated with each Gaussian to get the final composited wavefront profile at the SLM, given by Eqs.~\ref{eq:gwsplat} and \ref{eq:gwsplat_T}. We refer to this process as \textit{alpha wave blending}:
+%
+
+\begin{align}
+    u_{\textrm{SLM}} (\coordinate) = \sum_{\idx}^\maxidx \mathcal{P}\Big(c_\idx o_\idx |u_\idx(\coordinate)|\transmittance_\idx\left(\coordinate\right) e^{ikz_i}; -z_\idx\Big), \label{eq:gwsplat}\\
+    \transmittance_\idx\left(\coordinate\right) = \prod_{j=1}^{\idx-1} (1 - o_{j} |u_j(\coordinate)|).
+    \label{eq:gwsplat_T}
+\end{align}
+
+GWS inherits the ability of Gaussian splatting to seamlessly merge large numbers of Gaussians for high-quality reconstruction. GWS further collapses classic alpha blending and volume rendering \cite{kerbl3Dgaussians, kajiya1984ray} if we ignore the wave propagation operator and match the phase of all wavefronts at all depths (i.e., $\angle u_\idx=kz_i$) such that the composited wavefront at the SLM plane achieves a smooth or near-constant phase profile, which we will formally derive in Section \ref{sec:awb_random}. Therefore, this formulation of GWS inherently generates ``smooth-phase'' holograms. Although GWS has demonstrated the potential to recreate sharp details with photorealistic image quality ~\cite{choi2025gaussian}, prior works in holography \cite{schiffers2023stochastic, kim2022accommodative, shi2024ergonomic, lee2022binary} have pointed out that smooth-phase holograms are undesirable due to their poor SLM bandwidth utilization, unnatural defocus blur, large depth of field (i.e., small blur variation across different depths), and floater artifacts. GWS also requires $|u_i(\coordinate)|$ to be a 2D Gaussian distribution, thus its generalizability to other geometric primitives remains unknown.
+
+Most importantly, na\"ively extending GWS to random-phase primitives (GWS-NRP) by additionally modulating each Gaussian wavefront with a random phase map $\phi_i \overset{\text{iid}}\sim \mathcal{U}(-\pi, \pi)$ as shown below:
+\begin{align}
+    u_{\textrm{SLM}} (\coordinate) = \sum_{\idx}^\maxidx \mathcal{P}\Big(c_\idx o_\idx |u_\idx(\coordinate)|\transmittance_\idx\left(\coordinate\right) e^{ikz_i + \phi_i}; -z_\idx\Big)
+    \label{eq:gwsplat_naive_random}
+\end{align}
+provably fails as we demonstrate in Section ~\ref{sec:awb_random}.
+
+\subsection{Random-phase Wave Splatting}
+\label{subsec:gws_rp}
+
+
+
+ To formally close this gap, we propose \textit{Random-phase Wave Splatting} (RPWS), a robust CGH framework that generates random-phase holograms from translucent primitives, tackling all of the drawbacks of GWS. In RPWS, each primitive wavefront is effectively modulated by a random phase map $\phi_i(\coordinate)$ to scatter the light passing through each primitive in the scene away from the optical axis. The primitives are then alpha blended and composited from \textit{back to front} with respect to the SLM, and multiple such wavefronts with individually sampled random phases are time multiplexed for accurate alpha blending to achieve the desired intensity distribution. The novel alpha blending and wave compositing procedure in RPWS is specifically designed to work with random-phase \textit{translucent} primitives with continuous alpha values, and greatly outperforms GWS in blending complex wavefronts \cite{choi2025gaussian}, which we demonstrate in Sec. \ref{sec:results}.
+
+% \begin{align}
+%     u_\textrm{SLM}^{(t)} (\coordinate) = \sum_{\idx}^\maxidx \mathcal{P}\Big(\sqrt{c_i o_i|u_\idx(\coordinate)|\transmittance_\idx\left(\coordinate\right)}  e^{i(kz_i+\phi_i^{(t)}(\coordinate))} ; -z_\idx\Big), \label{eq:gwsplat_random_tm}
+% \end{align}
+
+In Eq. ~\ref{eq:gwsplat_random_tm}, let $g_i(\coordinate)$ denote the \textit{back-to-front} composited wavefront starting from the $N^{th}$ primitive up to the $i^{th}$ primitive and $M_i(\coordinate)$ be the transmittance mask of the $i^{th}$ primitive. The primitive wavefront \( u_i(\coordinate) \) denotes the wavefront generated from primitives such as Gaussians or translucent triangles (Section~\ref{sec:results}), making RPWS a plug-and-play framework for arbitrary translucent wavefronts. The wavefront at the ${i - 1}^{\text{th}}$ parallel plane where the next primitive is located, which is a propagation distance $\Delta z = z_{i - 1} -  z_{i}$ away, is given by:
+
+\begin{align}
+    \hspace*{-0.5em}
+    g_{i - 1}^{(t)} (\coordinate) = \mathcal{P} \Big( M_i(\coordinate) \; g_i(\coordinate) +  \sqrt{c_i} \sqrt{ o_i |u_i(\coordinate)|} \; e^{i \angle u_i(\coordinate) + \phi_i^{(t)}(\coordinate)} ; \Delta z\Big)
+    \label{eq:gwsplat_random_tm}, \\
+    M_i(\coordinate) = \sqrt{(1 - o_{i} |u_i(\coordinate)|)},
+    \label{eq:gsplat_mask}
+\end{align}
+where $t, 1\leq t\leq T$ is the index of the time-multiplexed frame, $T$ is the total number of multiplexed frames, and $\phi_i^{(t)}$ is the sampled random phase for the $i^\text{th}$ primitive at the $t^\text{th}$ frame. The final composited wavefront at the SLM plane that is located at $z_0 = 0$ is simply defined by $u_\text{SLM}^{(t)}(\coordinate) = g_0^{(t)}(\coordinate)$. We highlight that the above procedure is highly similar to the \textit{over} operation \cite{porter1984over}, or Painter's algorithm, in traditional graphics, with additional wave propagation and square root operations. This is because in RPWS, we use primitives optimized to reconstruct the \textit{square} (i.e., intensity) of the target scene, instead of the amplitude like in GWS, which we explain in detail in the following Section~\ref{sec:awb_random}.
+
+The intensity of reconstructed images of the time-multiplexed hologram is flexibly described by the operator $\mathcal{O(\cdot; \cdot)}$ as
+\begin{align}
+    I(\mathbf{x})  = \frac{1}{T} \sum_{t=1}^{T} \left| \mathcal{O} \left( u_\text{SLM}^{(t)}(\mathbf{x}); \cdot \right) \right|^2 ,
+\end{align}
+where the operator $\mathcal{O(\cdot; \cdot)}$ could describe a single propagation that reconstructs a 2D image, multiple propagations that reconstruct a 3D focal stack, or the Short-time Fourier Transform (STFT) that reconstructs a 4D light field \cite{choi2022time}.
+
+
+%The approach of multiplying the wavefronts of individual primitives directly by random phase maps $\phi_i^{(t)}$ (Eq. \ref{eq:gwsplat_random_tm}) is widely used in prior works. Albeit straightforward, this is a heuristic and does not allow for flexible control over the Fourier amplitude distribution of the final synthesized hologram. Instead, we leverage an exact, principled formulation of applying random phase to primitives, which we call \textit{structured random phase}, and describe in detail in Section 3.3. 
+
+With random-phase modulation, combined with the novel wave compositing and alpha blending schemes, the bandwidth of the SLM can be maximally utilized while enabling accurate reconstruction of occlusion and color. This leads to a large eyebox and parallax, shallow depth of field (i.e., significant blur variation across depths), and natural defocus blur, as illustrated in Section~\ref{sec:results}. Please refer to the supplemental materials for a detailed statistical-optics analysis quantifying bandwidth and defocus.
+
+\subsection{Random-phase Alpha Wave Blending}
+\label{sec:awb_random}
+
+RPWS departs fundamentally from GWS~\cite{choi2025gaussian} and prior silhouette-based methods~\cite{matsushima2014silhouette} in its treatment of alpha blending. While earlier smooth-phase CGH approaches assumed \textbf{amplitude}-domain alpha compositing, we show that for random-phase wavefronts alpha blending is linear in the \textbf{intensity} domain \textit{in expectation}. This crucial distinction, which is largely overlooked in prior work and GWS, directly leads to our wave compositing equation (Eq.~\ref{eq:gsplat_mask}), where square-root terms and time-multiplexing naturally emerge, in contrast to GWS. We analyze different alpha blending formulations in detail in Fig. \ref{fig:alpha_blending_comparison} and in Section \ref{subsubsec:alpha_blending}. 
+
+For simplicity, consider two primitive wavefronts at the same depth,
+$u_1 = \alpha_1 e^{i\phi_1},\;u_2 = \alpha_2 e^{i\phi_2} \in \mathbb{C}^2$,
+with $u_1$ in front of $u_2$. Here $\alpha_1, \alpha_2 \in \mathbb{R}^2$ are alpha maps defined as $\alpha = o \cdot \mathcal{M}$, the product of the primitive opacity $o \in \mathbb{R}$ and its transparency falloff $\mathcal{M} \in \mathbb{R}^2$ (from the Gaussian covariance/mean or the $\sigma$ parameter of a translucent triangle~\cite{Held2025Triangle}). Let $c_1, c_2 \in \mathbb{R}$ denote the scalar colors. In standard ray-based splatting~\cite{kerbl3Dgaussians, huang20242d, Held2025Triangle}, the alpha-blended color is
+\begin{align}
+c = \alpha_1 c_1 + (1 - \alpha_1)\alpha_2 c_2,
+\label{eq:gs_ab}
+\end{align}
+where $c$ is the resulting amplitude of the blended wavefront.
+
+In wave splatting, the key question is how to alpha-blend primitive \textit{wavefronts} in the presence of phase. Formally, this requires finding blending weights $w_1(\alpha_1, \alpha_2, c_1, c_2), w_2(\alpha_1, \alpha_2, c_1, c_2) \in \mathbb{R}$ such that the amplitude of the blended wavefront  
+\begin{align}
+    u = w_1(\alpha_1, \alpha_2, c_1, c_2) e^{i\phi_1} + w_2(\alpha_1, \alpha_2, c_1, c_2) e^{i\phi_2}
+    \label{eq:blended_wavefront}
+\end{align}
+matches the target color $c$ reconstructed from the input primitives.
+
+Squaring the amplitude of both sides of Eq.~\ref{eq:blended_wavefront} yields
+\begin{align}
+    c^2 = |u|^2 &= \big| w_1 e^{i\phi_1} + w_2 e^{i\phi_2} \big|^2 \\
+          &= w_1^2 + w_2^2 + w_1 w_2 \left( e^{i(\phi_1 - \phi_2)} + e^{i(\phi_2 - \phi_1)} \right) \\
+          &= w_1^2 + w_2^2 + 2w_1 w_2 \cos(\phi_1 - \phi_2),
+    \label{eq:awb_random}
+\end{align}
+which shows explicit dependence on the phase distribution of $\phi_1 - \phi_2$, as analyzed below.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/alpha_blending_toy_example.pdf}
+    \caption{\textbf{Effectiveness of RPWS sqrt-blending of random-phase wavefronts.} We show the effectiveness of our sqrt-blending procedure using the toy example described in Section \ref{sec:awb_random} with two random-phase Gaussians, where the orange Gaussian is in front of the blue Gaussian and alpha blended. The straightforward extension of GWS amplitude-based blending with random phase (GWS-NRP) fails to reconstruct the correct appearance with significant errors near occlusion borders --- which is exactly the cross term in Eq. \ref{eq:awb_random}. RPWS sqrt-blending achieves perfect alpha blending results.}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsubsection{Smooth-phase (GWS): $\phi_1 - \phi_2 = 2k\pi$}
+When two primitive wavefronts are in phase at the same depth, $\cos(\phi_1-\phi_2)=1$, and Eq.~\ref{eq:awb_random} reduces to $(w_1+w_2)^2$, i.e., $|u|=c=w_1+w_2$. Comparing with Eq.~\ref{eq:gs_ab}, we set $w_1=\alpha_1 c_1$ and $w_2=(1-\alpha_1)\alpha_2 c_2$, yielding
+\begin{align}
+    u = \alpha_1 c_1 e^{i\phi_1} + (1-\alpha_1)\alpha_2 c_2 e^{i\phi_2}.
+    \label{eq:awb_smooth}
+\end{align}
+which is linear in the amplitude domain, exactly the \textit{alpha wave blending} formulation described in GWS.
+
+\subsubsection{Random-phase (RPWS): $\phi_1, \phi_2 \overset{\text{iid}}\sim \mathcal{U}(-\pi, \pi)$}
+When primitives are modulated by i.i.d. random phases drawn from $\mathcal{U}(-\pi,\pi)$, the cross term $\cos(\phi_1-\phi_2)$ in Eq.~\ref{eq:awb_random} is nonzero for a single realization, but only vanishes \textit{in expectation}, which is essentially time multiplexing. Specifically, the expected intensity is
+\begin{align}
+    \mathbb{E}[|u|^2] &= w_1^2 + w_2^2 + 2w_1w_2\mathbb{E}[\cos(\phi_1-\phi_2)] \label{eq:cross_term} \\ 
+    &= w_1^2 + w_2^2 = c^2,
+    \label{eq:awb_random_2}
+\end{align}
+showing that cross terms are completely eliminated in the intensity domain.
+
+To satisfy Eq.~\ref{eq:awb_random_2}, we optimize primitives with the standard ray-based alpha blending rule on intensity $c^2$,
+\begin{align}
+    c^2 = \alpha_1'c_1' + (1-\alpha_1')\alpha_2'c_2',
+\end{align}
+and set
+\begin{align}
+    w_1 = \sqrt{\alpha_1'c_1'}, \quad 
+    w_2 = \sqrt{(1-\alpha_1')\alpha_2'c_2'}.
+\end{align}
+The resulting random-phase compositing rule is
+\begin{align}
+    u = \sqrt{\alpha_1'c_1'} \, e^{i\phi_1} + 
+        \sqrt{(1-\alpha_1')\alpha_2'c_2'} \, e^{i\phi_2},
+    \label{eq:awb_random_final}
+\end{align}
+where each primitive wavefront is assigned color $\sqrt{c_i'}$ from a model optimized to reconstruct $c^2$ (intensity) rather than $c$ (amplitude). This formulation generalizes directly to thousands or millions of random-phase primitives (Section~\ref{subsec:gws_rp}), forming the basis of our RPWS wave-compositing algorithm in Eq. \ref{eq:gwsplat_random_tm} and \ref{eq:gsplat_mask}. 
+
+Evident from Eq. \ref{eq:awb_random_2}, we emphasize that time multiplexing is not merely an optional add-on for speckle reduction, but a fundamental requirement for correct alpha blending in our framework. The alpha blending equation is inherently stochastic: it is only satisfied in expectation over random phases, and any single realization introduces cross-term interference that corrupts the blend. Time multiplexing ensures that these cross terms vanish statistically, thereby realizing the mathematically correct alpha blending behavior in practice. In this sense, speckle reduction is only a by-product; the primary role of time multiplexing is to enforce the validity of the probabilistic alpha blending formulation itself. We further derive exact convergence bounds in the supplemental materials, showing that the uniform $2\pi$ phase distribution belongs to a class of phase distributions that achieve the optimal $O(1/\sqrt{N})$ decay of cross terms, thereby providing formal justification for our probabilistic alpha blending framework.
+
+\subsection{Applying Random Phase to Primitives}
+To apply random phase to primitive surfaces, we adopt the heuristic briefly mentioned in the supplementary materials of GWS \cite{choi2025gaussian}. While GWS only alluded to this idea qualitatively, we provide, \textbf{for the first time}, a rigorous mathematical formulation grounded in statistical optics that proves this heuristic to be exact, and demonstrate its practical applications such as programmatic depth-of-field control. Please refer to the supplementary materials of this paper for more details.
+

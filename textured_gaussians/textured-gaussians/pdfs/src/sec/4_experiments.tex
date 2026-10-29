@@ -1,0 +1,103 @@
+\section{Results and Analysis}
+We show selected qualitative and quantitative results in this section and refer the readers to the Appendix and the \href{https://textured-gaussians.github.io/}{project website} for an extensive set of results and video renderings.
+
+\begin{figure*}[!t]
+    \centering
+\includegraphics[width=\textwidth]{sec/figures/main_qualitative.pdf}
+    \caption{\textbf{Qualitative NVS results of benchmark datasets.} Novel-view rendering results for both object-level and scene-level standard benchmark datasets. Given the same small number of Gaussians (on average 2.5k and 39k Gaussians for object-level and scene-level datasets, respectively), 3DGS$^*$ fails to reconstruct high-frequency textures and complex shapes while our RGBA Textured Gaussians model succeeds. Please refer to the Appendix for results of our models optimized using varying number of Gaussians. }
+    \label{fig:main_qualitative}
+\end{figure*}
+
+\noindent \textbf{Datasets and Evaluation Protocols. }
+We evaluate the novel-view synthesis performance of our method on the 8 synthetic scenes from the Blender dataset \cite{mildenhall2020nerf}, all 9 scenes from the Mip-NeRF~360 dataset \cite{barron2022mipnerf360}, 5 scenes from the DTU dataset \cite{jensen2014DTU}, 2 scenes from the Tanks and Temples dataset \cite{Knapitsch2017tanks}, and 2 scenes from the Deep Blending dataset \cite{DeepBlending2018}. Please refer to the Appendix for a detailed description of the dataset preparation process.
+ 
+For comparisons with Mip-NeRF~360 \cite{barron2022mipnerf360} and Instant-NGP \cite{mueller2022instant}, we refer to \citet{kerbl3Dgaussians} for results in scene-level datasets \cite{barron2022mipnerf360, Knapitsch2017tanks, DeepBlending2018}, and refer to NeRFBaselines \cite{kulhanek2024nerfbaselines} for results on the Blender dataset \cite{mildenhall2020nerf}. Results on the DTU dataset \cite{jensen2014DTU} are from our own runs of the authors' released code. Please refer to the Appendix for additional experimental details.
+
+\citet{xu2024texturegs} pointed out in Section 5.4 of their paper that their algorithm cannot handle scene-level datasets and objects with complex structures (i.e. Blender dataset), thus they only reported results on the DTU dataset \cite{jensen2014DTU}. We report those numbers and additionally show results on the Blender dataset from GStex \cite{rong2024gstex} authors' own runs of the algorithm described in \citet{xu2024texturegs}.
+
+In addition to standard benchmark test scenes, we also capture our own set of scenes that contain artworks with highly detailed textures to help demonstrate the effectiveness of our method.
+
+
+\noindent \textbf{3DGS Baseline. } We build our method on top of our own implementation of a slightly modified 3DGS that closely follows the algorithm described in Gaussian Opacity Fields \cite{Yu2024GOF}. 
+Specifically, we use a ray-based formulation that allows for the exact evaluation of 3D Gaussian values without approximating splatted 3D Gaussians as 2D Gaussians. In addition, we used a revised densification strategy~\cite{Yu2024GOF,ye2024absgs}.
+For fair comparisons with our method, we report the performance of our 3DGS implementation and label it as 3DGS$^*$ throughout the results section, and refer the readers to the Appendix for quantitative results reported in the original 3DGS paper \cite{kerbl3Dgaussians}.
+
+
+
+\subsection{Quantitative Results}
+In Table \ref{tab:same_num_gs}, we show quantitative comparisons in terms of PSNR/SSIM/LPIPS between our Textured Gaussians model using full RGBA textures and 3DGS$^*$ with the same number of Gaussians, and results of other baseline methods. Our method generally achieves better results than 3DGS$^*$ and all other methods, since Texture Gaussians are more expressive than vanilla 3D Gaussians due to the added texture maps. 
+
+\begin{figure*}[!t]
+    \centering
+\includegraphics[width=\textwidth]{sec/figures/custom_main_figure.pdf}
+    \caption{\textbf{Qualitative NVS results of custom datasets.} Our RGBA Textured Gaussians model achieves sharper reconstruction compared to 3DGS$^*$ when using the same small number of Gaussians (on average around 100k Gaussians). }
+    \label{fig:custom_captures}
+\end{figure*}
+
+In the bottom half of Table \ref{tab:same_num_gs}, we also show comparisons between our method and 3DGS$^*$ when using a fraction of the default number of Gaussians, denoted by the percentage in parentheses. 
+For our models with different numbers of Gaussians, we distribute a fixed amount of texels to all Gaussians (i.e., the same memory overhead for all Textured Gaussians models compared with 3DGS$^*$). Therefore, the texture map resolution of models with fewer Gaussians will be larger. We see that our method truly outshines 3DGS$^*$ with fewer Gaussians, achieving nearly 2 dB improvements over 3DGS$^*$ when using $1\%$ of the default number of Gaussians. Figure \ref{fig:vary_num_gs_trend} shows the trend of the quality of novel view synthesis as we vary the number of Gaussians. Our method consistently outperforms 3DGS$^*$ when using different numbers of Gaussians.
+
+
+
+Table \ref{tab:same_model_size} compares the performance of 3DGS$^*$ and our Textured Gaussians model with the same model size using alpha-only textures and RGBA textures. Since our models use per-Gaussian texture maps, they require fewer Gaussians than 3DGS$^*$ to achieve the same model size. Our alpha-only textures model generally outperforms the 3DGS$^*$ and RGBA textures models, indicating that there is a sweet spot for distributing the model size budget between Gaussian parameters and texture map channels. This is further explored in Section~\ref{sec:exp_ablation}.
+
+% mention rendering time here
+
+
+\begin{table}[!t]
+  \centering
+  \footnotesize
+  \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l@{\hskip 0.1cm}c@{\hskip 0.1cm}c@{\hskip 0.1cm}c@{\hskip 0.1cm}c@{\hskip 0.1cm}c@{\hskip 0.1cm}c@{}}
+    \toprule
+    % Main headers
+    Method & \multicolumn{2}{c}{3DGS$^*$} & \multicolumn{2}{c}{Alpha-only} & \multicolumn{2}{c}{RGBA} \\
+    & PSNR & \#GS (M) & PSNR & \#GS (M)& PSNR & \#GS (M) \\
+    \midrule
+    Blender & \second{33.08} & 0.27 & \first{33.12} & 0.19 & 33.03 & 0.21 \\
+    Mip-NeRF~360  & 27.26 & 4.4 & \first{27.37} & 3.1 & \second{27.26} & 3.5 \\
+    DTU & \first{33.53} & 0.28 & \second{33.45} & 0.24 & 33.41 & 0.22 \\
+    Tanks and Temples & 24.17 & 2.9 & \first{24.38} & 2.6 & \second{24.28} & 1.3 \\
+    Deep Blending & 28.04 & 2.8 & \second{28.36} & 1.6 & \first{28.52} & 1.0 \\
+    \bottomrule
+  \end{tabular*}
+  \caption{\textbf{Same model size comparisons.} We compare the PSNR performance between 3DGS$^*$ and our model using alpha-only and RGBA textures with the same model size. The average number of optimized Gaussians (in millions) from each dataset is shown in the \#GS (M) columns. We boldface and underline the best and second-best performing models, respectively. Alpha-only texture models generally achieve better performance than 3DGS$^*$ and RGBA texture models with the same model size.}
+  \label{tab:same_model_size}
+\end{table}
+
+\subsection{Qualitative Results}
+\noindent \textbf{Novel-View Synthesis. } We show novel view synthesis results of our model with RGBA textures and 3DGS$^*$ on both standard benchmark and custom-captured datasets in Figures \ref{fig:main_qualitative} and \ref{fig:custom_captures}. Our method reconstructs much sharper details of the scene compared to 3DGS$^*$ when using the same small number of Gaussians. Please refer to the Appendix for results of our models optimized using varying number of Gaussians.
+
+\begin{figure*}[!t]
+    \centering
+\includegraphics[width=\textwidth]{sec/figures/color_contribution.pdf}
+    \caption{\textbf{Color component decomposition visualization.} Visualization of \textit{alpha-modulated and composited} $\mathbf{c}^\text{base}$ and $\mathbf{c}^\text{tex}$ color components in our Textured Gaussians model (Eq.~\ref{eq:texture_map}, \ref{eq:alpha_map}, \ref{eq:generalized_appearance_model}). Insets with yellow borders show zoom-in crops. Texture color brightness is adjusted for visualization. While 3DGS$^*$ fails to capture fine details with limited Gaussians, our method reconstructs sharp textures. With RGB textures, base color reconstructs low-frequency textures and texture maps reconstruct high-frequency elements. With alpha-only and RGBA textures, base color also reconstructs high-frequency textures via spatially varying alpha compositing.}
+    \label{fig:color_contributions}
+\end{figure*}
+
+\noindent \textbf{Color Component Decomposition. }  We show the \textit{alpha-modulated and composited} results of the two color components, $\mathbf{c}^\text{tex}$ and $\mathbf{c}^\text{base}$, of the optimized alpha-only, RGB and RGBA textured Gaussians model with 1\% of the default number of Gaussians in Figure \ref{fig:color_contributions}. A 3DGS$^*$ model with the same number of Gaussians is shown for comparison. For RGB and RGBA models, $\mathbf{c}^\text{tex}$ reconstructs fine-grained textures that 3DGS$^*$ cannot. For alpha-only and RGBA models, $\mathbf{c}^\text{base}$ also reconstructs high-frequency details due to spatially varying alpha composition enabled by alpha textures.
+
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{sec/figures/texture_map_ablation_main.pdf}
+    \caption{\textbf{Ablation study on texture map variants.} We show the PSNR performance improvements ($\Delta \text{PSNR}$) over 3DGS$^*$ of our Textured Gaussians model when using different texture map variants. Models with full RGBA textures achieve the best results. Interestingly, alpha-only textures outperform RGB textures and perform comparably to RGBA textures while using one-third and one-fourth of the model size, respectively. }
+    \label{fig:texture_ablation}
+\end{figure}
+
+
+\subsection{Ablation Studies}
+\label{sec:exp_ablation}
+
+\noindent \textbf{Texture Map Variants. } 
+We ablate variants of our model that use different texture maps, namely alpha-only, RGB, and RGBA texture maps, and the same number of Gaussians in Figure \ref{fig:texture_ablation}. Experiments are conducted on Blender, Tanks and Temples, and Deep Blending datasets with the default optimized number (top row) and 1\% of the default optimized number (bottom row) of Gaussians. We see that our model achieves the best performance with RGBA textures. Interestingly, using alpha-only textures already outperforms 3DGS$^*$, and our RGB textures model despite being one-third the size, striking a better balance between performance and model size. This is because alpha-textured Gaussians can represent complex shapes through spatially varying opacity and reconstruct high-frequency textures through spatially varying alpha composition. In contrast, RGB-textured Gaussians are still limited to representing ellipsoids.
+
+
+% explain why alpha textures can already reconstruct well
+\noindent \textbf{Texture Map Resolution and the Number of Gaussians. } In Figure \ref{fig:ablation_same_model_size}, we optimize alpha-only Textured Gaussians models of the same model size with different texture map resolutions and number of Gaussians, and show the trend of novel view synthesis performance on the Blender and DTU datasets. We observe a sweet spot between texture map resolution and number of Gaussians that achieves the best image reconstruction quality. Maximizing texture map resolution corresponds to greatly reducing the number of Gaussians, which harms reconstruction of detailed geometric structures. Minimizing the texture map resolution, on the other hand, simply degenerates into 3DGS$^*$.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{sec/figures/same_model_size_ablation.pdf}
+    \caption{\textbf{Ablation study on texture map resolution and the number of Gaussians given the same model size.} We optimized various alpha-only Textured Gaussians models (red dots) with equivalent model sizes but different texture map resolutions and numbers of Gaussian. A fitted quadratic curve (blue dashed line) illustrates the performance trend. The optimal model variant balances these two parameters to achieve superior novel view synthesis results.}
+    \label{fig:ablation_same_model_size}
+\end{figure}

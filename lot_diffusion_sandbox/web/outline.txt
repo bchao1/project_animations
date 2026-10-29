@@ -1,0 +1,40 @@
+################# video_demos.html
+h2 | 1. Agent-Assisted and Manually created LoT Video Generation | 
+p | GPT6 Astra creates Blender scenes or directly draws keyframe importance maps, which we convert into Level-of-Token layouts for video generation. These demos sho | 
+h4 | Interactive 3D scene | 
+p | Drag to orbit · scroll or pinch to zoom. The amber camera and its viewing frustum follow the camera used to rasterize the layout. | 
+button | Pause animation | 
+button | Reset view | 
+p | 3D preview unavailable in this browser. View the rendered scene alongside. | 
+span | tokens across the clip | 
+span | fewer than a uniformly fine grid | 
+summary | Generation prompt | 
+summary | Scene or painted keyframes → temporal token layouts | 
+################# painted_demos.html
+h2 | 2. Agent-Assisted and Manually created LoT Image Generation | 
+p | GPT6 Astra or a user manually draws an importance map, which we convert into a Level-of-Token layout for image generation. These demos show how spatial detail a | 
+span | tokens in the painted grid | 
+span | fewer than a uniformly fine grid | 
+summary | Generation prompt | 
+summary | Custom detail map → Level of Tokens | 
+p | Paint the desired detail by hand, or let an agent construct the map from a text description. Black, orange, yellow, and white encode detail scores of 0, 0.3, 0. | 
+p | The scores are area-averaged onto the finest token lattice, optionally smoothed, and scaled by the overall-detail control. Starting with 8×8 blocks, the convert | 
+################# comparisons.html
+h2 | 5. Video Generation Qualitative Baseline Comparisons | 
+p | We compare our video model with full-resolution Wan2.1 and token-reduction baselines alongside the Level-of-Token layout. Full video playback makes it possible  | 
+button | ← Previous | 
+button | Next → | 
+button | Play / pause all | 
+button | Restart all | 
+summary | Generation prompt | 
+span | Low | 
+span | High | 
+################# image_comparisons.html
+h2 | 6. Image Generation Qualitative Baseline Comparisons | 
+p | We compare our image model with full-resolution FLUX.2 and token-reduction baselines alongside the Level-of-Token layout. These additional examples let readers  | 
+button | ← Previous | 
+button | Next → | 
+summary | Generation prompt | 
+button | Close | 
+span | Low | 
+span | High | 

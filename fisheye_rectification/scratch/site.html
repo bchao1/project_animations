@@ -1,0 +1,836 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Brian Chao</title>
+
+    <meta name="author" content="Brian Chao">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="images/favicon/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="index.js"></script>
+    
+  </head>
+
+  <body>
+    <table style="width:100%;max-width:800px;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+      <tr style="padding:0px">
+        <td style="padding:0px">
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr style="padding:0px">
+              <td style="padding:2.5%;width:63%;vertical-align:middle">
+                <p class="name" style="text-align: center;">
+                  Brian Chao
+                </p>
+                <p>
+                  I'm a final-year PhD candidate at Stanford University working in the <a href="https://www.computationalimaging.org/">Stanford Computational Imaging Lab</a>, advised by Prof. <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>.
+                  I'm grateful to be supported by the <a href="https://www.nsfgrfp.org/">NSF GRFP</a> and the <a href="https://vpge.stanford.edu/fellowships-funding/sgf">Stanford Graduate Fellowship</a>.
+                </p>
+                <p>
+                  My work draws on first principles in vision and graphics to develop efficient visual world representations across image, video, and 3D domains, including 
+                  token-efficient generation and adaptive tokenization (<a href="https://bchao1.github.io/foveated-diffusion/">Foveated Diffusion</a>, <a href="https://howardxiao.ca/speed/">Spectral Progressive Diffusion</a>), 
+                  novel 3D representations (<a href="https://textured-gaussians.github.io/">Textured Gaussians</a>), 
+                  and fast rendering algorithms (<a href="https://bchao1.github.io/gaussian-wave-splatting/">GWS</a>).
+                </p>
+                <p>
+                  I've spent two summers at Meta Reality Labs, where I worked on neural rendering for 3D reconstruction and next-generation computational AR/VR displays.
+                  I've also served as a reviewer for SIGGRAPH, SIGGRAPH Asia, NeurIPS, ISMAR, TIP, TCI, ICIP, and ICASSP. 
+                </p>
+                <p style="text-align:center">
+                  <a href="mailto:brianchc@stanford.edu">Email</a> &nbsp;/&nbsp;
+                  <a href="data/resume.pdf">CV</a> &nbsp;/&nbsp;
+                  <a href="https://scholar.google.com/citations?user=ALOWoaAAAAAJ&hl=en">Google Scholar</a> &nbsp;/&nbsp;
+                  <a href="https://twitter.com/BrianCChao">Twitter</a> &nbsp;/&nbsp;
+                  <a href="https://www.linkedin.com/in/brian-chao-85425415a/">LinkedIn</a> &nbsp;/&nbsp;
+                  <a href="https://github.com/bchao1">Github</a>
+                </p>
+              </td>
+              <td style="padding:2.5%;width:40%;max-width:40%">
+                <a href="images/prof_pic_2.png"><img style="width:100%;max-width:100%;object-fit: cover; border-radius: 50%;" alt="profile photo" src="images/prof_pic_2.png" class="hoverZoomLink"></a>
+              </td>
+            </tr>
+          </tbody></table>
+
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+              <tr>
+              <td style="padding:20px;width:100%;vertical-align:middle">
+                <h2>Research</h2>
+                <div style="text-align:center;margin-top:10px;">
+                  <div id="research-filter" style="display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+                    <button onclick="filterResearch('selected')" class="filter-btn active" data-filter="selected">Selected</button>
+                    <button onclick="filterResearch('genai3d')" class="filter-btn" data-filter="genai3d">Generative AI and 3D</button>
+                    <button onclick="filterResearch('graphics')" class="filter-btn" data-filter="graphics">Graphics and Imaging</button>
+                    <button onclick="filterResearch('others')" class="filter-btn" data-filter="others">Others</button>
+                    <button onclick="filterResearch('all')" class="filter-btn" data-filter="all">All</button>
+                  </div>
+                </div>
+                <style>
+                  .filter-btn {
+                    padding: 5px 14px;
+                    border: 1.5px solid #aaa;
+                    border-radius: 20px;
+                    background: #fff;
+                    color: #444;
+                    font-size: 13px;
+                    cursor: pointer;
+                    transition: background 0.15s, color 0.15s, border-color 0.15s;
+                  }
+                  .filter-btn:hover {
+                    border-color: #555;
+                    color: #111;
+                  }
+                  .filter-btn.active {
+                    background: #333;
+                    color: #fff;
+                    border-color: #333;
+                  }
+                </style>
+                <script>
+                  function filterResearch(category) {
+                    document.querySelectorAll('#research-papers-table tr[data-category]').forEach(function(row) {
+                      var show;
+                      if (category === 'all') {
+                        show = true;
+                      } else if (category === 'selected') {
+                        show = row.getAttribute('data-selected') === 'true';
+                      } else {
+                        show = row.getAttribute('data-category') === category;
+                      }
+                      row.style.display = show ? '' : 'none';
+                      if (row.getAttribute('data-selected') === 'true') {
+                        row.style.backgroundColor = (category === 'selected') ? '#ffffff' : '#ffffd0';
+                      }
+                    });
+                    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+                      btn.classList.toggle('active', btn.getAttribute('data-filter') === category);
+                    });
+                  }
+                  document.addEventListener('DOMContentLoaded', function() {
+                    filterResearch('selected');
+                  });
+                </script>
+              </td>
+            </tr>
+          </tbody></table>
+          <table id="research-papers-table" style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+
+
+              <tr style="background-color: #ffffd0;" data-category="genai3d" data-selected="true">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one" style="display: flex; justify-content: center; align-items: center;">
+                  <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+                      <source src="images/spd.webm" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="" width=100% style="display: none;">
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://howardxiao.ca/speed/">
+                  <span class="papertitle">Spectral Progressive Diffusion for Efficient Image and Video Generation</span>
+                </a>
+                <br>
+                <a href="https://howardxiao.ca/">Howard Xiao</a>,
+                <strong>Brian Chao</strong>,
+                <a href="https://lioryariv.github.io/">Lior Yariv</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>arXiv</em>, 2026
+                <div class="impact">
+                  <span class="impact-label">Adopted by SGLang:</span>
+                  available as an experimental feature in
+                  <a href="https://docs.sglang.io/docs/sglang-diffusion/progressive_resolution">SGLang</a>,
+                  delivering over <strong>2&times;</strong> speedup across FLUX.1&amp;2, Z-Image, Qwen-Image, Ideogram, and Wan.
+                </div>
+                <p></p>
+                <p>
+                  A plug-and-play framework for efficient image and video generation acceleration,
+                  using the intrinsic diffusion property of spectral autoregression.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://howardxiao.ca/speed/">Project Page</a> <span class="sep">|</span>
+                  <a href="https://arxiv.org/abs/2605.18736">Paper</a> <span class="sep">|</span>
+                  <a href="https://github.com/howardhx/speed">Code</a> <span class="sep">|</span>
+                  <a href="https://x.com/GordonWetzstein/status/2056766835283067065?s=20">X Thread</a>
+                </div>
+              </td>
+            </tr>
+            <tr style="background-color: #ffffd0;" data-category="genai3d" data-selected="true">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one" style="display: flex; justify-content: center; align-items: center;">
+                  <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+                      <source src="images/foveated_diffusion.mp4" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="" width=100% style="display: none;">
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://bchao1.github.io/foveated-diffusion/">
+                  <span class="papertitle">Foveated Diffusion: Efficient Spatially Adaptive Image and Video Generation</span>
+                </a>
+                <br>
+                <strong>Brian Chao*</strong>,
+                <a href="https://lioryariv.github.io/">Lior Yariv*</a>,
+                <a href="https://howardxiao.ca/">Howard Xiao</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>arXiv</em>, 2026
+                <div class="impact">
+                  <span class="impact-label">Invited talks:</span>
+                  NVIDIA Research, Rhoda AI, Black Forest Labs, Cohere, and Decart.
+                </div>
+                <p></p>
+                <p>
+                  A biologically-inspired diffusion framework that employs spatially adaptive tokenization
+                  to concentrate compute on selected regions, achieving up to 4× speedups in image and video synthesis.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://bchao1.github.io/foveated-diffusion/">Project Page</a> <span class="sep">|</span>
+                  <a href="https://arxiv.org/abs/2603.23491">Paper</a> <span class="sep">|</span>
+                  <a href="https://github.com/bchao1/foveated_diffusion">Code</a> <span class="sep">|</span>
+                  <a href="https://x.com/GordonWetzstein/status/2036819672507793643?s=20">X Thread</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr style="background-color: #ffffff;" data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="mpi-teaser">
+                  <video class="mpi-lf" width="100%" muted autoplay loop playsinline>
+                    <source src="images/mpi_light_field.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                  <video class="mpi-fs" width="100%" muted autoplay loop playsinline>
+                    <source src="images/mpi_focal_stack.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                  <span class="mpi-teaser-label mpi-label-lf">Light Field</span>
+                  <span class="mpi-teaser-label mpi-label-fs">Focal Stack</span>
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://arxiv.org/abs/2607.19731">
+                  <span class="papertitle">Fast Wave-optics Rendering of Multiplane Images for 3D Holographic Displays</span>
+                </a>
+                <br>
+                <strong>Brian Chao</strong>,
+                <a href="">Dario Seyb</a>,
+                <a href="">Nathan Matsuda</a>,
+                <a href="">Oliver Cossairt</a>,
+                <a href="">Yang Zhou</a>,
+                <a href="">Douglas Lanman</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>,
+                <a href="https://grace-kuo.com/">Grace Kuo</a>,
+                <a href="https://scholar.google.co.kr/citations?user=s2uBMgkAAAAJ&hl=ko">Changwon Jang</a>
+                <br>
+                <em>arXiv</em>, 2026
+                <br>
+                <p></p>
+                <p>
+                  An efficient rendering algorithm for multiplane images (MPIs) that enables fast 3D hologram generation for next-generation holographic displays.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://arxiv.org/abs/2607.19731">Paper</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr style="background-color: #ffffff;" data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one" style="display: flex; justify-content: center; align-items: center;">
+                  <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+                      <source src="images/gws-rp.mp4" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="" width=100% style="display: none;">
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://arxiv.org/abs/2508.17480">
+                  <span class="papertitle">Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography</span>
+                </a>
+                <br>
+                <strong>Brian Chao*</strong>,
+                <a href="">Jackie Yang*</a>,
+                <a href="https://choisuyeon.github.io/">Suyeon Choi</a>,
+                <a href="https://manugopa.github.io/">Manu Gopakumar</a>,
+                <a href="">Ryota Koiso</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>arXiv</em>, 2025
+                <br>
+                <p></p>
+                <p>
+                  A fundamentally new alpha blending algorithm for Gaussian splats generates <strong><i>random-phase, full-bandwidth</i></strong> light field holograms for VR displays,
+                  enabling natural defocus blur, physically-accurate <i>parallax</i>, and <i>occlusion</i>.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://arxiv.org/abs/2508.17480">Paper</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr style="background-color: #ffffff;" data-category="genai3d">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one" style="display: flex; justify-content: center; align-items: center;">
+                  <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+                      <source src="images/siggraph_2025.mp4" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="" width=100% style="display: none;">
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://bchao1.github.io/gaussian-wave-splatting/">
+                  <span class="papertitle">Gaussian Wave Splatting for Computer-generated Holography</span>
+                </a>
+                <br>
+                <a href="https://choisuyeon.github.io/">Suyeon Choi*</a>,
+                <strong>Brian Chao*</strong>,
+                <a href="">Jackie Yang</a>,
+                <a href="https://manugopa.github.io/">Manu Gopakumar</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>SIGGRAPH</em>, 2025
+                <br>
+                <em>CVPR <a href="https://neural-bcc.github.io/">Neural Fields Beyond Conventional Cameras</a> & <a href="https://kristinamonakhova.com/ccd2025/">CCD</a> Workshop</em>, 2025
+                <br>
+                <p></p>
+                <p>
+                  When state-of-the-art neural rendering meets next-generation holographic VR displays: converting
+                  optimized Gaussian splats to holograms that support natural focus cues.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://bchao1.github.io/gaussian-wave-splatting/">Project Page</a> <span class="sep">|</span>
+                  <a href="https://arxiv.org/abs/2505.06582">Paper</a> <span class="sep">|</span>
+                  <a href="https://github.com/computational-imaging/hsplat">Code</a> <span class="sep">|</span>
+                  <a href="https://x.com/GordonWetzstein/status/1922318918162469317?s=20">X Thread</a>
+                </div>
+              </td>
+            </tr>
+            
+
+          
+            <tr style="background-color: #ffffd0;" data-category="genai3d" data-selected="true">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one">
+                  <div class="two" id='smerf_image'>
+                    <div class="teaser-video-container">
+                      <div class="teaser-video-wrapper" id="teaser-video1-wrapper">
+                        <video id="teaser-video1" width="200%" preload="auto" autoplay loop muted>
+                          <source src="images/textured_gaussians/blender_lego_3dgs.mp4" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                      <div class="teaser-video-wrapper" id="teaser-video2-wrapper">
+                        <video id="teaser-video2" width="200%" preload="auto" autoplay loop muted>
+                          <source src="images/textured_gaussians/blender_lego_ours.mp4" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                      <div class="teaser-slider" id="teaser-slider"></div>
+                      <!-- Labels -->
+                      <div class="teaser-label teaser-label-top" id="teaser-label-top">Ours</div>
+                      <div class="teaser-label teaser-label-bottom" id="teaser-label-bottom">3DGS</div>
+                    </div>
+                  </div>
+                </div>
+        
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://textured-gaussians.github.io/">
+                  <span class="papertitle">Textured Gaussians for Enhanced 3D Scene Appearance Modeling</span>
+                </a>
+                <br>
+                <strong>Brian Chao</strong>,
+                <a href="https://hytseng0509.github.io/">Hung-Yu Tseng</a>,
+                <a href="https://ducksoup.github.io/">Lorenzo Porzi</a>,
+                <a href="https://www.chengao.vision/">Chen Gao</a>,
+                <a href="">Tuotuo Li</a>,
+                <a href="https://www.qinboli.com/">Qinbo Li</a>,
+                <a href="https://www.aayushsaraf.com/">Ayush Saraf</a>,
+                <a href="https://jbhuang0604.github.io/">Jia-Bin Huang</a>,
+                <a href="https://johanneskopf.de/">Johannes Kopf</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>,
+                <a href="https://changilkim.com/">Changil Kim</a>
+                <br>
+                <em>CVPR</em>, 2025
+                <br>
+                <p></p>
+                <p>
+                  Augmenting Gaussians with RGBA texture maps greatly improves novel-view synthesis quality in
+                  3D Gaussian Splatting.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://textured-gaussians.github.io/">Project Page</a> <span class="sep">|</span>
+                  <a href="https://arxiv.org/abs/2411.18625">Paper</a> <span class="sep">|</span>
+                  <a href="https://github.com/bchao1/textured_gaussians">Code</a> <span class="sep">|</span>
+                  <a href="https://x.com/jbhuang0604/status/1863088718329909693?s=20">X Thread</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one">
+                  <img src="images/sigasia_2024.gif" width=100%>
+                </div>
+        
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://bchao1.github.io/holo_dfm/">
+                  <span class="papertitle">Large Étendue 3D Holographic Display with Content-adaptive Dynamic Fourier Modulation</span>
+                </a>
+                <br>
+                <strong>Brian Chao</strong>,
+                <a href="https://manugopa.github.io/">Manu Gopakumar</a>,
+                <a href="https://choisuyeon.github.io/">Suyeon Choi</a>,
+                <a href="https://people.csail.mit.edu/liangs/">Liang Shi</a>,
+                <a href="https://research.nvidia.com/person/jonghyun-kim">Jonghyun Kim</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>SIGGRAPH Asia</em>, 2024
+                <br>
+                <p></p>
+                <p>
+                  The novel combination of a multisource laser array and a dynamic Fourier amplitude modulator significantly improves
+                  holographic VR display étendue and light field hologram image quality.
+                </p>
+                <div class="paperlinks">
+                  <a href="https://bchao1.github.io/holo_dfm/">Project Page</a> <span class="sep">|</span>
+                  <a href="https://arxiv.org/abs/2409.03143">Paper</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one">
+                  <div class="two" id='smerf_image'>
+                    <video  width=100% muted autoplay loop>
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="images/nature2024.png" width=100%>
+                </div>
+        
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://www.nature.com/articles/s41586-024-07386-0">
+                  <span class="papertitle">Full-colour 3D Holographic Augmented-Reality Displays with Metasurface Waveguides</span>
+                </a>
+                <br>
+                <a href="https://manugopa.github.io/">Manu Gopakumar*</a>,
+                <a href="https://gunyeal.github.io/">Gun-Yeal Lee*</a>,
+                <a href="https://choisuyeon.github.io/">Suyeon Choi</a>,
+                <strong>Brian Chao</strong>,
+                <a href="https://www.eee.hku.hk/~evanpeng/">Yifan Peng</a>,
+                <a href="https://research.nvidia.com/person/jonghyun-kim">Jonghyun Kim</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>Nature</em>, 2024
+                <br>
+                <p></p>
+                <p>
+                  A near-eye display design that pairs inverse-designed metasurface waveguides with AI-driven holographic displays 
+                  to enable full-colour 3D augmented reality from a compact glasses-like form factor.
+                </p>
+              </td>
+            </tr>
+        
+            <tr data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one" style="display: flex; justify-content: center; align-items: center;">
+                  <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                    <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+                      <source src="images/siggraph_etech_2024_video.mp4" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                  <img src="" width=100% style="display: none;">
+                </div>
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://dl.acm.org/doi/abs/10.1145/3641517.3664386">
+                  <span class="papertitle">Holographic Parallax</span>
+                </a>
+                <br>
+                <a href="https://nseungwoo.github.io/">Seong-Woo Nam</a>,
+                <a href="https://dongyeon93.github.io/">Dongyeon Kim</a>,
+                <a href="https://choisuyeon.github.io/">Suyeon Choi</a>,
+                <a href="">Juhyun Lee</a>,
+                <a href="">Siwoo Lee</a>,
+                <a href="https://manugopa.github.io/">Manu Gopakumar</a>,
+                <strong>Brian Chao</strong>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>,
+                <a href="https://laser.snu.ac.kr/members/professor">Yoonchan Jeong</a>
+                <br>
+                <em>SIGGRAPH Emerging Technologies</em>, 2024
+                <br>
+                <p></p>
+                <p>
+                  The inclusion of parallax cues in CGH rendering plays a crucial role in enhancing perceptual realism,
+                  and we show this through a live demonstration of 4D light field holograms.
+                </p>
+              </td>
+            </tr>
+          
+            <tr data-category="graphics">
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <div class="one">
+                  <div width="100%" height="100%">
+                    <img src="images/siggraph_etech_2023_video.gif" width="100%">
+                  </div>
+                </div>
+          
+                <script type="text/javascript">
+                  function etech_start() {
+                    document.getElementById('etech_image').style.opacity = "1";
+                  }
+          
+                  function etech_stop() {
+                    document.getElementById('etech_image').style.opacity = "0";
+                  }
+                  etech_stop()
+                </script>
+          
+              </td>
+              <td style="padding:20px;width:75%;vertical-align:middle">
+                <a href="https://dl.acm.org/doi/abs/10.1145/3588037.3595395">
+                  <span class="papertitle">Neural Holographic Displays for Virtual Reality</span>
+                </a>
+                <br>
+                <strong>Brian Chao*</strong>,
+                <a href="https://choisuyeon.github.io/">Suyeon Choi*</a>,
+                <a href="https://manugopa.github.io/">Manu Gopakumar*</a>,
+                <a href="https://gunyeal.github.io/">Gun-Yeal Lee</a>,
+                <a href="https://research.nvidia.com/person/jonghyun-kim">Jonghyun Kim</a>,
+                <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+                <br>
+                <em>SIGGRAPH Emerging Technologies</em>, 2023
+                <br>
+                <p></p>
+                <p>
+                  Live demonstration of state-of-the-art image quality, full-color, 3D, holographic 
+                  VR near-eye displays that supports natural accommodation.
+                </p>
+              </td>
+            </tr>
+
+    <tr data-category="graphics">
+      <td style="padding:20px;width:25%;vertical-align:middle">
+        <div class="one" style="display: flex; justify-content: center; align-items: center;">
+          <div class="two" id='smerf_image' style="width: 100%; display: flex; justify-content: center; align-items: center;">
+            <video width=100% muted autoplay loop style="max-width: 100%; height: auto; display: block;">
+              <source src="images/OL2023.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <img src="" width=100% style="display: none;">
+        </div>
+      </td>
+      <td style="padding:20px;width:75%;vertical-align:middle">
+        <a href="https://opg.optica.org/ol/fulltext.cfm?uri=ol-48-15-4041&id=535470">
+          <span class="papertitle">High Brightness Holographic Projection</span>
+        </a>
+        <br>
+        <strong>Brian Chao</strong>,
+        <a href="https://manugopa.github.io/">Manu Gopakumar</a>,
+        <a href="https://choisuyeon.github.io/">Suyeon Choi</a>,
+        <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+        <br>
+        <em>Optics Letters</em>, 2023
+        <br>
+        <p></p>
+        <p>
+          A novel light-efficiency loss function, AI-driven 
+          CGH techniques, and camera-in-the-loop calibration greatly improves holographic projector 
+          brightness and image quality.
+        </p>
+      </td>
+    </tr>
+
+
+    <tr data-category="graphics">
+      <td style="padding:20px;width:25%;vertical-align:middle">
+        <div class="one">
+          <img src="images/tip2021.gif" width=100%>
+        </div>
+
+      </td>
+      <td style="padding:20px;width:75%;vertical-align:middle">
+        <a href="https://ieeexplore.ieee.org/document/9987726">
+          <span class="papertitle">Time-Division Multiplexing Light Field Display With Learned Coded Aperture</span>
+        </a>
+        <br>
+        <strong>Brian Chao*</strong>,
+        <a href="">Chang-Le Liu*</a>,
+        <a href="https://www.ee.ntu.edu.tw/bio1.php?id=60">Homer H. Chen</a>
+        <br>
+        <em>IEEE Transactions on Image Processing</em>, 2022
+        <br>
+        <p></p>
+        <p>
+          Using coded apertures and a learning-based light field display optimization pipeline 
+          to reproduce correct defocus blurs for better accommodation cues.
+        </p>
+      </td>
+    </tr>
+
+    <tr data-category="genai3d">
+      <td style="padding:20px;width:25%;vertical-align:middle">
+        <div class="one">
+          <img src="images/icip2021-results.gif" width=100%>
+        </div>
+
+      </td>
+      <td style="padding:20px;width:75%;vertical-align:middle">
+        <a href="https://ieeexplore.ieee.org/document/9506423">
+          <span class="papertitle">Robust Light Field Synthesis From Stereo Images With Left-Right Geometric Consistency</span>
+        </a>
+        <br>
+        <strong>Brian Chao</strong>,
+        <a href="">Chang-Le Liu</a>,
+        <a href="https://www.ee.ntu.edu.tw/bio1.php?id=60">Homer H. Chen</a>
+        <br>
+        <em>IEEE International Conference on Image Processing (ICIP)</em>, 2021
+        <br>
+        <p></p>
+        <p>
+          Leveraging geoemtric consistency in stereo images
+          to synthesize high-quality light fields.
+        </p>
+      </td>
+    </tr>
+
+    <tr data-category="graphics">
+      <td style="padding:20px;width:25%;vertical-align:middle">
+        <div class="one">
+          <img src="images/icassp2020-result.gif" width=100%>
+        </div>
+
+      </td>
+      <td style="padding:20px;width:75%;vertical-align:middle">
+        <a href="https://ieeexplore.ieee.org/document/9054191">
+          <span class="papertitle">Self-Supervised Deep Learning for Fisheye Image Rectification</span>
+        </a>
+        <br>
+        <strong>Brian Chao*</strong>,
+        <a href="">Pin-Lun Hsu*</a>,
+        <a href="https://speech.ee.ntu.edu.tw/~tlkagk/">Hung-yi Lee</a>,
+        <a href="https://vllab.ee.ntu.edu.tw/members.html">Y.C. Frank Wang</a>
+        <br>
+        <em>IEEE Internation Conference on Acoustics, Speech, and Signal Processing (ICASSP)</em>, 2020
+        <br>
+        <p></p>
+        <p>
+          We propose an image-to-image translation algorithm based on generative adversarial networks
+          that rectifies fisheye images without the need of paired training data.
+        </p>
+      </td>
+    </tr>
+
+    <tr data-category="others">
+      <td style="padding:20px;width:25%;vertical-align:middle">
+        <div class="one">
+          <img src="images/scTIE_pipeline.jpg" width=100%>
+        </div>
+
+      </td>
+      <td style="padding:20px;width:75%;vertical-align:middle">
+        <a href="https://genome.cshlp.org/content/34/1/119.full">
+          <span class="papertitle">scTIE: data integration and inference of gene regulation using single-cell temporal multimodal data</span>
+        </a>
+        <br>
+        <a href="https://yingxinlin.github.io/">Yingxin Lin</a>,
+        <a href="">Tung-Yu Wu</a>,
+        <a href="">Xi Chen</a>,
+        <a href="">Sheng Wan</a>,
+        <strong>Brian Chao</strong>,
+        <a href="">Jingxue Xin</a>,
+        <a href="https://www.sydney.edu.au/science/about/our-people/academic-staff/jean-yang.html">Jean Y.H. Yang</a>,
+        <a href="https://statistics.stanford.edu/people/wing-hung-wong">Wing H. Wong</a>
+        <a href="https://ryxwang.github.io/">Y.X. Rachel Wang</a>,
+        <br>
+        <em>Genome Research</em>, 2023
+        <br>
+        <p></p>
+        <p>
+          Using optimal transport to infer regulatory relationships predictive of cellular state changes
+          in single-cell temporal and multimodal data.
+        </p>
+      </td>
+    </tr>
+    
+</tbody></table>
+
+<table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+  <tr>
+  <td style="padding:20px;width:100%;vertical-align:middle">
+    <h2>Industry Experiences</h2>
+  </td>
+</tr>
+</tbody></table>
+<table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+
+  <tr>
+    <td style="padding:20px;width:25%;vertical-align:middle">
+      <div class="one" style="display:flex;align-items:center;height:100%">
+        <img src="images/waymo_logo.webp" width="100%" alt="Waymo Logo">
+      </div>
+    </td>
+    <td style="padding:20px;width:75%;vertical-align:middle">
+      <div style="display:flex;flex-direction:column;justify-content:center">
+        <span style="font-weight:bold">Research Scientist Intern</span>
+        <span>Waymo Research, AI Foundations Team</span>
+        <span style="color:#666;font-style:italic;margin-top:3px">June 2026 - Present</span>
+      </div>
+      <p style="margin-top:10px">
+          Working on 4D world modeling and video models with <a href="https://anciukevicius.com/">Titas Anciukevičius</a> and <a href="http://maxjiang.ml/">Max Jiang</a>, in collaboration with <a href="http://casser.io/">Vincent Casser</a>, <a href="https://henzler.github.io/">Philipp Henzler</a>, and <a href="https://www.cs.princeton.edu/~funk/">Thomas Funkhouser</a>.
+        </p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:20px;width:25%;vertical-align:middle">
+      <div class="one" style="display:flex;align-items:center;height:100%">
+        <img src="images/meta_logo.svg" width="100%" alt="Meta Logo">
+      </div>
+    </td>
+    <td style="padding:20px;width:75%;vertical-align:middle">
+      <div style="display:flex;flex-direction:column;justify-content:center">
+        <span style="font-weight:bold">Research Scientist Intern</span>
+        <span>Meta Reality Labs, Display Systems Research (DSR)</span>
+        <span style="color:#666;font-style:italic;margin-top:3px">June 2025 - January 2026</span>
+        <p style="margin-top:10px">
+          Worked on neural rendering and compact 3D representations for computational displays
+          (<a href="https://arxiv.org/abs/2607.19731">Fast Wave-optics Rendering of Multiplane Images</a>, arXiv 2026)
+          with <a href="https://grace-kuo.com/">Grace Kuo</a> and <a href="https://scholar.google.co.kr/citations?user=s2uBMgkAAAAJ&hl=ko">Changwon Jang</a>.
+        </p>
+      </div>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:20px;width:25%;vertical-align:middle">
+      <div class="one" style="display:flex;align-items:center;height:100%">
+        <img src="images/meta_logo.svg" width="100%" alt="Meta Logo">
+      </div>
+    </td>
+    <td style="padding:20px;width:75%;vertical-align:middle">
+      <div style="display:flex;flex-direction:column;justify-content:center">
+        <span style="font-weight:bold">Research Scientist Intern</span>
+        <span>Meta Reality Labs, the <a href="https://www.meta.com/experiences/meta-horizon-hyperscape-preview/7972066712871980/?srsltid=AfmBOorCKvChU8DSqLUN9tx2xpHgWKYeB7FuxwbbPCNR4iBgKavBrG1g">Hyperscape</a> team (formerly XR Hyperreal)</span>
+        <span style="color:#666;font-style:italic;margin-top:3px">June 2024 - January 2025</span>
+        <p style="margin-top:10px">
+          Worked on neural rendering for 3D reconstruction (<a href="https://textured-gaussians.github.io">Textured Gaussians</a>, CVPR 2025)
+          with <a href="https://changilkim.com/">Changil Kim</a>, in collaboration with <a href="https://hytseng0509.github.io/">Hung-Yu Tseng</a>,
+          <a href="https://jbhuang0604.github.io/">Jia-Bin Huang</a>, and <a href="https://johanneskopf.de/">Johannes Kopf</a>.
+        </p>
+      </div>
+    </td>
+  </tr>
+
+
+</tbody></table>
+
+
+<!-- 
+<table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+  <tr>
+  <td style="padding:20px;width:100%;vertical-align:middle">
+    <h2>Public Demonstrations</h2>
+  </td>
+</tr>
+</tbody></table>
+<table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+
+
+</tbody></table>
+-->
+
+          <!--
+          <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20"><tbody>
+            <tr>
+              <td>
+                <h2>Miscellanea</h2>
+              </td>
+            </tr>
+          </tbody></table>
+          <table width="100%" align="center" border="0" cellpadding="20"><tbody>
+            
+            <tr>
+              <td style="padding:20px;width:25%;vertical-align:middle"><img src="images/cvf.jpg"></td>
+              <td width="75%" valign="center">
+                <a href="https://cvpr.thecvf.com/Conferences/2024/Organizers">Area Chair, CVPR 2024</a>
+                <br>
+                <a href="https://cvpr2023.thecvf.com/Conferences/2023/Organizers">Demo Chair, CVPR 2023</a>
+                <br>
+                <a href="https://cvpr2022.thecvf.com/area-chairs">Area Chair, CVPR 2022</a>
+                <br>
+                <a href="http://cvpr2021.thecvf.com/area-chairs">Area Chair & Award Committee Member, CVPR 2021</a>
+                <br>
+                <a href="http://cvpr2019.thecvf.com/area_chairs">Area Chair, CVPR 2019</a>
+                <br>
+                <a href="http://cvpr2018.thecvf.com/organizers/area_chairs">Area Chair, CVPR 2018</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px;width:25%;vertical-align:middle">
+                <img src="images/cs188.jpg" alt="cs188">
+              </td>
+              <td width="75%" valign="center">
+                <a href="http://inst.eecs.berkeley.edu/~cs188/sp11/announcements.html">Graduate Student Instructor, CS188 Spring 2011</a>
+                <br>
+                <a href="http://inst.eecs.berkeley.edu/~cs188/fa10/announcements.html">Graduate Student Instructor, CS188 Fall 2010</a>
+                <br>
+                <a href="http://aima.cs.berkeley.edu/">Figures, "Artificial Intelligence: A Modern Approach", 3rd Edition</a>
+              </td>
+            </tr>
+            
+
+            <tr>
+              <td align="center" style="padding:20px;width:25%;vertical-align:middle">
+                <h2>Basically <br> Blog Posts</h2>
+              </td>
+              <td width="75%" valign="middle">
+                <a href="https://arxiv.org/abs/2112.11687">Squareplus: A Softplus-Like Algebraic Rectifier</a>
+                <br>
+                <a href="https://arxiv.org/abs/2010.09714">A Convenient Generalization of Schlick's Bias and Gain Functions</a>
+                <br>
+                <a href="https://arxiv.org/abs/1704.07483">Continuously Differentiable Exponential Linear Units</a>
+                <br>
+                <a href="https://jonbarron.info/data/cvpr2023_llm_workshop_annotated.pdf">Scholars & Big Models: How Can Academics Adapt?</a>
+              </td>
+            </tr>
+            
+            
+          </tbody></table>
+        -->
+
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr>
+              <td style="padding:0px">
+                <br>
+                <p style="text-align:right;font-size:small;">
+                  Website source code from <a href="https://github.com/jonbarron/jonbarron_website">here</a>. 
+                </p>
+              </td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

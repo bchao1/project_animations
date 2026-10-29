@@ -1,0 +1,278 @@
+In this section, we provide pseudocodes of the various algorithms described in the paper. In fact, all algorithms presented in the paper can be classified into three classes based on how occlusion is handled for primitives: 
+\begin{itemize}
+    \item \textbf{Na\"ive Wave Splatting (WS) Algorithm}: simply adding up the wavefront contribution of each primitive without any occlusion handling. Baselines that fall into this category include: Na\"ive (sparse point cloud), Na\"ive (dense point cloud, RGBD), and our fast Gaussian Wave Splatting (Gaussians). 
+    \item  \textbf{Exact Wave Splatting (WS) Algorithm}: the exact wave splatting algorithm performs CGH using \textit{alpha wave blending} described in the main paper. Since occlusion is explicitly described by alpha wave blending, prior methods that perform occlusion handling can also be easily realized using WS, as we will show in \ref{subsec:silhouette}. Baselines that fall into this category include: Point cloud WS (sparse point cloud), Polygon WS (mesh), and our exact Gaussian Wave Splatting (Gaussians). 
+    \item \textbf{Silhouette Method}: The algorithms that lies in this category are all prior methods that implement visibility tests with binary apertures, including Chen \& Wilkinson \cite{chen2009computer} (sparse point cloud) and the silhouette method (mesh) proposed by Matsushima et al. \cite{matsushima2014silhouette}. However, we show that with some rearrangement of equations, this can be exactly realized using Wave Splatting. We note that this classical method encompasses most occlusion-handling methods, which reject or attenuate wavefronts from the rear using binary or translucent masks~\cite{chen2009computer, shi2021towards}.  
+\end{itemize}
+
+
+These three classes of algorithms sequentially processes each primitive and adds up their wavefront contribution at the SLM plane. Within these three, the Na\"ive Wave Splatting algorithm is specifically suited for per-pixel parallelization since no order information and no alpha masking (which corresponds to a convolution in Fourier domain as described in the main paper) is required. Therefore, we additionally describe how to implement the per-pixel parallelizable version of the Na\"ive Wave Splatting algorithm, which also serves as  the basis for our efficient CUDA implementation of the fast variant of our Gaussian Wave Splatting algorithm.
+
+
+\subsection{Na\"ive Wave Splatting Algorithm}
+\label{subsec:naive_ws}
+The Na\"ive Wave Splatting (WS) algorithm simply calculates the wavefront contribution of each primitive at the SLM plane and sums them up. We outline the sequential version of the Na\"ive WS algorithm using Gaussian primitives in Algorithm \ref{alg:naive_ws}, and describe the per-pixel parallelized version in Section~\ref{subsec:fast_naive_ws}.  
+
+
+\begin{algorithm}[t]
+\caption{Na\"ive Gaussian Wave Splatting, sequential version}
+\label{alg:naive_ws}
+\SetKwComment{Comment}{$\blacktriangleright$\ }{}
+\SetCommentSty{textnormal}
+\DontPrintSemicolon
+\Comment{No need to sort primitives.}
+\KwIn{$K$: Number of primitives}
+\KwIn{$z_k, o_k, c_k, S_k, \textrm{J}_k, R_k, \mu_k$: The depth, opacity, color, scale, rotation, center, and Jacobian determinant of the Fourier coordinate transformation of the $k^\text{th}$ Gaussian}
+\KwIn{$N_x, N_y$: Image dimensions}
+\KwOut{$u_\text{SLM}$: Wavefront at the SLM plane}
+$\angularspectrum_\text{SLM} \gets \mathbf{0}_{N_x \times N_y}$ \Comment{Angular spectrum of wavefront at SLM plane}
+\ForEach{$k$ \textbf{in} $1 \ldots K$}{
+    % $U_k \gets \mathcal{F}(p_k)$ \Comment{Compute the angular spectrum $\mathcal{F}(p_k)$ of primitive $p_k$}
+    $\angularspectrum_k \gets  \textrm{det}( \mathbf{J}_k) \textrm{det}(S_k) \hat{\mathcal{G}} \left(S_kR_k^{-1}\mathbf{k} \right) e^{j  \mathbf{k}\cdot \centergaussian_k}$ \Comment{Query the angular spectrum of the $k^\text{th}$ Gaussian at the SLM plane using Eq.~\ref{eq:final} }
+    $\angularspectrum_\text{SLM} \gets \angularspectrum_\text{SLM} + \angularspectrum_k \cdot c_k \cdot o_k$ \Comment{multiply by the color and opacity of the primitive, and add to the SLM angular spectrum}
+}
+$u_\text{SLM} = \mathcal{F}^{-1}(\angularspectrum_\text{SLM})$ \\
+\Return $u_\text{SLM}$
+\end{algorithm}
+
+
+\begin{figure*}[!ht]
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/gs_gws.pdf}
+    \caption{\textbf{Gaussian Splatting and Gaussian Wave Splatting.} Gaussian Splatting performs per-pixel alpha blending for all pixels in the rendered image, which is highly suitable for parallelization. Conversely, Gaussian Wave Splatting requires alpha blending to be performed on a global scale with the full image resolution since wave propagation can only be simulated with the full spatial extent of the SLM, and global transmittance map needs to be actively maintained throughout the CGH process. However, both methods share the exact same concept of alpha blending. }
+    \label{fig:gs_vs_gws}
+\end{figure*}
+
+\subsection{Exact Wave Splatting Algorithm}
+\label{subsec:full_ws}
+At the core of the Exact Wave Splatting (WS) algorithm is \textit{alpha wave blending}, which first sorts the primitive from front (near SLM) to back (far from SLM) and sequentially processes each primitive. The wavefront of each primitive is sequentially ``splatted'' onto the SLM plane from near to far and a global transmittance map is simultaneously updated with the transmittance of each primitive. This transmittance map is a crucial component in alpha wave blending as it contains all the occlusion information. 
+
+% We present the pseudo code of this algorithm in Algorithm~\ref{alg:gws}.
+% Here, we develop a new technique for summing the wavefront contributions from multiple Gaussians. Traditional occlusion handling methods for translucent polygons cannot be directly applied to Gaussian-based CGH and lead to inconsistent outcomes due to its noncommutativity (see Fig.~\ref{fig:alpha}). Therefore, we develop a new method that produces the exact Gaussian volume in 3D space, inspired by both the silhouette method and alpha blending. In our alpha wave blending, we begin with the frontmost Gaussian and accumulate the wavefront contributions until it reaches the rearmost object:
+
+The above splatting procedure can also be thought of as propagating a wave starting from the SLM plane, and sequentially accumulating the wavefront contributions of primitives that are encountered along the process one by one. This can be formulated as a recursive equation, relating the accumulated wavefront up to the $\idx$-th Gaussian, $u_{1 \cdots \idx} (\mathbf{r})$, by adding the attenuated wavefront of the $\idx$-th Gaussian to the previously accumulated wavefront, $u_{1 \cdots (\idx -1)} (\mathbf{r})$, after propagation:
+
+\begin{align}
+u_{1 \cdots \idx} (\coordinate) = \mathcal{P}\left(u_{1 \cdots (\idx-1)}\left(\coordinate\right) ; z_{\idx} - z_{\idx-1}\right) + \mathbf{c}_\idx o_\idx T_\idx\left(\coordinate\right)  u_\idx\left(\coordinate\right) , \\ u_{1 \cdots 1}\left(\mathbf{r}\right) = u_1\left(\coordinate\right), T_\idx\left(\coordinate\right) = \prod_{j=1}^{\idx-1} (1 - o_{j} |u_j(\coordinate)|),
+\end{align} %\bc{remove view-dependent because we are not implementing that so better claim less}. 
+where $\mathbf{c}_\idx$ is the color of the $i^\text{th}$ primitive By expanding the recursive equation and collapsing the sequential propagations into a single propagation distance using the depth-invariant property of the wave propagation operator, we can reformulate the recursive equation into a summation form: %Note that commutativity holds when the alpha values are binary, making our alpha wave blending technique applicable to meshes with binary opacity. It is also equivalent to ray-based alpha blending if we ablate the wave propagation and set the phase to zero (i.e. $|u| = u$).
+
+
+\begin{align}
+u_{1 \cdots \idx} (\coordinate) &= \mathcal{P}\left(u_{1 \cdots (\idx-1)}\left(\coordinate\right) ; z_{\idx} - z_{\idx-1}\right) + \mathbf{c}_\idx o_\idx T_\idx\left(\coordinate\right)  u_\idx\left(\coordinate\right) \nonumber \\
+&= \mathcal{P}\left( \mathcal{P}\left(u_{1 \cdots (\idx-2)}\left(\coordinate\right); z_{\idx-1} - z_{\idx-2} \right)  ; z_{\idx} - z_{\idx-1}\right) \nonumber \\
+&\quad + \mathcal{P} \left( \mathbf{c}_{\idx-1} o_{\idx-1} T_{\idx-1} \left( \coordinate\right)  u_{\idx-1} \left( \coordinate \right); z_{\idx} - z_{\idx-1} \right) \nonumber \\ 
+&\quad + \mathbf{c}_\idx o_\idx T_\idx\left(\coordinate\right)  u_\idx\left(\coordinate\right) \nonumber \\
+&= \cdots = \sum_{j=1}^{\idx} \mathcal{P} \left( \mathbf{c}_j o_j T_j \left(\coordinate\right)  u_j \left(\coordinate\right); z_\idx - z_j\right) .\label{eq:awb_up_to_idx}
+\end{align}
+
+We would like to highlight the significance of this collapsible property of wave propagation, which enables this simple summation formulation. After summing all $\maxidx$ Gaussians, the accumulated wavefront will be positioned at a depth of $z_\maxidx$. We can then simply propagate the entire wavefront back to the SLM plane, where $z=0$, adding only a marginal computational cost with a single FFT-based wave propagation~\cite{shimobaba2009simple}, arriving at our alpha blending equation described in Eq.~5 of the manuscript:
+\begin{align}    
+    u_{\textrm{SLM}} (\coordinate) &= \mathcal{P} \left(\sum_{\idx=1}^{\maxidx} \mathcal{P} \left( \mathbf{c}_\idx o_\idx T_\idx \left(\coordinate\right)  u_\idx \left(\coordinate\right); z_\maxidx - z_\idx\right); -z_\maxidx \right) \\
+    &=\sum_{\idx}^\maxidx \mathbf{c}_\idx o_\idx\mathcal{P}\Big(  u_\idx(\coordinate)T_\idx\left(\coordinate\right) ; -z_\idx\Big). \label{eq:gwsplat_supp}
+\end{align}
+
+
+The formulation of exact WS is almost exactly identical as its ray space counterpart, which is the volume rendering equation widely used in traditional graphics and recent neural rendering works \cite{mildenhall2020nerf, kerbl3Dgaussians}. The major difference is that since we are frequently converting between the frequency domain and spatial domain for wave propagation, per-pixel alpha blending is not possible in exact WS but instead requires a global transmittance map to be maintained throughout the process, as illustrated in Figure \ref{fig:gs_vs_gws}. We specifically outline the pseudocode of Gaussian Wave Splatting in Algorithm \ref{alg:full_ws}, but it can be trivially adapted to support other primitive types such as points or triangles simply by replacing the Gaussian angular spectrum in the first line of the for loop with angular spectrums of other primitives. 
+
+\noindentparagraph{\bf{Other implementation details.}}
+Under plane wave illumination in the direction $\mathbf{k}_r$, the angular spectrum derived in Eq.~\ref{eq:final} can be shifted by $\mathbf{k}_r$~\cite{park2017recent}. With this intuition, supporting directional effects using spherical harmonics can be understood as a convolution of the angular spectrum with an angular kernel defined by spherical harmonics~\cite{yeom2016calculation, askari2017occlusion}. This is discussed in detail in Sec.~\ref{subsec:occlusion}. Additionally, we match the phase of each wavefront from the primitives to produce multiple coherent wavefronts that constructively interfere, following practices in previous CGH methods~\cite{park2015removal, maimone2017holographic, padmanaban2019holographic}.
+
+
+\begin{algorithm*}[h]
+\caption{Exact Gaussian Wave Splatting}
+\label{alg:full_ws}
+\SetKwComment{Comment}{$\blacktriangleright$\ }{}
+\SetCommentSty{textnormal}
+\DontPrintSemicolon
+\Comment{First sort primitives from front (close to SLM) to back (far from SLM) based on depth values}
+\Comment{$\mathcal{P}(u, z, \lambda) = \mathcal{F}^{-1}(\mathcal{F}(u)\mathcal{H}(\lambda, z))$ is the ASM wave propagation operator and $\mathcal{H}$ is the angular transfer function. }
+\KwIn{$K$: Number of primitives}
+\KwIn{$z_k, o_k, c_k, S_k, \textrm{J}_k, R_k, \mu_k$: The depth, opacity, color, scale, rotation, center, and Jacobian determinant of the Fourier coordinate transformation of the $k^\text{th}$ Gaussian}
+\KwIn{$N_x, N_y$: Image dimensions}
+\KwIn{$\lambda$: Illumination wavelength}
+\KwIn{$t_\text{eps}$: Threshold for low alpha value, used to ignore low transmittance primitives. We set  $t_\text{eps} = \frac{1}{255}$ following 3DGS ~\cite{kerbl3Dgaussians}.}
+\KwIn{$t_\text{binarize}$: Threshold to binarize alpha. Used to realize the disk-based occlusion handling described in Chen \& Wilkinson \cite{chen2009computer}}
+\KwOut{$u_\text{SLM}$: Wavefront at the SLM plane}
+$u_\text{SLM} \gets \mathbf{0}_{N_x \times N_y}$ \Comment{Wavefront at SLM plane}
+$T \gets \mathbf{1}_{N_x \times N_y}$ \Comment{Initialize transmittance map} 
+\ForEach{$k$ \textbf{in} $1 \ldots K$}{
+    $\angularspectrum_k \gets  \textrm{det}( \mathbf{J}_k) \textrm{det}(S_k) \hat{\mathcal{G}} \left(S_kR_k^{-1}\mathbf{k} \right) $ \Comment{Query the angular spectrum of the $k^\text{th}$ Gaussian at the shifted hologram space using Eq.~\ref{eq:final} }
+    
+    $u_\text{SLM} \gets u_\text{SLM} + \mathcal{P}(T\cdot u_k, z_k, \lambda)\cdot c_k \cdot o_k $ \Comment{Splat the wavefront onto the SLM plane by propagating the masked wavefront the SLM plane, multiplying the propagated wavefront by the the primitive color and opacity, and add to the wavefront on the SLM plane}
+    
+    $\alpha_k \gets o_k \cdot |u_k|$ \Comment{Compute the alpha map from the primitive opacity and the primitive wavefront amplitude}
+
+    $\alpha_k \gets \alpha_k \cdot (\alpha_k > t_\text{eps})$ \Comment{Ignore low alpha values like in Gaussian Splatting \cite{kerbl3Dgaussians}}
+
+    \If{\text{use disk-based occlusion handling}}{
+        $\alpha_k \gets \alpha_k > t_\text{binarize}$ \Comment{Exact GWS can also be used to implement visibility tests using binary apertures as described in Chen \& Wilkinson \cite{chen2009computer}}
+    }
+
+    $T \gets T \cdot (1 - \alpha_k)$ \Comment{Update the transmittance map}
+}
+\Return $u_\text{SLM}$
+\end{algorithm*}
+
+\subsection{Silhouette-based Method}
+\label{subsec:silhouette}
+Perhaps the most accurate method to address occlusion in prior CGH literature is the silhouette-based method~\cite{matsushima2014silhouette}, and we outline its pseudocode in Algorithm \ref{alg:silhouette}. The silhouette-based method starts from the rearmost polygon $\mathbf{P}_N$ and accumulates the wavefront contributions that are not attenuated by the front objects, continuing the propagation until it reaches the frontmost polygon $\mathbf{P}_1$. The wavefront contribution up to the $\idx$th polygon $u_{\idx \cdots N}$, starting from $u_{N \cdots N} = u_N\left(\mathbf{r}\right)$, can be inductively formulated as:
+
+% Tuning $z$ position in angular spectrum is very straightforward (elementwise multiplication of the angular spectrum (AS) kernel). 
+
+\begin{align}
+u_{\idx \cdots \maxidx} (\coordinate) = M_\idx(\coordinate) \mathcal{P}\left(u_{\idx+1 \cdots \maxidx}\left(\coordinate  \right); z_\idx - z_{\idx + 1} \right) + o_i u_\idx\left(\coordinate \right),
+ \label{eq:silhoutte}   
+\end{align}
+where $M_\idx(\coordinate) = 1 - o_\idx A_\idx(\coordinate)$ is the silhouette mask of a translucent polygon $\mathbf{P}_\idx$, defined to emulate alpha blending in computer graphics~\cite{matsushima2020introduction}. In this context, $A_\idx$ represents the binary polygon aperture, and $o_\idx$ denotes the alpha values. This method has shown promising results for high-definition polygon CGH~\cite{matsushima2009extremely}. However, its sequential nature, especially the mask profile on the accumulated wavefront, complicates intuitive use of the collapse property, and the reliance on discrete apertures makes it difficult to apply to Gaussians. Notably, computational cost can be significantly reduced by limiting the region of interest for propagation using Babinet's principle~\cite{matsushima2020introduction}. Please refer to  Sec.~\ref{sec:misc} for the full analytical solution for polygon-based methods~\cite{zhang2022polygon, park2017recent, kim2008mathematical, ahrenberg2008computer}.
+% M / alpha equation reference: Eq. (11.5) and Eq. (11.30) in the Matsushima's book.
+
+\noindentparagraph{\bf{From Alpha Wave Blending to Silhouette-based Methods.}}
+Our alpha wave blending formulation that directly inherits the continuous aperture property of Gaussians and composites front to back, generalizes these silhouette-based methods and is compatible with polygons that use binary apertures, as derived in this section and demonstrated in Figs.~\ref{fig:extended_baselines_1} --- ~\ref{fig:extended_baselines_12}.
+
+To derive the connection between the general alpha wave blending formulation and silhouette-based methods, we start from Eq.~\ref{eq:awb_up_to_idx}, after propagating the final wavefront to where the first polygon is located (to match the final depth) and consider color and opacity as translucency applied to the binary aperture profile $o_\idx A_\idx (\coordinate)$~\cite{matsushima2020introduction}. In this setting, the attenuation map $T_i$ is equivalent to $\prod_{j=1}^{\idx-1} (1 - o_{j} A_j(\coordinate))$. 
+
+\begin{align}
+ u_{1 \cdots \maxidx} (\coordinate) &= \mathcal{P} \left(\sum_{\idx=1}^{\maxidx} \mathcal{P} \left( o_\idx A_\idx(\coordinate) T_\idx (\coordinate)  u_\idx (\coordinate); z_\maxidx - z_\idx \right); z_1 - z_N \right) \\
+ &= \sum_{\idx=1}^{\maxidx} \mathcal{P} \left( o_\idx A_\idx(\coordinate) T_\idx (\coordinate)  u_\idx (\coordinate); z_1 - z_\idx \right) \\
+ &= \sum_{\idx=1}^{\maxidx} \mathcal{P} \left( o_\idx A_\idx(\coordinate) u_\idx (\coordinate)
+ \prod_{j=1}^{\idx-1} (1 - o_{j} A_j(\coordinate)) ; z_1 - z_\idx \right) \\
+ &= \sum_{\idx=1}^{\maxidx} \mathcal{P} \left( o_\idx A_\idx(\coordinate) u_\idx (\coordinate) \prod_{j=1}^{\idx-1} M_j (\coordinate); z_1 - z_\idx \right).
+\end{align}
+
+We can expand the summation propagating from front to back, following the order of silhouette-based method, and the mask term can be pulled out at the depth of the polygon sequentially, allowing us to arrive at the same recursive formulation to Eq.~\ref{eq:silhoutte}.
+
+% \begin{align}
+%  u_{1 \cdots \maxidx} (\coordinate) &= \sum_{\idx=2}^{\maxidx} \mathcal{P} \left( o_\idx A_\idx(\coordinate) T_\idx \left(\coordinate\right)  u_\idx \left(\coordinate\right); z_1 - z_\idx\right) \\ 
+%  &+  o_1 A_1(\coordinate) T_1 \left(\coordinate\right) u_1 \left(\coordinate \right)
+% \end{align}
+
+\begin{algorithm*}[t!]
+\caption{Silhouette-based Method}
+\label{alg:silhouette}
+\SetKwComment{Comment}{$\blacktriangleright$\ }{}
+\SetCommentSty{textnormal}
+\DontPrintSemicolon
+
+\Comment{First sort primitives from back (far from SLM) to front (close to SLM) based on depth values.}
+\Comment{$\mathcal{P}(u, z, \lambda) = \mathcal{F}^{-1}(\mathcal{F}(u)\mathcal{H}(\lambda, z))$ is the ASM wave propagation operator and $\mathcal{H}$ is the angular transfer function. }
+\KwIn{$K$: Number of primitives}
+\KwIn{$z_k, o_k, c_k$: The depth, opacity, and color of the $k^\text{th}$ primitive}
+\KwIn{$N_x, N_y$: Image dimensions}
+\KwIn{$\lambda$: Illumination wavelength}
+\KwOut{$u_\text{SLM}$: Wavefront at the SLM plane}
+
+$u \gets 0$ \Comment{Initialize accumulated wavefront}
+
+\ForEach{$k$ \textbf{in} $1 \ldots K$}{
+    \If{$k = 1$}{
+        $u' \gets u$ \Comment{Processing first primitive so previous accumulated wavefront is zero}
+    }
+    \Else{
+        $u' \gets \mathcal{P}(u, z_k, \lambda)$ \Comment{Propagate previous accumulated wavefront to current depth}
+    }
+    
+    $u_k \gets \texttt{Generate object wavefront(k)}$ 
+    
+    $u_k \gets \mathcal{P}(u_k, z_k, \lambda)$ \Comment{Propagate object wavefront to its depth}
+    
+    $u \gets (\mathbf{1} - |u_k|\cdot o_k) \cdot u' + u_k \cdot c_k \cdot o_k$ \Comment{Combine previous accumulated wavefront and current object wavefront to get new accumulated wavefront}
+
+    $u \gets \mathcal{P}(u, -z_k, \lambda)$ \Comment{Propagate accumulated wavefront back to SLM plane}
+}
+
+$u_\text{SLM} \gets u$\;
+\Return $u_\text{SLM}$
+\end{algorithm*}
+
+
+
+
+
+
+\subsection{Fast Na\"ive Wave Splatting Algorithm}
+\label{subsec:fast_naive_ws}
+Since no order information and alpha blending is need in the Na\"ive WS algorithm, it is trivial to parallelize and can be efficiently implemented in CUDA. 
+
+Whether to parallelize over pixels or primitives, however, is purely a design choice that depends on the number of primitives and the target hologram resolution. Since we are given a 3D model with a fixed number of primitives and the number of the pixels in the hologram is usually larger than the number of primitives, we decided to parallelize over pixels to achieve maximum gain.
+
+We roughly outline our how the kernel launches and memory allocation is defined in our CUDA implementation of the Fast Na\"ive WS algorithm in Algorithm \ref{alg:cuda_wavefront_perpixel}.
+
+\begin{algorithm*}[ht!]
+\caption{Fast Na\"ive Gaussian Wave Splatting, parallelized over pixels}
+\label{alg:cuda_wavefront_perpixel}
+\SetKwComment{Comment}{$\blacktriangleright$\ }{}
+\SetCommentSty{textnormal}
+\DontPrintSemicolon
+
+\SetKwFunction{KernelFunc}{ComputePixelWavefrontKernel}
+
+\KwIn{$K$: Number of primitives}
+\KwIn{$z_k, o_k, c_k, S_k, \textrm{J}_k, R_k, \mu_k$: The depth, opacity, color, scale, rotation, center, and Jacobian determinant of the Fourier coordinate transformation of the $k^\text{th}$ Gaussian stored in device memory.}
+\KwIn{$N_x, N_y$: Image dimensions}
+\KwOut{$u_\text{SLM}$: Wavefront at the SLM plane}
+$\angularspectrum_\text{SLM} \gets \mathbf{0}_{N_x \times N_y}$ \Comment{Angular spectrum of wavefront at SLM plane}
+\BlankLine
+\Comment{Host code}
+$\text{gridDim} \gets (N_x/B_x, N_y/B_y)$ \Comment{Each thread processes one pixel}
+$\text{blockDim} \gets (B_x, B_y)$ 
+
+$\angularspectrum_\text{SLM} \gets 0$ \Comment{Initialize output array in device memory}
+\KernelFunc{$\ll\!\!\ll \text{gridDim}, \text{blockDim} \gg\!\!\gg$}($z_k, o_k, c_k, ..., \mu_k$, $K$, $\angularspectrum_\text{SLM}$)
+
+\BlankLine
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\KernelFunc{..., $K$, $U_\text{SLM}$}}{
+    \Comment{Calculate global pixel coordinates}
+    $x \gets \text{blockIdx.x} \times \text{blockDim.x} + \text{threadIdx.x}$\;
+    $y \gets \text{blockIdx.y} \times \text{blockDim.y} + \text{threadIdx.y}$\;
+    
+    \If{$x < N_x$ \textbf{and} $y < N_y$}{
+        \For{$k \gets 1$ \KwTo $K$}{
+            \Comment{Process each primitive sequentially for this pixel}   $\angularspectrum_k[x, y] \gets  \textrm{det}( \mathbf{J}_k) \textrm{det}(S_k) \hat{\mathcal{G}} \left(S_kR_k^{-1}\mathbf{k} \right) e^{j  \mathbf{k}\cdot \centergaussian_k}[x, y]$ \Comment{Query the angular spectrum of the $k^\text{th}$ primitive at $[x, y]$ pixel location at the SLM plane using Eq.~\ref{eq:final} }
+            
+            $\angularspectrum_\text{SLM}[x, y] \gets \angularspectrum_\text{SLM}[x, y] + \angularspectrum_k[x, y]\mathcal{H}(z_k, \lambda)[x, y] \cdot c_k \cdot o_k$\; \Comment{Propagate the angular spectrum of the primitive by its depth using the angular transfer function $\mathcal{H}$ in ASM}
+        }
+    }
+}
+
+\BlankLine
+\Comment{Back on host}
+$u_\text{SLM} = \mathcal{F}^{-1}(\angularspectrum_\text{SLM})$ \Comment{Inverse Fourier transform of result}
+\Return $u_\text{SLM}$
+\end{algorithm*}
+
+\subsection{Details on 2DGS Models}
+We use the open source \texttt{gsplat}~\cite{ye2024gsplat} library to optimize 2DGS models for Gaussian Wave Splatting CGH calculation. All models are optimized using default parameters defined in the open source code base.
+
+To flexibly control the number of the optimized Gaussians in the final model to match the number of optimized Gaussians with the number of triangles in the mesh models for fair comparison, we used the 3DGS-MCMC densification strategy \cite{kheradmand20243dgsmcmc} which is also supported in \texttt{gsplat}. We additionally optimized 2DGS models with a maximum of 1M Gaussians for video results of focal stacks from various novel views.  
+
+\subsection{Details on 2DGS-OIT Models}
+We implement custom CUDA forward and backward kernels and integrate them in \texttt{gsplat} to optimize 2DGS-OIT models that are used for the fast variant of Gaussian Wave Splatting CGH. Since the OIT image formation is different than that of 2DGS, the gradients of the model parameters need to be re-derived. Here, we show derivations of several intermediate gradient functions that can be easily integrated with existing Gaussian Splatting software frameworks, and refer the readers to the extensive writeup provided by the \texttt{gsplat} authors for full gradient derivations \cite{ye2024gsplat}.
+
+In 2DGS-OIT, the color of each pixel being rendered  is represented as:
+\begin{align}
+    \mathbf{c} \approx \sum_{i=1}^N \mathbf{c}_i \alpha_i = \sum_{i=1}^N \mathbf{c}_i \mathcal{G}_i o_i,
+\label{eq:OIT}
+\end{align}
+where $\mathbf{c}$ is the final rendered pixel color, $\mathbf{c}_i, \alpha_i, o_i \in \mathbb{R}$ are the color, alpha, opacity, and opacity of the $i^\text{th}$ Gaussian, respectively, and $\mathcal{G}_i$ is the splatted 2D Gaussian value evaluated at the location of the pixel currently being rendered. 
+
+Since $c_i$ and $\alpha_i$ are independent of each other, the gradient formulas of $\alpha_i$ and $c_i$ with respect to the loss $\mathcal{L}$ is trivial:
+
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial \alpha_i} = \mathbf{c}_i \cdot \ \frac{\partial \mathcal{L}}{\partial \mathbf{c}} \\
+    \frac{\partial \mathcal{L}}{\partial \mathbf{c}_i} = a_i \cdot \ \frac{\partial \mathcal{L}}{\partial \mathbf{c}}
+\end{align}
+
+Other gradients, such as gradients with respect to opacities and spherical harmonics coefficients, are the same as the gradients in original 2DGS, and we refer the readers to the \texttt{gsplat} writeup \cite{ye2024gsplat} for more details.
+
+To optimize a 2DGS-OIT model, we first pretrain a 2DGS model with the 3DGS-MCMC strategy and initialize the 2DGS-OIT model with means and rotations of the optimized Gaussians from 2DGS. We do not densify Gaussians throughout the 2DGS-OIT optimization process. We observe that 2DGS-OIT models converge much faster and is more stable to optimize with this pretrained 2DGS initialization. We use degree 3 spherical harmonics (16 SH coefficients) to model the view-dependent opacity of each Gaussian. All other optimization configurations are the same as that of 2DGS.
+
+
+
+\subsection{Details on the Efficient CUDA Implementation of Fast Gaussian Wave Splatting}
+\label{subsec:details}
+We implement the fast version of our Gaussian Wave Splatting using custom CUDA kernels following the logic described in Algorithm \ref{alg:cuda_wavefront_perpixel}. We spawn 1024 threads for each block (32 in both height and width dimensions of the hologram), and sequentially process \textit{all} Gaussians in each kernel call. This CUDA kernel is integrated in our \texttt{hsplat} library so that it works seamlessly with \texttt{PyTorch}.
+
+
+\newpage

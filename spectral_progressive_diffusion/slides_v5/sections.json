@@ -1,0 +1,362 @@
+[
+  {
+    "scene": "S00_Title",
+    "index": 0,
+    "name": "title",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S00_Title_0000_title.mp4",
+    "duration_s": 7.1,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S00_Title_0000_title_last.png",
+    "description": "Title, authors; progressive image and spectrum reach full resolution"
+  },
+  {
+    "scene": "S01_Cost",
+    "index": 0,
+    "name": "tokens",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S01_Cost_0000_tokens.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S01_Cost_0000_tokens_last.png",
+    "description": "8×8 token grid labelled N tokens"
+  },
+  {
+    "scene": "S01_Cost",
+    "index": 1,
+    "name": "double_res",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S01_Cost_0001_double_res.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S01_Cost_0001_double_res_last.png",
+    "description": "Arrow to 16×16 grid: 2× resolution → 4N tokens"
+  },
+  {
+    "scene": "S01_Cost",
+    "index": 2,
+    "name": "every_step",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S01_Cost_0002_every_step.mp4",
+    "duration_s": 3.4,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S01_Cost_0002_every_step_last.png",
+    "description": "Noisy states t = 1…0, full token grid under each step"
+  },
+  {
+    "scene": "S01_Cost",
+    "index": 3,
+    "name": "early_noise",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S01_Cost_0003_early_noise.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S01_Cost_0003_early_noise_last.png",
+    "description": "Red box highlights noisy early steps t = 1.0, 0.8"
+  },
+  {
+    "scene": "S02_Spectrum",
+    "index": 0,
+    "name": "fft",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S02_Spectrum_0000_fft.mp4",
+    "duration_s": 1.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S02_Spectrum_0000_fft_last.png",
+    "description": "Corgi, FFT arrow, centred magnitude spectrum"
+  },
+  {
+    "scene": "S02_Spectrum",
+    "index": 1,
+    "name": "radial_psd",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S02_Spectrum_0001_radial_psd.mp4",
+    "duration_s": 4.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S02_Spectrum_0001_radial_psd_last.png",
+    "description": "Radially averaged power spectrum curve on log-log axes"
+  },
+  {
+    "scene": "S02_Spectrum",
+    "index": 2,
+    "name": "power_law",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S02_Spectrum_0002_power_law.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S02_Spectrum_0002_power_law_last.png",
+    "description": "Dashed power-law fit, β ≈ 3.0, paper's β values"
+  },
+  {
+    "scene": "S02_Spectrum",
+    "index": 3,
+    "name": "lowpass_low",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S02_Spectrum_0003_lowpass_low.mp4",
+    "duration_s": 2.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S02_Spectrum_0003_lowpass_low_last.png",
+    "description": "Low-pass reconstruction, radius 24 circle and PSD marker"
+  },
+  {
+    "scene": "S02_Spectrum",
+    "index": 4,
+    "name": "lowpass_high",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S02_Spectrum_0004_lowpass_high.mp4",
+    "duration_s": 3.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S02_Spectrum_0004_lowpass_high_last.png",
+    "description": "Full-band reconstruction, circle at radius 256"
+  },
+  {
+    "scene": "S03_Noise",
+    "index": 0,
+    "name": "flow_matching",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S03_Noise_0000_flow_matching.mp4",
+    "duration_s": 1.4,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S03_Noise_0000_flow_matching_last.png",
+    "description": "Flow-matching equation, clean corgi, spectrum, signal curve"
+  },
+  {
+    "scene": "S03_Noise",
+    "index": 1,
+    "name": "add_noise",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S03_Noise_0001_add_noise.mp4",
+    "duration_s": 4.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S03_Noise_0001_add_noise_last.png",
+    "description": "t = 0.97: flat noise line drowns most frequencies"
+  },
+  {
+    "scene": "S03_Noise",
+    "index": 2,
+    "name": "snr",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S03_Noise_0002_snr.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S03_Noise_0002_snr_last.png",
+    "description": "SNR formula added below the plot"
+  },
+  {
+    "scene": "S03_Noise",
+    "index": 3,
+    "name": "sampler_sweep",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S03_Noise_0003_sampler_sweep.mp4",
+    "duration_s": 7.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S03_Noise_0003_sampler_sweep_last.png",
+    "description": "Sampler sweep finished: frontier at full band, t ≈ 0"
+  },
+  {
+    "scene": "S03_Noise",
+    "index": 4,
+    "name": "autoregression",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S03_Noise_0004_autoregression.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S03_Noise_0004_autoregression_last.png",
+    "description": "Citation Rissanen 2023, Dieleman 2024 added"
+  },
+  {
+    "scene": "S04_Frontier",
+    "index": 0,
+    "name": "frontier",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S04_Frontier_0000_frontier.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S04_Frontier_0000_frontier_last.png",
+    "description": "Fourier plane at t ≈ 0.9 with yellow frontier circle"
+  },
+  {
+    "scene": "S04_Frontier",
+    "index": 1,
+    "name": "nyquist",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S04_Frontier_0001_nyquist.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S04_Frontier_0001_nyquist_last.png",
+    "description": "Dashed Nyquist squares for 32…256 grids, current grid highlighted"
+  },
+  {
+    "scene": "S04_Frontier",
+    "index": 2,
+    "name": "grow_grid",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S04_Frontier_0002_grow_grid.mp4",
+    "duration_s": 8.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S04_Frontier_0002_grow_grid_last.png",
+    "description": "Grid grown to 512, all full-resolution pixels"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 0,
+    "name": "dct",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0000_dct.mp4",
+    "duration_s": 1.6,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0000_dct_last.png",
+    "description": "Low-res state x_ti and its DCT coefficients"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 1,
+    "name": "embed",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0001_embed.mp4",
+    "duration_s": 1.6,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0001_embed_last.png",
+    "description": "Coefficients placed in corner of 128×128 canvas"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 2,
+    "name": "pad_noise",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0002_pad_noise.mp4",
+    "duration_s": 1.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0002_pad_noise_last.png",
+    "description": "Canvas padded with t_i ε noise"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 3,
+    "name": "invert",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0003_invert.mp4",
+    "duration_s": 1.2,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0003_invert_last.png",
+    "description": "Inverse DCT gives x_ti at 128×128"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 4,
+    "name": "align",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0004_align.mp4",
+    "duration_s": 1.0,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0004_align_last.png",
+    "description": "Timestep alignment equations, κ = 1.50, t̃ = 0.50 example"
+  },
+  {
+    "scene": "S05_Expansion",
+    "index": 5,
+    "name": "compare",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S05_Expansion_0005_compare.mp4",
+    "duration_s": 1.7,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S05_Expansion_0005_compare_last.png",
+    "description": "Expanded+aligned vs true x_t̃ vs bilinear upsampling"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 0,
+    "name": "prop1",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0000_prop1.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0000_prop1_last.png",
+    "description": "Proposition 1 statement and closed-form t_ω formula"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 1,
+    "name": "t_omega_curve",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0001_t_omega_curve.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0001_t_omega_curve_last.png",
+    "description": "t_ω vs |ω| curve from paper's pixel fit"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 2,
+    "name": "prop2",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0002_prop2.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0002_prop2_last.png",
+    "description": "Stage cut-off lines, t1*, t2* dots, Prop. 2 box"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 3,
+    "name": "delta_knob",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0003_delta_knob.mp4",
+    "duration_s": 4.9,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0003_delta_knob_last.png",
+    "description": "δ readout after sweep, back at δ = 0.010"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 4,
+    "name": "timeline",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0004_timeline.mp4",
+    "duration_s": 1.9,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0004_timeline_last.png",
+    "description": "Three-stage resolution timeline s1, s2, s3 with token fractions"
+  },
+  {
+    "scene": "S06_Schedule",
+    "index": 5,
+    "name": "passthrough",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S06_Schedule_0005_passthrough.mp4",
+    "duration_s": 1.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S06_Schedule_0005_passthrough_last.png",
+    "description": "Fig. 5 bus row: full res and δ sweep"
+  },
+  {
+    "scene": "S07_FineTune",
+    "index": 0,
+    "name": "training_free",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S07_FineTune_0000_training_free.mp4",
+    "duration_s": 2.6,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S07_FineTune_0000_training_free_last.png",
+    "description": "Three stage lanes with expand+align jumps back in time"
+  },
+  {
+    "scene": "S07_FineTune",
+    "index": 1,
+    "name": "finetune",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S07_FineTune_0001_finetune.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S07_FineTune_0001_finetune_last.png",
+    "description": "Fine-tuning equations: straight path velocity and loss"
+  },
+  {
+    "scene": "S07_FineTune",
+    "index": 2,
+    "name": "lora",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S07_FineTune_0002_lora.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S07_FineTune_0002_lora_last.png",
+    "description": "LoRA details: rank 32, 2000 iterations, 8 H100s"
+  },
+  {
+    "scene": "S07_FineTune",
+    "index": 3,
+    "name": "imagereward",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S07_FineTune_0003_imagereward.mp4",
+    "duration_s": 2.4,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S07_FineTune_0003_imagereward_last.png",
+    "description": "ImageReward bars: Z-Image and PixelGen, training-free vs LoRA"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 0,
+    "name": "flux_steps",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0000_flux_steps.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0000_flux_steps_last.png",
+    "description": "Speedup vs ImageReward axes, legend, FLUX fewer-steps curve"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 1,
+    "name": "baselines",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0001_baselines.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0001_baselines_last.png",
+    "description": "Bottleneck Sampling and RALU points added"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 2,
+    "name": "ours",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0002_ours.mp4",
+    "duration_s": 1.0,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0002_ours_last.png",
+    "description": "Ours S=2, S=3 points with speedup labels up to 7.09×"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 3,
+    "name": "fig3_flux",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0003_fig3_flux.mp4",
+    "duration_s": 2.3,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0003_fig3_flux_last.png",
+    "description": "Fig. 3a: FLUX, RALU, Ours on buddha and canyon"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 4,
+    "name": "fig3_pixelgen",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0004_fig3_pixelgen.mp4",
+    "duration_s": 1.8,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0004_fig3_pixelgen_last.png",
+    "description": "Fig. 3b: PixelGen 1× vs Ours 1.6×"
+  },
+  {
+    "scene": "S08_Results",
+    "index": 5,
+    "name": "fig3_video",
+    "file": "/home/brianchc/project_animations/spectral_progressive_diffusion/media/videos/animation_spectral_progressive_v5/1080p60/sections/S08_Results_0005_fig3_video.mp4",
+    "duration_s": 2.2,
+    "last_frame": "/home/brianchc/project_animations/spectral_progressive_diffusion/slides_v5/qa/S08_Results_0005_fig3_video_last.png",
+    "description": "Fig. 3c: Wan 2.1 video frames with VBench scores"
+  }
+]

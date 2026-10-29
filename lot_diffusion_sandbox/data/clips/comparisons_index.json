@@ -1,0 +1,302 @@
+[
+ {
+  "key": "cmp0",
+  "compression": 3,
+  "prompt": "Two individuals, one wearing a blue top and the other in a black top, engaged in the task of loading gear onto a blue inflatable raft. The raft is positioned on the bank of a river, with a backdrop of a rocky cliff. The subject turns, gestures, shifts posture, and moves through part of the scene in one continuous, physically grounded action. The camera starts close, pulls backward as the action approaches, then pans smoothly to expose the surrounding context. Cinematic observational documentary footage, soft motivated light, 35mm lens, moderate depth of field and natural human presence.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1107.8709178940626
+   },
+   "ToMe-SD": {
+    "compression": 2.444149881995409,
+    "generation_seconds": 401.68764842604287
+   },
+   "Foveated Diffusion": {
+    "compression": 2.444149881995409,
+    "generation_seconds": 406.9214498929214
+   },
+   "Ours": {
+    "compression": 2.444149881995409,
+    "generation_seconds": 386.37959396117367
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp0_cue",
+   "Dense Wan2.1": "cmp0_dense",
+   "ToMe-SD": "cmp0_tome",
+   "Foveated Diffusion": "cmp0_fov",
+   "Ours": "cmp0_ours"
+  }
+ },
+ {
+  "key": "cmp1",
+  "compression": 2,
+  "prompt": "A dynamic scene in a park where two individuals are engaged in BMX biking. The first biker, wearing a white helmet and a white and black top, is seen riding a black BMX bike, executing a jump over a concrete structure. The performance builds continuously through decisive gestures, rhythmic body motion, and responsive movement across the surrounding space. The camera pushes through foreground depth, follows the main motion on a shallow diagonal, and eases into a broad establishing view. Kinetic performance-documentary cinematography, motivated stage and practical light, 35mm lens, layered audience depth, energetic atmosphere.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1101.9201198380324
+   },
+   "ToMe-SD": {
+    "compression": 1.8117765475591343,
+    "generation_seconds": 544.775005367992
+   },
+   "Foveated Diffusion": {
+    "compression": 1.8117765475591343,
+    "generation_seconds": 560.2106496791821
+   },
+   "Ours": {
+    "compression": 1.8117765475591343,
+    "generation_seconds": 544.3649173490703
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp1_cue",
+   "Dense Wan2.1": "cmp1_dense",
+   "ToMe-SD": "cmp1_tome",
+   "Foveated Diffusion": "cmp1_fov",
+   "Ours": "cmp1_ours"
+  }
+ },
+ {
+  "key": "cmp2",
+  "compression": 2,
+  "prompt": "A scene where a person is pouring a liquid from a brown pot into a cup held by another individual. The person pouring the liquid is wearing a brown robe and a brown hat, while the recipient of the liquid is wearing a brown robe and a white headscarf. The subject turns, gestures, shifts posture, and moves through part of the scene in one continuous, physically grounded action. The camera starts close, pulls backward as the action approaches, then pans smoothly to expose the surrounding context. Cinematic observational documentary footage, soft motivated light, 35mm lens, moderate depth of field and natural human presence.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1112.589529443998
+   },
+   "ToMe-SD": {
+    "compression": 1.507958670762357,
+    "generation_seconds": 694.4058377130423
+   },
+   "Foveated Diffusion": {
+    "compression": 1.507958670762357,
+    "generation_seconds": 701.4778328298125
+   },
+   "Ours": {
+    "compression": 1.507958670762357,
+    "generation_seconds": 684.8606412541121
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp2_cue",
+   "Dense Wan2.1": "cmp2_dense",
+   "ToMe-SD": "cmp2_tome",
+   "Foveated Diffusion": "cmp2_fov",
+   "Ours": "cmp2_ours"
+  }
+ },
+ {
+  "key": "cmp3",
+  "compression": 3,
+  "prompt": "A blurry image of a man and a woman sitting on a couch in a dimly lit room. The man is wearing a light-colored shirt, and the woman is in a white tank top. Then, the focus sharpens, revealing the couple embracing and kissing passionately. The subject turns, gestures, shifts posture, and moves through part of the scene in one continuous, physically grounded action. The camera pushes through foreground depth, follows the main motion on a shallow diagonal, and eases into a broad establishing view. Cinematic observational documentary footage, soft motivated light, 35mm lens, moderate depth of field and natural human presence.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1106.3857748040464
+   },
+   "ToMe-SD": {
+    "compression": 2.4224557805690847,
+    "generation_seconds": 403.1604182830197
+   },
+   "Foveated Diffusion": {
+    "compression": 2.4224557805690847,
+    "generation_seconds": 409.8344171838835
+   },
+   "Ours": {
+    "compression": 2.4224557805690847,
+    "generation_seconds": 392.65474963898305
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp3_cue",
+   "Dense Wan2.1": "cmp3_dense",
+   "ToMe-SD": "cmp3_tome",
+   "Foveated Diffusion": "cmp3_fov",
+   "Ours": "cmp3_ours"
+  }
+ },
+ {
+  "key": "cmp4",
+  "compression": 1.5,
+  "prompt": "A close-up of a person's hands as they open the cap of a beer bottle and then place the bottle into a silver bucket filled with ice. The person's nails are painted red, and they are wearing a ring on their left hand. Hands and objects move through a clear sequence of manipulation while material details, reflections, and nearby elements respond naturally to each action. The camera pushes through foreground depth, follows the main motion on a shallow diagonal, and eases into a broad establishing view. Cinematic detail-documentary footage, soft motivated light, 50mm lens, tactile material detail and clearly layered working space.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1112.8370482299943
+   },
+   "ToMe-SD": {
+    "compression": 1.2978540772532188,
+    "generation_seconds": 838.4766241759062
+   },
+   "Foveated Diffusion": {
+    "compression": 1.2978540772532188,
+    "generation_seconds": 876.3521486060345
+   },
+   "Ours": {
+    "compression": 1.2978540772532188,
+    "generation_seconds": 851.5380661289673
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp4_cue",
+   "Dense Wan2.1": "cmp4_dense",
+   "ToMe-SD": "cmp4_tome",
+   "Foveated Diffusion": "cmp4_fov",
+   "Ours": "cmp4_ours"
+  }
+ },
+ {
+  "key": "cmp5",
+  "compression": 3,
+  "prompt": "A man in a gray shirt and black pants running down a cobblestone street at night. He is carrying a book and appears to be in a hurry. As he runs, he trips and falls to the ground, dropping the book. The vehicle advances through the scene with visible speed changes, environmental parallax, and physically grounded motion in the surrounding landscape. The camera starts close, pulls backward as the action approaches, then pans smoothly to expose the surrounding context. Cinematic travel-documentary footage, motivated natural light, 35mm lens, strong leading lines and pronounced foreground-to-background parallax.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1113.3047409310238
+   },
+   "ToMe-SD": {
+    "compression": 2.73585929866464,
+    "generation_seconds": 360.6569261630066
+   },
+   "Foveated Diffusion": {
+    "compression": 2.73585929866464,
+    "generation_seconds": 363.54292124300264
+   },
+   "Ours": {
+    "compression": 2.73585929866464,
+    "generation_seconds": 342.02654790179804
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp5_cue",
+   "Dense Wan2.1": "cmp5_dense",
+   "ToMe-SD": "cmp5_tome",
+   "Foveated Diffusion": "cmp5_fov",
+   "Ours": "cmp5_ours"
+  }
+ },
+ {
+  "key": "cmp6",
+  "compression": 2,
+  "prompt": "A young girl standing in a dimly lit underwater scene, surrounded by tall, slender purple plants. She is wearing a sleeveless top with horizontal stripes in shades of yellow and white. Then, a large, blue shark with white teeth and gills swims into the frame. The subject turns, gestures, shifts posture, and moves through part of the scene in one continuous, physically grounded action. A low tracking camera moves laterally with the action, passes a foreground layer, and rises into a wider reveal. Cinematic observational documentary footage, soft motivated light, 35mm lens, moderate depth of field and natural human presence.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1115.5787769709714
+   },
+   "ToMe-SD": {
+    "compression": 1.6364699006428989,
+    "generation_seconds": 619.8856217629509
+   },
+   "Foveated Diffusion": {
+    "compression": 1.6364699006428989,
+    "generation_seconds": 648.7416172539815
+   },
+   "Ours": {
+    "compression": 1.6364699006428989,
+    "generation_seconds": 622.8964625177905
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp6_cue",
+   "Dense Wan2.1": "cmp6_dense",
+   "ToMe-SD": "cmp6_tome",
+   "Foveated Diffusion": "cmp6_fov",
+   "Ours": "cmp6_ours"
+  }
+ },
+ {
+  "key": "cmp7",
+  "compression": 2.5,
+  "prompt": "A person seated on a stage, playing a classical guitar. The individual is wearing a white shirt and is focused on the guitar, which has a brown body and a darker fretboard. The person's right hand is positioned on the fretboard, while the left hand is strumming the strings. The performance builds continuously through decisive gestures, rhythmic body motion, and responsive movement across the surrounding space. A stabilized camera begins wide, glides forward beside the main action, then arcs into a closer three-quarter view. Kinetic performance-documentary cinematography, motivated stage and practical light, 35mm lens, layered audience depth, energetic atmosphere.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1096.2084577099886
+   },
+   "ToMe-SD": {
+    "compression": 2.0090353441403135,
+    "generation_seconds": 482.0462125639897
+   },
+   "Foveated Diffusion": {
+    "compression": 2.0090353441403135,
+    "generation_seconds": 506.5117452440318
+   },
+   "Ours": {
+    "compression": 2.0090353441403135,
+    "generation_seconds": 482.1609149710275
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp7_cue",
+   "Dense Wan2.1": "cmp7_dense",
+   "ToMe-SD": "cmp7_tome",
+   "Foveated Diffusion": "cmp7_fov",
+   "Ours": "cmp7_ours"
+  }
+ },
+ {
+  "key": "cmp8",
+  "compression": 1.5,
+  "prompt": "A view of a river flowing through a forest, with the sunlight filtering through the trees, casting a warm glow on the water. The trees are a mix of green and yellow leaves, indicating the changing of seasons. Hands and objects move through a clear sequence of manipulation while material details, reflections, and nearby elements respond naturally to each action. The camera pushes through foreground depth, follows the main motion on a shallow diagonal, and eases into a broad establishing view. Cinematic detail-documentary footage, soft motivated light, 50mm lens, tactile material detail and clearly layered working space.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1101.8773918430088
+   },
+   "ToMe-SD": {
+    "compression": 1.1330425790207275,
+    "generation_seconds": 998.4836831059656
+   },
+   "Foveated Diffusion": {
+    "compression": 1.1330425790207275,
+    "generation_seconds": 1068.6307310099946
+   },
+   "Ours": {
+    "compression": 1.1330425790207275,
+    "generation_seconds": 1021.6499070540303
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp8_cue",
+   "Dense Wan2.1": "cmp8_dense",
+   "ToMe-SD": "cmp8_tome",
+   "Foveated Diffusion": "cmp8_fov",
+   "Ours": "cmp8_ours"
+  }
+ },
+ {
+  "key": "cmp9",
+  "compression": 1.5,
+  "prompt": "A woman with long, dark hair, wearing a black top, standing in front of a man in a dark suit. The woman is smiling and appears to be engaged in a conversation with the man. The subject turns, gestures, shifts posture, and moves through part of the scene in one continuous, physically grounded action. The camera starts close, pulls backward as the action approaches, then pans smoothly to expose the surrounding context. Cinematic observational documentary footage, soft motivated light, 35mm lens, moderate depth of field and natural human presence.",
+  "stats": {
+   "Dense Wan2.1": {
+    "compression": 1.0,
+    "generation_seconds": 1114.6288525989512
+   },
+   "ToMe-SD": {
+    "compression": 1.4011936093709456,
+    "generation_seconds": 752.3507748070406
+   },
+   "Foveated Diffusion": {
+    "compression": 1.4011936093709456,
+    "generation_seconds": 770.451875331928
+   },
+   "Ours": {
+    "compression": 1.4011936093709456,
+    "generation_seconds": 748.5962121100165
+   }
+  },
+  "videos": {
+   "Layout cue": "cmp9_cue",
+   "Dense Wan2.1": "cmp9_dense",
+   "ToMe-SD": "cmp9_tome",
+   "Foveated Diffusion": "cmp9_fov",
+   "Ours": "cmp9_ours"
+  }
+ }
+]

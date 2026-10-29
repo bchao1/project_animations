@@ -1,0 +1,1351 @@
+CameraCtrl II: Dynamic Scene Exploration via
+Camera-controlled Video Diffusion Models
+Hao He1,2 Ceyuan Yang2,† Shanchuan Lin2 Yinghao Xu3 Meng Wei4 Liangke Gui2
+Qi Zhao2 Gordon Wetzstein3 Lu Jiang2 Hongsheng Li1
+1The Chinese University of Hong Kong
+2ByteDance Seed
+3Stanford University
+4ByteDance
+† corresponding author
+https://hehao13.github.io/Projects-CameraCtrl-II/
+I need to turn left 
+to avoid these people.
+Let me return back 
+to my original path.
+Now I can turn left to 
+along my original foward 
+direction.
+User input image 
+& thinking
+User-input
+camera trajectories
+Generating
+Starting image
+User input 
+trajectory
+User input 
+trajectory
+User input 
+trajectory
+Thinking
+Thinking
+Thinking
+Figure 1. Illustration of CAMERACTRL II. Our camera-controlled video diffusion model generates consistent video sequences for dy-
+namic scenes based on user-defined camera trajectories. The first row represents a generated video clip conditioned on the starting image
+and a user input camera trajectory. After watching the generated video clip, user can decide next step and specify the corresponding
+camera trajectories. Subsequent rows show clips conditioned on previous generated videos and these newly provided camera trajectories.
+The model strictly follows these user camera trajectory inputs while maintaining scene consistency across multiple video clips, enabling
+seamless navigation around pedestrians and exploration of the environment from various perspectives.
+Abstract
+This paper introduces CAMERACTRL II, a framework that
+enables large-scale dynamic scene exploration through a
+camera-controlled video diffusion model. Previous camera-
+conditioned video generative models suffer from diminished
+video dynamics and limited range of viewpoints when gen-
+erating videos with large camera movement. We take an
+approach that progressively expands the generation of dy-
+namic scenes—first enhancing dynamic content within in-
+dividual video clip, then extending this capability to cre-
+ate seamless explorations across broad viewpoint ranges.
+Specifically, we construct a dataset featuring a large degree
+of dynamics with camera parameter annotations for train-
+ing while designing a lightweight camera injection module
+and training scheme to preserve dynamics of the pretrained
+models. Building on these improved single-clip techniques,
+we enable extended scene exploration by allowing users to
+iteratively specify camera trajectories for generating co-
+herent video sequences. Experiments across diverse sce-
+narios demonstrate that CAMERACTRL II enables camera-
+controlled dynamic scene synthesis with substantially wider
+spatial exploration than previous approaches.
+1
+arXiv:2503.10592v1  [cs.CV]  13 Mar 2025
+
+1. Introduction
+Recent years have witnessed remarkable advances in video
+diffusion models [6, 9, 29], which can generate high-fidelity
+and temporally coherent videos from text descriptions.
+These models accept user-defined control [16, 18, 21, 45]
+and are also scalable w.r.t. dataset size and computational
+resources, producing long and physically plausible videos.
+For example, Sora [9] can generate minute-long videos with
+realistic physics and complex motions.
+Therefore, these
+video diffusion models have become a promising tool for
+modeling and simulating dynamic real-world scenes.
+Beyond generating individual dynamic scenes, enabling
+users to actively explore these digital worlds has become
+increasingly important. Recent works have made progress
+in learning to explore generated spaces. In the domain of
+game generation, methods like [14, 41, 52, 52, 59] learn
+to simulate state transitions and predict future observations
+from action sequences such as keyboard inputs. For gen-
+eral video generation, camera control has emerged as a nat-
+ural interface for scene exploration. Recent works [2, 2,
+3, 21, 30, 54–56] inject camera parameters into pretrained
+video diffusion models to enable precise camera viewpoint
+manipulation.
+By controlling virtual camera movements
+within these generated environments—analogous to cam-
+era navigation in the real world—users can explore these
+generated digital scenes from various perspectives.
+Despite their effectiveness in camera control and achiev-
+ing the exploration in certain spatial range, existing meth-
+ods face two limitations that hinder their practical applica-
+tions. First, after incorporating camera control, these mod-
+els often suffer from significant degradation in generating
+dynamic content. Second, they are restricted to generating
+short video clips (e.g., 25 frames for CameraCtrl [6], 49
+frames for AC3D [2]) and cannot generate new clips in the
+same scene based on previously generated content and new
+camera trajectories given by users. These limitations fun-
+damentally limit both the types of scenes that can be gen-
+erated (constrained to largely static content) and the spatial
+range that can be explored, thus significantly diminishing
+the user experience. We introduce CAMERACTRL II to ad-
+dress these two limitations.
+We address the challenge of generating highly dynamic
+videos using two key techniques.
+First, existing ap-
+proaches primarily rely on static video datasets with cam-
+era parameter annotations, such as RealEstate10K [62] and
+DL3DV10K [35].
+Training on these datasets inevitably
+compromises the dynamic capabilities of camera-controlled
+video diffusion models.
+Therefore, we construct a new
+dataset by extracting camera trajectory annotations from
+real dynamic videos using Structure-from-Motion (SfM),
+specifically VGGSfM [53]. Then, we propose methods to
+address challenges of arbitrary scale and long-tailed cam-
+era trajectory distributions in the constructed dataset. Sec-
+ond, for the model architecture, we inject camera parame-
+ters only at the initial layer of the diffusion model, avoid-
+ing over-constraining pixel generation to preserve dynamic
+content.
+Besides, we jointly train all model parameters
+on both labeled and unlabeled videos to preserve the pre-
+trained model’s capability for generating dynamic and di-
+verse scenes while maintaining its ability to perform gen-
+eral video generation tasks, such as text-to-video genera-
+tion without camera input. This strategy also enables cam-
+era classifier-free guidance [22] during inference to enhance
+camera control accuracy.
+To enable exploration of broader scene ranges, we care-
+fully design a video extension scheme and corresponding
+training strategy that allows our model to generate multiple
+coherent video clips sequentially. Specifically, we extend
+our single-clip camera-controlled video diffusion model to
+support clip-wise autoregressive video generation with a
+novel technique. During training, the model learns to gen-
+erate new clips by conditioning on clean frames from pre-
+vious clips and new camera trajectories, while optimizing
+only on the newly generated frames. At inference time, the
+model can generate new video segments by conditioning on
+both the previous clip frames and new camera trajectories,
+maintaining visual consistency while following user desired
+camera path. To preserve the high-quality generation capa-
+bility of single clips, we jointly train this video extension
+task with the original single-clip camera-controlled video
+generation.
+Fig. 1 shows an example of our CameraCtrl
+II model generating multiple video sequences in a dynamic
+urban scene. It maintains consistent scene content while
+strictly adhering to camera controls, allowing for diverse
+exploration patterns such as navigating around pedestrians
+or changing direction while preserving object motion.
+In summary, our key contributions include: 1) A system-
+atic data curation pipeline for constructing a dynamic video
+dataset with camera trajectory annotations; 2) A lightweight
+camera control injection module and corresponding training
+strategy that preserves dynamic video generation capabili-
+ties while adding camera control effect; 3) A clip-wise au-
+toregressive generation recipe that enables extended range
+exploration of generated scenes.
+2. Related Work
+Video Diffusion Models. Driven by the advances in model
+architectures [23], large-scale datasets [5, 10, 57], com-
+prehensive benchmarks [26, 27], and improved training
+techniques [28, 37], the field of video diffusion models
+has seen remarkable progress in recent years.
+A major
+focus of this field has been text-to-video (T2V) genera-
+tion [6, 7, 9, 24, 33, 39, 46, 49, 58], where models create
+videos from text descriptions. Early works [6, 7, 17, 19, 24]
+efficiently transform UNet-based text-to-image (T2I) mod-
+els into video generators by incorporating additional tem-
+2
+
+poral modeling layers. Recent models [1, 9, 29, 38, 49, 58]
+adopt transformer architectures [13, 42] to achieve bet-
+ter temporal consistency and generation quality at scale.
+While these works focus on pretraining models for general-
+purpose video generation, our work aims to leverage video
+diffusion models for dynamic scene exploration. Through
+video generation, we enable users to freely explore a dy-
+namic scene in a large range.
+Camera-controlled Video Diffusion Models. To enable
+camera pose control in the video generation process, Mo-
+tionCtrl [54], CameraCtrl [21], I2VControl-Camera [15]
+inject the camera parameters (extrinsic, Pl¨ucker embed-
+ding [47], or point trajectory) into a pretrained video
+diffusion model.
+Building upon this, CamCo [56] in-
+tegrates epipolar constraints into attention layers, while
+CamTrol [25] leverages explicit 3D point cloud representa-
+tions. AC3D [2] carefully design the camera representation
+injection to the pretrained model. VD3D [3] enables camera
+control to transformer-based video diffusion models [40].
+Several recent works have advanced beyond single-camera
+scenarios: CVD [30], Caiva [55], Vivid-ZOO [32], and
+SyncCamMaster [4] have developed frameworks for multi-
+camera synchronization. Despite these advances, existing
+methods struggle to generate dynamic content with cam-
+era control, and are limited to short video clips. Our work
+enhances dynamic content generation and enables scene ex-
+ploration through sequential video generation.
+3. CameraCtrl II
+We present CAMERACTRL II to enable camera-controlled
+generation of large-scale dynamic scenes using video diffu-
+sion model. To generate such a video with a high degree of
+dynamism, we carefully curate a new dataset (Sec. 3.2) and
+develop an effective camera control injection mechanism
+(Sec. 3.3). Sec. 3.4 presents our approach to enable large
+range exploration in the dynamic scene via a video exten-
+sion technique. Sec. 3.1 provides essential preliminary on
+camera-controlled video diffusion models.
+3.1. Preliminary
+Given a pre-trained latent video diffusion model and camera
+representation s, a camera-controlled video diffusion model
+learns to model the conditional distribution p(z0|c, s) of
+video tokens, where z0 represents the encoded latents from
+a visual tokenizer [60] and c denotes the text/image prompt.
+The training process involves adding noise ϵt to the latents
+at each timestep t ∈[0, T] to obtain zt and optimizing a
+transformer model to predict this noise using the following
+objective:
+L(θ) = Ez0,ϵ,c,s,t[|ϵ −ˆϵθ(zt, c, s, t)|2
+2].
+(1)
+For inference, we initialize from Gaussian noise ϵ
+∼
+N(0, σ2
+t I) and iteratively recover the video latents z0 us-
+Distribution
+Balance
+Scale
+Calibration
+VGGSfM
+RealCam
+Dataset
+Motion
+Segmentation
+Metric Depth
+Estimation
+Motion
+Segmentation
+VGGSfM
+Metric Depth
+Estimation
+Scale
+Calibration
+Figure 2. Dataset curation pipeline. We omit the process of
+dynamic video selection.
+ing the Euler sampler, conditioning on both the input image
+and camera parameters.
+For the camera representation,
+we follow recent
+works [21, 56] and adopt the Pl¨ucker embedding [47],
+which provides strong geometric interpretation and fine-
+grained per-pixel camera information. Specifically, given
+camera extrinsic matrix E = [R; t] ∈R3×4 and intrinsic
+matrix K ∈R3×3, we compute for each pixel (u, v) its
+Pl¨ucker embedding p = (o × d′, d′). Here, o represents
+the camera center in world space, d = RK−1[u, v, 1]T + t
+denotes the ray direction from camera to pixel, and d′ is the
+normalized d. The final Pl¨ucker embedding Pi ∈R6×h×w
+is constructed for each frame, with spatial dimensions h and
+w matching those of the encoded visual tokens.
+3.2. Dataset Curation
+High-quality video datasets with accurate camera parame-
+ter annotations are crucial for training a camera-controllable
+video diffusion model.
+While existing datasets, like
+RealEstate10K [62], ACID [36], DL3DV10K [35] and Ob-
+javerse [12] provide diverse camera parameter annotations,
+they primarily contain static scenes and focus on single do-
+main. Previous works such as CameraCtrl [56], MotionC-
+trl [54], and Camco [56] have shown that training on these
+static scene datasets leads to significant degradation in dy-
+namic content generation. To address this limitation, we in-
+troduce REALCAM Dataset, a new dynamic video dataset
+with precise camera parameter annotations.
+The overall
+data processing pipeline is shown in Fig. 2.
+Camera Estimation from Dynamic Videos. While syn-
+thetic scenes used in recent works [4, 16] could provide
+precise camera parameter annotation, they require extensive
+manual design of individual scenes and environments. This
+labor-intensive process significantly limits dataset scalabil-
+ity and diversity. Therefore, we opt to curate our dataset
+from real-world videos. To maintain scene diversity, we get
+3
+
+Plücker  Embedding
+…
+ℝ(𝑛×ℎ×𝑤)×6
+Camera Patchify
+𝐸1, 𝐾1
+𝐸2, 𝐾2
+𝐸𝑛, 𝐾𝑛
+…
+Visual Tokens
+ℝ(𝑛×ℎ×𝑤)×32
+Visual Patchify
+𝑝𝑓𝑒𝑎𝑡
+ℝ(𝑛×ℎ×𝑤)×𝑐
+ℝ(𝑛×ℎ×𝑤)×𝑐
+𝑧𝑓𝑒𝑎𝑡
+Element-wise addition
+…
+Pretrained
+DiT
+(a) Camera Representation Injection
+(b) Video Extension
+…
+…
+Previous clip 
+clean features
+Current clip 
+noised features
+ℝ(𝑛1×ℎ×𝑤)×𝑐
+ℝ(𝑛2×ℎ×𝑤)×𝑐
+Camera control DiT
+…
+Predicted noises
+ℝ(𝑛2×ℎ×𝑤)×𝑐
+: Pose reference frame
+: Mask 0
+: Mask 1
+ℝ((𝑛1+ 𝑛2)×ℎ×𝑤)×𝑐
+Concatenation
+DiT blocks
+Figure 3. Model architecture of CAMERACTRL II. (a) Given a pretrained video diffusion model, CAMERACTRL II adds an extra camera
+patchify layer at the initial of the model. It takes the Pl¨ucker embedding as input, outputs camera features with the same shape of the visual
+features. Both features are element-wisely added before the first DiT layer. (b) Features belonging to the previous video clip are kept clean,
+while current features are noised. After concatenation, features are sent to a camera control DiT; we only compute the loss of the current
+clip’s tokens. We omit the text encoder for both figures, and the camera features for the second figure.
+videos across various scenarios including indoor environ-
+ments, aerial views, and street scenes. Our data processing
+pipeline consists of several key steps: First, we employ the
+motion segmentation model TMO [11] to identify dynamic
+foreground objects in a video. Then RAFT [50] is used to
+estimate optical flow of a video. With the mask and the
+optical flow, by averaging the optical flow in static back-
+ground regions, we obtain a quantitative measure of cam-
+era movement. Videos are selected only when their average
+flow exceeds an empirically determined threshold, ensur-
+ing sufficient camera movement. After that, we use VG-
+GSfM [53] to estimate camera parameters for each frame.
+However, initial experiments revealed two key challenges:
+1) Structure-from-Motion reconstructions from monocular
+videos inherently produce arbitrary scene scales, making it
+difficult to learn consistent camera movements. 2) Real-
+world videos have imbalanced camera trajectory distribu-
+tion, with certain camera trajectory types like forward mo-
+tion being overrepresented. This can cause the model to
+overfit to common trajectory types while performing poorly
+on underrepresented types of camera movements. There-
+fore, we do the following two modification of our dataset.
+Camera Parameter Calibration for Unified Scales. To
+establish a unified scale across scenes, we develop a calibra-
+tion pipeline aligning arbitrary scene scales to metric space.
+For each video sequence, we first select N keyframes and
+estimate their metric depths {Mi}N
+i=1 using a metric depth
+estimator [8]. We then obtain corresponding SfM depths
+{Si}N
+i=1 from the VGGSfM output. The scale factor s be-
+tween metric and VGGSfM depths for each frame i can be
+formulated as:
+si = arg min
+s
+X
+p∈P
+ρ(|s · Si(p) −Mi(p)|)
+(2)
+where P denotes pixel coordinates, and ρ(·) is the Huber
+loss function. We solve this minimization problem using
+RANSAC [20] to ensure robustness against depth estima-
+tion errors. The final scale factor s for the a scene is com-
+puted as the mean of individual frame scales. This factor
+is multiplied to the camera position vector t ∈R3×1 of the
+extrinsic matrix, obtaining E = [R; s · t] ∈R3×4.
+Camera Trajectory Distribution Balancing. We imple-
+ment a systematic approach to analyze, and balance the dis-
+tribution of camera trajectory types.
+We first detect key
+camera positions (keypoints) on a camera trajectory: for
+each point, we fit two lines through its preceding and fol-
+lowing n points, marking it as a keypoint if the angle be-
+tween these lines exceeds threshold γ. These keypoints di-
+vide a camera trajectory into several segments, whose direc-
+tions are determined by the fitted line vectors. The segment
+with the longest camera movement defines the trajectory’s
+primary movement direction. Along each segment, we an-
+alyze camera rotation matrices to identify significant view
+changes. Between adjacent segments, we identify turns by
+measuring their angular deviations, with turns after the main
+segment defined as the main turns of the trajectory. Each
+trajectory is assigned an importance weight based on the
+number and magnitude of both view changes and turns. We
+4
+
+then categorize trajectories into N × M categories based
+on N primary directions and M main turns. To balance the
+dataset, we prune redundant trajectory types by removing
+trajectories with lower importance scores, resulting a more
+uniform camera trajectory distribution of the dataset.
+3.3. Adding Camera Control to Video Generation
+With our dataset of dynamic videos and corresponding cam-
+era parameter annotations in hand, we next explore how to
+enable camera control in video diffusion models and pre-
+serve the dynamics of generated videos. This requires care-
+ful design of both the camera parameter injection module
+and training strategies. A key challenge is to incorporate
+camera control while maintaining the model’s ability to
+generate dynamic scenes. We detail our approach in the
+following sections.
+Lightweight Camera Injection Module. Previous meth-
+ods [4, 16, 21, 54, 56] often employ a dedicated encoder to
+extract camera features and then inject them into each diffu-
+sion transformer (DiT) or convolution layers. These global
+camera injection approaches [2] can over-constrain video
+dynamics, limiting natural motion variations in the gener-
+ated content. Instead, we inject camera condition only at
+the initial layer of diffusion models using a new patchify
+layer for camera tokenization that matches the dimensions
+and downsample ratios of visual patchify layers. The visual
+tokens zt and Pl¨ucker embeddings p are processed through
+their respective patchify layers to get visual features zfeat
+and camera features pfeat.
+And they are combined via
+element-wise addition (zfeat = zfeat + pfeat) before flow-
+ing through remaining DiT layers, as shown in Fig. 3 (a).
+This simple yet effective approach preserves dynamic mo-
+tion better than encoder-injector methods while achieving
+superior camera control, as demonstrated in Tab. 4.
+Joint Training with Camera-labeled and Unlabeled
+data. Training the DiT model on REALCAM with improved
+camera injection modules still limits the model’s capabil-
+ity to generate diverse content since REALCAM only cov-
+ers a subset of scenes compared to the pretraining data.
+To address this limitation, we propose a joint training
+strategy that leverages both camera-labeled and unlabeled
+video data. For labeled data, we incoperate Pl¨ucker em-
+beddings from the estimated camera parameters as previ-
+ously described. For unlabeled data, we utilize an all-zero
+dummy Pl¨ucker embedding as the condition input. This
+joint training framework enables an additional advantage:
+implementing classifier-free guidance (cfg) for camera con-
+trol, analogous to widely-adopted classifier-free text guid-
+ance [22]. We formulate camera classifier-free guidance as:
+ˆϵθ(zt, c, s, t) = ϵθ(zt, ϕtext, ϕcam)
++ wtext(ϵθ(zt, c, ϕcam) −ϵθ(zt, ϕtext, ϕcam))
++ wcam(ϵθ(zt, c, s) −ϵθ(zt, c, ϕcam))
+(3)
+Data Pipeline
+TransErr↓
+RotErr ↓
+Sample time (s) ↓
+Before distillation
+0.1892
+1.66
+13.83
+Progressive dist. [44]
+0.2001
+1.90
+2.61
+APT [34]
+0.2500
+2.56
+0.59
+Table 1. Model comparison before and after the distillations. The
+inference time is tested when generating a 4 second 12fps video
+with 4 H800 GPUs.
+where zt denotes the noised latent at timestep t, ϵθ repre-
+sents the denoising network, ϕ indicates null conditioning,
+and wtext and wcam are guidance weights for text and cam-
+era conditions respectively.
+This formulation allows en-
+hancing camera control accuracy through appropriate ad-
+justment of guidance weights. With this training scheme,
+our model learns effective camera conditioning while main-
+taining good generalization to in-the-wild senarios.
+3.4. Sequential Video Generation for Scene Explo-
+ration
+After obtaining a model capable of generating camera-
+controlled dynamic video, we try to enable broader scene
+exploration through sequential video generation.
+Clip-level Video Extension for Scene Exploration. We
+extend our single-clip camera-controlled video diffusion
+model to support clip-wise sequential generation. During
+training, for a previously generated video clip i, we ex-
+tract visual tokens zi
+0 from its last n frames as contex-
+tual conditioning for generating the next clip. For the cur-
+rent clip (i + 1), we add noise to its visual tokens follow-
+ing the standard diffusion process to obtain zi+1
+t
+. These
+tokens are concatenated along the sequence dimension as
+zt = [zi
+0; zi+1
+t
+] ∈Rq×c, where q represents the total to-
+ken count after concatenation. We introduce a binary mask
+m ∈Rq×1 (1 for conditioning tokens, 0 for tokens being
+generated) and concatenate it with zt along the channel di-
+mension to form zt = [zt; m] ∈Rq×(c+1). The model
+from Sec. 3.3 takes this combined feature with correspond-
+ing Pl¨ucker embeddings to predict the added noise, com-
+puting the loss from Eq. (1) only over tokens from the gen-
+erated clip. This process is shown in Fig. 3 (b). During
+inference, given a new camera trajectory, we select prede-
+fined frames from the previously generated clip as condi-
+tioning, enabling users to explore generated scenes through
+sequential camera trajectories while maintaining visual con-
+sistency between consecutive clips.
+In sequential video generation, we use the first frame of
+the initial trajectory as the reference for calculating relative
+poses across all generated clips. This unified coordinate
+system ensures geometric consistency throughout the se-
+quence and prevents pose error accumulation between clips.
+Model Distillation for Speedup. To accelerate the infer-
+ence speed and improve user experience, we implement a
+two-phase distillation approach. First, we employed pro-
+5
+
+Model
+FVD↓
+Motion strength↑
+TransErr↓
+RotErr↓
+Geometric consistency↑
+Appearance consistency↑
+MotionCtrl [54]
+221.23
+102.21
+0.3221
+2.78
+57.87
+0.7431
+CameraCtrl [21]
+199.53
+133.37
+0.2812
+2.81
+52.12
+0.7784
+CAMERACTRL II
+73.11
+698.51
+0.1527
+1.58
+88.70
+0.8893
+AC3D [2]
+987.34
+162.21
+0.2976
+2.98
+69.20
+N/A
+CAMERACTRL II
+641.23
+574.21
+0.1892
+1.66
+85.00
+N/A
+Table 2. Quantitative Comparisons. We compare against MotionCtrl [54] and CameraCtrl [21] in image-to-video setting, the AC3D [2]
+in the text-to-video setting. Since open-sourcing AC3D only supports text-to-video generation, appearance consistency between given
+image and generated videos is not available.
+gressive distillation [44] to reduce the required neural func-
+tion evaluations (NFEs) from 96 to 16 while maintaining
+visual quality. The original 96 NFEs consisted of 32 for un-
+conditional generation, 32 for text cfg generation, and 32
+for camera cfg generation. As shown in Tab. 1, the dis-
+tilled model does not exist significant degradation in terms
+of camera control accuracy. When generating a 4 second
+videos in 12fps with 4 H800 GPUs, the sample time is de-
+creased significantly, from 13.83 second to 2.61 second.
+This sample time contains the DiT model inference time
+and the VAE decode time.
+To further accelerate, we apply the recent proposed dis-
+tillation method APT [34] for one-step generation. Tab. 1
+presents the quality and speedup after distillation. Obvi-
+ously, APT [34] offers a significant speedup yet results in
+the degradation of conditional generation. Considering the
+original APT [34] that leverages more than one thousand
+GPUs, more computational resources and larger batch size
+could further improve the synthesis quality which we leave
+for the future.
+4. Experiments
+This section presents a comprehensive evaluation of CAM-
+ERACTRL II, comparing it with existing approaches and
+validating its design choices.
+This section is thus orga-
+nized as follows. Implementation details are provided in
+Sec. 4.1. The evaluation metrics and dataset specifications
+are described in Sec. 4.2 and Sec. 4.3, respectively.
+In
+Sec. 4.4, we compare CAMERACTRL II with other meth-
+ods [2, 21, 54]. Sec. 4.5 presents detailed ablation studies.
+Finally, we provide some visualization results of CAMER-
+ACTRL II in Sec. 4.6.
+4.1. Implementation Details
+Our model is based on an internal transformer-based text-to-
+video diffusion model, with approximately 3B parameters.
+As a latent diffusion model, it employs a temporal causal
+VAE tokenizer similar to MAGViT2 [60], with downsam-
+pling rate 4 for temporal and 8 for spatial. We sample the
+camera poses every 4 frames, resulting in the same number
+of camera poses to the visual features. During training, we
+kept all base video diffusion model parameters unfrozen,
+allowing joint optimization of all parameters. We trained
+the model in two phases. First phase is for the single clip
+CAMERACTRL II (Sec. 3.3) at a resolution of 192 × 320
+for 100,000 steps with a batch size of 640, using video clips
+ranging from 2 to 10 seconds in duration. The data compo-
+sition maintains a 4:1 ratio between camera-labeled and un-
+labeled data. In the second phase, we finetuned the model
+at a higher resolution of 384 × 640 while simultaneously
+training the video extension (Sec. 3.4). This phase ran for
+50,000 steps with a batch size of 512. The number of condi-
+tion frames from the previous clip ranges from a minimum
+of 5 frames to a maximum of 50% of the total frames. Both
+training stages utilize the AdamW optimizer. The learning
+rate was initially set to 1 × 10−4, with a warm-up period
+from 5 × 10−5 over 500 steps. , weight decay of 0.01, and
+betas of 0.9 and 0.95. The learning rate was finally decayed
+to 1×10−5 using the cosine learning rate scheduler. We use
+64 H100 GPUs for the first stage and 128 H100 GPUs for
+the second stage. During the inference, we adopted the Eu-
+ler sampler with 32 steps and a shift of 12 [31]. We set the
+CFG scales to 7.5 and 8.0 for text and camera, respectively.
+4.2. Evaluation Metric
+We utilize six metrics to comprehensively evaluate differ-
+ent aspects of baselines and our method, more details in
+appendix. 1) Visual Quality: We adopt Fr´echet Video Dis-
+tance (FVD) [51] to measure the overall quality of the gen-
+erated videos.
+2) Video Dynamic Fidelity: We propose
+motion strength to assess the dynamic degree of gener-
+ated videos. This quantitative measure calculates the aver-
+age motion magnitude of foreground objects across video
+frames using RAFT-extracted dense optical flow fields.
+To isolate object motion from camera movement, we ap-
+ply TMO-generated segmentation masks to the flow fields,
+computing motion for each lefted pixel as
+√
+u2+2 and con-
+verting from radians to degrees. The final motion strength
+represents the average flow magnitude across all foreground
+pixels in all frames. 3) Camera Control Accuracy: Follow-
+ing CameraCtrl [21], we use TransErr and RotErr to mea-
+sure the alignment between the condition camera poses and
+estimated camera poses from generated frames. We extract
+6
+
+Cars and a bus move along a city street lined with tall buildings.
+CameraCtrl
+CameraCtrl II
+AC3D
+CameraCtrl II
+Figure 4. Qualitative results. The camera trajectories are shown in the left. The first two rows share the same camera trajectory, and the
+second camera trajectory is for the last two rows. We compare CAMERACTRL II with CameraCtrl [21] in the I2V setting (first two rows),
+with the first image being the condition image. We also compare it with AC3D [2] in the T2V setting in the last two rows. In both case,
+CAMERACTRL II strictly follow each part of the camera trajectory and has better video dynamic. While CameraCtrl ignores the upward
+camera movements, AC3D ignores the forward camera moving at the end of the trajectory.
+motion patterns from generated videos using TMO [11] and
+estimate camera parameters with VGGSfM [53]. To ad-
+dress the inherent scale ambiguity in SfM, we align the es-
+timated camera trajectory to ground truth using ATE [48]
+by centering both trajectories, finding the optimal scale fac-
+tor, computing rotation via SVD, and determining align-
+ment translation. After alignment, we calculate TransErr
+as the average Euclidean distance between corresponding
+camera positions and RotErr as the average angular differ-
+ence between corresponding camera orientations. 4) Geom-
+etry Consistency: We apply the VGGSfM [53] on the gener-
+ated videos, and calculate the successful ratio of VGGSfM
+to estimate camera parameters. It indicates the quality of 3D
+geometry consistency of a generated scene. 5) Scene Ap-
+pearance Coherence: Exploring a scene requires the model
+to generate sequential video clips for the same scene given
+sequential camera trajectories. To evaluate visual consis-
+tency between these clips, we first extract features using a
+pretrained [43] visual encoder for each frame in a video clip,
+then average these features to obtain the video feature for
+each video clip. After that, we compute the cosine similar-
+ity across different video features, and term this metric as
+appearance consistency.
+4.3. Evaluation Dataset
+Our evaluation dataset consists of 800 video clips from two
+sources: 240 videos sampled from the RealEstate10K [62]
+test set, and 560 videos from our processed real-world
+dynamic videos with camera annotations.
+We sampled
+videos across different camera trajectory categories ana-
+lyzed in Sec. 3.2.
+4.4. Comparisons with other methods
+Quantitative comparison. To evaluate the effectiveness of
+CAMERACTRL II, we compare it with two representative
+methods, MotionCtrl [54] and CameraCtrl [21], in the I2V
+setting. Since these two methods cannot directly generate
+new video clips based on previously generated ones, we use
+the last frame of the previous video clip as the condition
+image to generate the next clip. In addition, benefiting from
+our minimal modifications to the base model architecture
+and joint training strategy, our method can also be applied
+to camera-controlled T2V generation. Thus, we compare
+CAMERACTRL II with AC3D [2] in the camera-controlled
+T2V task. Due to the different number of camera parame-
+ters supported by these methods, we temporally downsam-
+ple the camera parameters for them as the camera input. As
+shown in the Tab. 2, CAMERACTRL II significantly outper-
+forms previous method across all metrics in both setting. In
+the I2V setting, our method achieves better FVD, and higher
+Motion strength compared to MotionCtrl and CameraCtrl.
+The camera control accuracy and geometric consistency are
+also improved, as indicated by lower TransErr, RotErr and
+higher Geometric consistency. Similar improvements can
+be observed in the T2V setting when compared with AC3D.
+Qualitative Comparison.
+We also provide qualitative
+comparisons in Fig. 4.
+As illustrated by the first two
+rows (I2V setting), CAMERACTRL II more accurately fol-
+lows the input camera trajectories, while CameraCtrl [21]
+ignores the upward camera movements. Besides, CAMER-
+ACTRL II is able to generate more dynamic videos, while
+CameraCtrl tends to generate static ones. The third and
+fourth rows compare CAMERACTRL II with AC3D [2] in
+7
+
+Model
+Motion strength↑TransErr↓RotErr↓Geometric Consistency↑
+w/o Dyn. Vid
+129.40
+0.2069
+2.02
+78.50
+w/o Scale Calib.
+301.68
+0.2121
+2.14
+82.10
+w/o Dist. Balance
+309.24
+0.2834
+4.56
+85.96
+Full Pipeline
+306.99
+0.1830
+1.74
+86.50
+Table 3. Ablation study on dataset curation pipeline.
+the T2V setting.
+CAMERACTRL II effectively combines
+camera control with object motion, successfully generat-
+ing dynamic elements such as moving vehicles. In con-
+trast, AC3D ignores the forward camera moving and does
+not strictly follow the text prompt, failed to generate a bus.
+4.5. Ablation Study
+The design of CAMERACTRL II consists of three key com-
+ponents: dataset construction, injecting the camera control
+into the pretrained video diffusion model, and a multi-clip
+video extension method. In this section, we conduct exten-
+sive ablation studies to validate each component. All mod-
+els are trained at a resolution of 192 × 384 for 50,000 steps
+of single-clip training followed by 30,000 steps of multi-
+clip video extension training with the same resolution.
+Effectiveness of Each Component of Data Construc-
+tion Pipeline. First, we investigate the necessity of incor-
+porating dynamic videos by training only with the static
+data (Tab. 3 w/o Dyn.
+Vid), RealEstate10K [62].
+The
+model shows degraded performance in terms of Motion
+strength (129.40 vs 306.99) and camera control ability. This
+demonstrates that using dynamic videos with camera pose
+annotation during the training of camera-controlled video
+diffusion model is crucial for achieving high quality and
+high dynamic generation while maintaining camera control.
+We then examine the importance of scale calibration by
+removing this step (Tab. 3 w/o Scale Calib.). The results
+show that without this step, the model exhibits higher cam-
+era control errors (TransErr 0.2121 vs 0.1830, RotErr 2.14
+vs 1.74), and the lower Geometric consistency. This val-
+idates our hypothesis that normalizing scene scales to the
+same metric space helps the model learn more consistent
+geometric relationships, contributing to more accurate cam-
+era control and easier scene reconstruction.
+After that, we analyze the effect of distribution balanc-
+ing in camera trajectory types (Tab. 3 w/o Dist. Balance).
+Without this step, the model shows notable degradation in
+camera control accuracy and geometric consistency. This
+confirms that balancing the extreme long-tailed distribution
+of camera trajectory distributions of real-world videos is es-
+sential for achieving robust camera control and geometric
+consistency across diverse camera movement patterns.
+Effectiveness of Model Design and Training Strategy.
+Next, we conduct ablation studies on our design choice for
+the camera pose injection module and the training strat-
+Model
+Motion strength↑TransErr↓RotErr↓Geometric consistency↑
+Complex Encoder
+301.23
+0.1826
+1.88
+84.00
+Multilayer Inj.
+247.23
+0.1865
+1.78
+85.00
+w/o Joint Training
+279.82
+0.2098
+1.97
+81.92
+CAMERACTRL II
+306.99
+0.1830
+1.74
+86.50
+Table 4. Ablation study on the effectiveness of our model archi-
+tecture and training strategy for single-clip model.
+Model
+FVD↓
+TransErr↓
+RotErr↓
+Appearance consistency↑
+Different Ref.
+118.32
+0.1963
+1.94
+0.8032
+Noised Condition
+136.78
+0.1847
+1.85
+0.7843
+Noised Condition∗
+140.98
+0.1901
+1.88
+0.7982
+CAMERACTRL II
+112.46
+0.1830
+1.74
+0.8654
+Table 5. Ablation study on key design choices in extending the
+single-clip model to enable scene exploration.
+egy. First, we evaluate the effectiveness of using a single
+patchify layer to extract camera features from the Pl¨ucker
+embedding. For comparison, we implement a model variant
+with a more sophisticated encoder similar to CameraCtrl,
+and the extracted camera features are used at the beginning
+of the DiT model. As shown in Tab. 4 (Complex Encoder),
+while this more complex architecture achieves comparable
+performance in terms of TransErr, our simple patchify layer
+design yields better results across other metrics. This find-
+ing indicates that a simple feature extraction layer is suf-
+ficient for converting camera representations into effective
+guidance signals for the generation process.
+We then investigate the impact of camera condition in-
+jection places. While injecting camera features at every DiT
+layers (Tab. 4 Multilayer Inj.) achieves comparable camera
+control accuracy, it significantly reduce the Motion strength.
+This result supports our argument that camera control in-
+formation should only guide the overall video generation.
+Adding camera features to the deeper layers, where the
+model processes local details, can restrict the model’s capa-
+bility to generate dynamic videos. Thus, adding the camera
+representation at the initial layer of DiT model is sufficient.
+Next, we study the effectiveness of joint training the
+model with additional video data without camera annota-
+tions (Tab. 4 w/o Joint Training). Results show that remov-
+ing this joint training leads to reduced dynamics. This is
+because additional video data exposes our model to more
+diverse visual domains and object motion types that are not
+covered in the RealCam dataset. Additionally, joint train-
+ing helps improve camera control performance by enabling
+the camera-wise classifier-free guidance, as demonstrated
+by TransErr, RotErr, and Geometric consistency.
+Key Design Choices for Video Extension.
+Finally, we
+investigate two important design choices for video exten-
+sion. First, we study different strategy for defining reference
+frames for calculating the relative camera pose. One ap-
+8
+
+Figure 5. Visualization results of CAMERACTRL II across diverse scenes. Our model demonstrates effective camera control in various
+visual environments, including Minecraft-style game scenes (top row), black and white foggy London streets (second row), abandoned
+hospital interiors (third row), fantasy forest hiking trails (fourth row), and animated palace scenes (bottom row). The results are generated
+using the I2V setting, with the first image as the condition image. The camera trajectories are shown on the left of each row.
+Videos Generated by CameraCtrl II
+Point Cloud
+Figure 6. 3D reconstruction on generated scenes by CAMERACTRL II. With the generated video frames, we use the FLARE [61] to
+estimate the point clouds of the scenes.
+proach uses each clip’s first frame as a local reference frame
+within that clip (Tab. 5 Different Ref.). Our method uses
+the first frame of the first clip as a global reference frame to
+compute the relative camera pose for all camera trajectories.
+Results show that using a global reference achieves better
+camera control accuracy and Appearance consistency. This
+is because that a shared reference frame helps maintain con-
+sistent geometric relationships across clips and camera tra-
+jectory conditions, making it easier for the model to learn
+smooth transition between clips.
+9
+
+Figure 7. Failure case visualization. A fence is on the intended camera trajectory. CAMERACTRL II strictly follows the trajectory and
+generate a video where the structure of the fence is damaged, which is anti-reality.
+We compare our clip-wise extension approach with an
+alternative strategy. In this alternative model (Tab. 5 Noised
+Condition), noise is added to all clips during training, and
+the loss is computed across both conditioning and target
+clips. However, during inference, only clean conditioning
+clips are used, creating a discrepancy between training and
+inference settings. This mismatch leads to degraded perfor-
+mance in both FVD and Appearance consistency metrics.
+Even when attempting to bridge this gap by adding little
+noise to conditioning frames in inference, the performance
+remains suboptimal (Tab. 5 Noised Condition’). In contrast,
+our teacher maintains consistent noise-free condition clips
+in both training and inference.
+4.6. Visualization Results
+Different scenario scenes exploration. We first provide
+visualizations of CAMERACTRL II for different scene sce-
+narios to showcase its generalization performance in cam-
+era control. As shown in the Fig. 5, our model can be ap-
+plied to various scenes (such as Minecraft-like game scenes,
+black and white 19th century foggy London streets, indoor
+abandoned hospital, outdoor hiking in a fantasy world, and
+anime-style palace scenes). Besides, CAMERACTRL II can
+effectively controlling camera movements (camera panning
+left and right, complete turns, etc.) and maintaining appro-
+priate dynamic effects.
+3D reconstruction of generated scenes. Our method gen-
+erates high-quality dynamic videos with conditional cam-
+era poses, effectively transforming video generative models
+into view synthesizers. The strong 3D consistency of these
+generated videos enables high-quality 3D reconstruction.
+Specifically, we use FLARE [61] to infer detailed 3D point
+clouds from frames extracted from our generated videos. As
+shown in Fig. 6, our approach produces videos that can be
+reconstructed into high-quality point clouds, demonstrating
+the superior 3D consistency achieved by our models.
+5. Discussion
+In this paper, we introduce CAMERACTRL II, a framework
+that enables users to explore generated dynamic scenes
+through precise camera control. We first construct REAL-
+CAM, a dataset composed of dynamic videos with camera
+pose annotations. Then, we design a lightweight camera pa-
+rameter injector that integrates camera conditions at the ini-
+tial layers of DiT, along with a corresponding joint training
+strategy to preserve the pre-trained model’s ability to gen-
+erate dynamic scenes. Besides, we develop a clip-level ex-
+tension method that allows the model to generate new video
+clips conditioned on both previously generated content and
+new camera trajectories. Experimental results demonstrate
+our method’s effectiveness in generating camera-controlled
+dynamic videos while maintaining high quality and tempo-
+ral consistency across sequential video clips.
+Limitation and Future Work. Our current approach has
+several limitations for future investigation.
+First, CAM-
+ERACTRL II occasionally struggles to resolve conflicts be-
+tween camera movement and scene geometry, sometimes
+resulting in physically implausible camera paths that in-
+tersect with scene structures.
+We provide a failure case
+in Fig. 7. In this example, we provide a forward camera
+trajectory with left and right camera view change. There
+is a fence blocks the intended path. An ideal physically-
+aware model would recognize this constraint and stop the
+camera movement at the fence. However, our model gener-
+ates a physically implausible result where the fence struc-
+ture deteriorates as the camera passes through it. Addition-
+ally, while our method achieves accurate camera control,
+the overall geometric consistency of generated scenes could
+be further improved, especially when dealing with complex
+camera trajectories.
+Ethics Statement. Our camera trajectory-based video gen-
+eration model enables dynamic scene generation and ex-
+ploration, but we acknowledge potential ethical concerns.
+While this technology has beneficial applications in educa-
+tion, virtual tourism, and creative industries, it could poten-
+tially be misused to create misleading content. Our model’s
+outputs may reflect biases present in the training data de-
+spite our efforts to use diverse training sets. Users should
+obtain proper consent when using personal images as in-
+put and respect copyright, privacy, and cultural sensitivities
+when utilizing our system.
+6. Acknowledgement
+We would like to express our sincere gratitude to Jianyuan
+Wang in the University of Oxford for his valuable insights
+and assistance regarding the usage of VGGSfM in our data
+processing pipeline. His expertise significantly contributed
+to the development of our camera pose estimation approach
+and enhanced the overall quality of our work.
+10
+
+References
+[1] Cosmos World Foundation Model Platform for Physical AI.
+3
+[2] Sherwin Bahmani, Ivan Skorokhodov, Guocheng Qian, Ali-
+aksandr Siarohin, Willi Menapace, Andrea Tagliasacchi,
+David B Lindell, and Sergey Tulyakov. Ac3d: Analyzing
+and improving 3d camera control in video diffusion trans-
+formers. arXiv preprint arXiv:2411.18673, 2024. 2, 3, 5, 6,
+7
+[3] Sherwin Bahmani, Ivan Skorokhodov, Aliaksandr Siaro-
+hin, Willi Menapace, Guocheng Qian, Michael Vasilkovsky,
+Hsin-Ying Lee,
+Chaoyang Wang,
+Jiaxu Zou,
+Andrea
+Tagliasacchi, David B. Lindell, and Sergey Tulyakov. Vd3d:
+Taming large video diffusion transformers for 3d camera
+control. arXiv preprint arXiv:2407.12781, 2024. 2, 3
+[4] Jianhong Bai, Menghan Xia, Xintao Wang, Ziyang Yuan,
+Xiao Fu, Zuozhu Liu, Haoji Hu, Pengfei Wan, and
+Di Zhang.
+Syncammaster:
+Synchronizing multi-camera
+video generation from diverse viewpoints.
+arXiv preprint
+arXiv:2412.07760, 2024. 3, 5
+[5] Max Bain, Arsha Nagrani, G¨ul Varol, and Andrew Zisser-
+man. Frozen in time: A joint video and image encoder for
+end-to-end retrieval. In Proceedings of the IEEE/CVF inter-
+national conference on computer vision, pages 1728–1738,
+2021. 2
+[6] Andreas Blattmann, Tim Dockhorn, Sumith Kulal, Daniel
+Mendelevitch, Maciej Kilian, Dominik Lorenz, Yam Levi,
+Zion English, Vikram Voleti, Adam Letts, et al. Stable video
+diffusion: Scaling latent video diffusion models to large
+datasets. arXiv preprint arXiv:2311.15127, 2023. 2
+[7] Andreas Blattmann, Robin Rombach, Huan Ling, Tim Dock-
+horn, Seung Wook Kim, Sanja Fidler, and Karsten Kreis.
+Align your latents: High-resolution video synthesis with la-
+tent diffusion models. In Proceedings of the IEEE/CVF con-
+ference on computer vision and pattern recognition, pages
+22563–22575, 2023. 2
+[8] Aleksei Bochkovskii, Ama¨el Delaunoy, Hugo Germain,
+Marcel Santos, Yichao Zhou, Stephan R Richter, and
+Vladlen Koltun. Depth pro: Sharp monocular metric depth in
+less than a second. arXiv preprint arXiv:2410.02073, 2024.
+4
+[9] Tim Brooks, Bill Peebles, Connor Holmes, Will DePue,
+Yufei Guo, Li Jing, David Schnurr, Joe Taylor, Troy Luh-
+man, Eric Luhman, Clarence Ng, Ricky Wang, and Aditya
+Ramesh.
+Video generation models as world simulators.
+2024. 2, 3
+[10] Tsai-Shien Chen, Aliaksandr Siarohin, Willi Menapace,
+Ekaterina Deyneka, Hsiang-wei Chao, Byung Eun Jeon,
+Yuwei Fang, Hsin-Ying Lee, Jian Ren, Ming-Hsuan Yang,
+et al.
+Panda-70m: Captioning 70m videos with multiple
+cross-modality teachers. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition,
+pages 13320–13331, 2024. 2
+[11] Suhwan Cho, Minhyeok Lee, Seunghoon Lee, Chaewon
+Park, Donghyeong Kim, and Sangyoun Lee. Treating mo-
+tion as option to reduce motion dependency in unsupervised
+video object segmentation. In Proceedings of the IEEE/CVF
+winter conference on applications of computer vision, pages
+5140–5149, 2023. 4, 7
+[12] Matt Deitke, Ruoshi Liu, Matthew Wallingford, Huong Ngo,
+Oscar Michel, Aditya Kusupati, Alan Fan, Christian Laforte,
+Vikram Voleti, Samir Yitzhak Gadre, et al. Objaverse-xl: A
+universe of 10m+ 3d objects. Advances in Neural Informa-
+tion Processing Systems, 36:35799–35813, 2023. 3
+[13] Patrick Esser, Sumith Kulal, Andreas Blattmann, Rahim
+Entezari, Jonas M¨uller, Harry Saini, Yam Levi, Dominik
+Lorenz, Axel Sauer, Frederic Boesel, et al. Scaling recti-
+fied flow transformers for high-resolution image synthesis.
+In Forty-first international conference on machine learning,
+2024. 3
+[14] Ruili Feng, Han Zhang, Zhantao Yang, Jie Xiao, Zhilei
+Shu, Zhiheng Liu, Andy Zheng, Yukun Huang, Yu Liu,
+and Hongyang Zhang. The matrix: Infinite-horizon world
+generation with real-time moving control.
+arXiv preprint
+arXiv:2412.03568, 2024. 2
+[15] Wanquan Feng,
+Jiawei Liu,
+Pengqi Tu,
+Tianhao Qi,
+Mingzhen Sun, Tianxiang Ma, Songtao Zhao, Siyu Zhou,
+and Qian He. I2vcontrol-camera: Precise video camera con-
+trol with adjustable motion strength. 2025. 3
+[16] Xiao Fu, Xian Liu, Xintao Wang, Sida Peng, Menghan
+Xia, Xiaoyu Shi, Ziyang Yuan, Pengfei Wan, Di Zhang,
+and Dahua Lin. 3dtrajmaster: Mastering 3d trajectory for
+multi-entity motion in video generation.
+arXiv preprint
+arXiv:2412.07759, 2024. 2, 3, 5
+[17] Yuwei Guo, Ceyuan Yang, Anyi Rao, Zhengyang Liang,
+Yaohui Wang, Yu Qiao, Maneesh Agrawala, Dahua Lin,
+and Bo Dai. Animatediff: Animate your personalized text-
+to-image diffusion models without specific tuning.
+arXiv
+preprint arXiv:2307.04725, 2023. 2
+[18] Yuwei Guo, Ceyuan Yang, Anyi Rao, Maneesh Agrawala,
+Dahua Lin, and Bo Dai. Sparsectrl: Adding sparse controls
+to text-to-video diffusion models. In European Conference
+on Computer Vision, pages 330–348. Springer, 2024. 2
+[19] Agrim Gupta, Lijun Yu, Kihyuk Sohn, Xiuye Gu, Meera
+Hahn, Fei-Fei Li, Irfan Essa, Lu Jiang, and Jos´e Lezama.
+Photorealistic video generation with diffusion models.
+In
+European Conference on Computer Vision, pages 393–411.
+Springer, 2024. 2
+[20] Richard Hartley and Andrew Zisserman. Multiple view ge-
+ometry in computer vision.
+Cambridge university press,
+2003. 4
+[21] Hao He, Yinghao Xu, Yuwei Guo, Gordon Wetzstein, Bo
+Dai, Hongsheng Li, and Ceyuan Yang. Cameractrl: Enabling
+camera control for text-to-video generation. arXiv preprint
+arXiv:2404.02101, 2024. 2, 3, 5, 6, 7
+[22] Jonathan Ho and Tim Salimans.
+Classifier-free diffusion
+guidance. arXiv preprint arXiv:2207.12598, 2022. 2, 5
+[23] Jonathan Ho, Tim Salimans, Alexey Gritsenko, William
+Chan, Mohammad Norouzi, and David J Fleet. Video dif-
+fusion models. Advances in Neural Information Processing
+Systems, 35:8633–8646, 2022. 2
+[24] Wenyi Hong, Ming Ding, Wendi Zheng, Xinghan Liu,
+and Jie Tang.
+Cogvideo:
+Large-scale pretraining for
+text-to-video generation via transformers.
+arXiv preprint
+arXiv:2205.15868, 2022. 2
+11
+
+[25] Chen Hou, Guoqiang Wei, Yan Zeng, and Zhibo Chen.
+Training-free camera control for video generation.
+arXiv
+preprint arXiv:2406.10126, 2024. 3
+[26] Ziqi Huang, Yinan He, Jiashuo Yu, Fan Zhang, Chenyang Si,
+Yuming Jiang, Yuanhan Zhang, Tianxing Wu, Qingyang Jin,
+Nattapol Chanpaisit, Yaohui Wang, Xinyuan Chen, Limin
+Wang, Dahua Lin, Yu Qiao, and Ziwei Liu. VBench: Com-
+prehensive benchmark suite for video generative models. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition, 2024. 2
+[27] Ziqi Huang, Fan Zhang, Xiaojie Xu, Yinan He, Jiashuo
+Yu, Ziyue Dong, Qianli Ma, Nattapol Chanpaisit, Chenyang
+Si, Yuming Jiang, Yaohui Wang, Xinyuan Chen, Ying-
+Cong Chen, Limin Wang, Dahua Lin, Yu Qiao, and Zi-
+wei Liu. Vbench++: Comprehensive and versatile bench-
+mark suite for video generative models.
+arXiv preprint
+arXiv:2411.13503, 2024. 2
+[28] Tero Karras, Miika Aittala, Timo Aila, and Samuli Laine.
+Elucidating the design space of diffusion-based generative
+models. Advances in neural information processing systems,
+35:26565–26577, 2022. 2
+[29] KuaiShou. Kling, 2025. Accessed: 2025-02-23. 2, 3
+[30] Zhengfei Kuang, Shengqu Cai, Hao He, Yinghao Xu, Hong-
+sheng Li, Leonidas J Guibas, and Gordon Wetzstein. Collab-
+orative video diffusion: Consistent multi-video generation
+with camera control. Advances in Neural Information Pro-
+cessing Systems, 37:16240–16271, 2025. 2, 3
+[31] Black Forest Labs.
+Flux.
+https://github.com/
+black-forest-labs/flux, 2024. 6
+[32] Bing Li, Cheng Zheng, Wenxuan Zhu, Jinjie Mai, Biao
+Zhang, Peter Wonka, and Bernard Ghanem.
+Vivid-zoo:
+Multi-view video generation with diffusion model. Advances
+in Neural Information Processing Systems, 37:62189–62222,
+2025. 3
+[33] Bin Lin, Yunyang Ge, Xinhua Cheng, Zongjian Li, Bin Zhu,
+Shaodong Wang, Xianyi He, Yang Ye, Shenghai Yuan, Li-
+uhan Chen, et al. Open-sora plan: Open-source large video
+generation model. arXiv preprint arXiv:2412.00131, 2024.
+2
+[34] Shanchuan Lin, Xin Xia, Yuxi Ren, Ceyuan Yang, Xuefeng
+Xiao, and Lu Jiang. Diffusion adversarial post-training for
+one-step video generation. arXiv preprint arXiv:2501.08316,
+2025. 5, 6
+[35] Lu Ling, Yichen Sheng, Zhi Tu, Wentian Zhao, Cheng Xin,
+Kun Wan, Lantao Yu, Qianyu Guo, Zixun Yu, Yawen Lu,
+et al.
+Dl3dv-10k: A large-scale scene dataset for deep
+learning-based 3d vision. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition,
+pages 22160–22169, 2024. 2, 3
+[36] Andrew Liu, Richard Tucker, Varun Jampani, Ameesh
+Makadia, Noah Snavely, and Angjoo Kanazawa. Infinite na-
+ture: Perpetual view generation of natural scenes from a sin-
+gle image. In Proceedings of the IEEE/CVF International
+Conference on Computer Vision (ICCV), 2021. 3
+[37] Xingchao Liu, Chengyue Gong, and Qiang Liu.
+Flow
+straight and fast: Learning to generate and transfer data with
+rectified flow. arXiv preprint arXiv:2209.03003, 2022. 2
+[38] Guoqing Ma, Haoyang Huang, Kun Yan, Liangyu Chen, Nan
+Duan, Shengming Yin, Changyi Wan, Ranchen Ming, Xi-
+aoniu Song, Xing Chen, et al. Step-video-t2v technical re-
+port: The practice, challenges, and future of video founda-
+tion model. arXiv preprint arXiv:2502.10248, 2025. 3
+[39] Xin Ma, Yaohui Wang, Gengyun Jia, Xinyuan Chen, Zi-
+wei Liu, Yuan-Fang Li, Cunjian Chen, and Yu Qiao. Latte:
+Latent diffusion transformer for video generation.
+arXiv
+preprint arXiv:2401.03048, 2024. 2
+[40] Willi Menapace, Aliaksandr Siarohin, Ivan Skorokhodov,
+Ekaterina Deyneka, Tsai-Shien Chen, Anil Kag, Yuwei
+Fang, Aleksei Stoliar, Elisa Ricci, Jian Ren, et al.
+Snap
+video: Scaled spatiotemporal transformers for text-to-video
+synthesis.
+In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition, pages 7038–
+7048, 2024. 3
+[41] Jack Parker-Holder, Philip Ball, Jake Bruce, Vibhavari
+Dasagi, Kristian Holsheimer, Christos Kaplanis, Alexandre
+Moufarek, Guy Scully, Jeremy Shar, Jimmy Shi, Stephen
+Spencer, Jessica Yung, Michael Dennis, Sultan Kenjeyev,
+Shangbang Long, Vlad Mnih, Harris Chan, Maxime Gazeau,
+Bonnie Li, Fabio Pardo, Luyu Wang, Lei Zhang, Fred-
+eric Besse, Tim Harley, Anna Mitenkova, Jane Wang, Jeff
+Clune, Demis Hassabis, Raia Hadsell, Adrian Bolton, Satin-
+der Singh, and Tim Rockt¨aschel.
+Genie 2: A large-scale
+foundation world model. 2024. 2
+[42] William Peebles and Saining Xie. Scalable diffusion models
+with transformers. In Proceedings of the IEEE/CVF inter-
+national conference on computer vision, pages 4195–4205,
+2023. 3
+[43] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya
+Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,
+Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning
+transferable visual models from natural language supervi-
+sion. In International conference on machine learning, pages
+8748–8763. PmLR, 2021. 7
+[44] Tim Salimans and Jonathan Ho.
+Progressive distillation
+for fast sampling of diffusion models.
+arXiv preprint
+arXiv:2202.00512, 2022. 5, 6
+[45] Xiaoyu Shi, Zhaoyang Huang, Fu-Yun Wang, Weikang Bian,
+Dasong Li, Yi Zhang, Manyuan Zhang, Ka Chun Cheung,
+Simon See, Hongwei Qin, et al. Motion-i2v: Consistent and
+controllable image-to-video generation with explicit motion
+modeling.
+In ACM SIGGRAPH 2024 Conference Papers,
+pages 1–11, 2024. 2
+[46] Uriel Singer, Adam Polyak, Thomas Hayes, Xi Yin, Jie An,
+Songyang Zhang, Qiyuan Hu, Harry Yang, Oron Ashual,
+Oran Gafni, et al. Make-a-video: Text-to-video generation
+without text-video data. arXiv preprint arXiv:2209.14792,
+2022. 2
+[47] Vincent Sitzmann, Semon Rezchikov, Bill Freeman, Josh
+Tenenbaum, and Fredo Durand. Light field networks: Neu-
+ral scene representations with single-evaluation rendering.
+Advances in Neural Information Processing Systems, 34:
+19313–19325, 2021. 3
+[48] J¨urgen Sturm, Nikolas Engelhard, Felix Endres, Wolfram
+Burgard, and Daniel Cremers. A benchmark for the evalua-
+tion of rgb-d slam systems. In 2012 IEEE/RSJ international
+12
+
+conference on intelligent robots and systems, pages 573–580.
+IEEE, 2012. 7
+[49] Hunyuan Foundation Model Team. Hunyuanvideo: A sys-
+tematic framework for large video generative models, 2024.
+2, 3
+[50] Zachary Teed and Jia Deng. Raft: Recurrent all-pairs field
+transforms for optical flow.
+In Computer Vision–ECCV
+2020: 16th European Conference, Glasgow, UK, August 23–
+28, 2020, Proceedings, Part II 16, pages 402–419. Springer,
+2020. 4
+[51] Thomas Unterthiner, Sjoerd Van Steenkiste, Karol Kurach,
+Raphael Marinier, Marcin Michalski, and Sylvain Gelly. To-
+wards accurate generative models of video: A new metric &
+challenges. arXiv preprint arXiv:1812.01717, 2018. 6
+[52] Dani Valevski, Yaniv Leviathan, Moab Arar, and Shlomi
+Fruchter.
+Diffusion models are real-time game engines.
+arXiv preprint arXiv:2408.14837, 2024. 2
+[53] Jianyuan Wang, Nikita Karaev, Christian Rupprecht, and
+David Novotny. Vggsfm: Visual geometry grounded deep
+structure from motion. In Proceedings of the IEEE/CVF con-
+ference on computer vision and pattern recognition, pages
+21686–21697, 2024. 2, 4, 7
+[54] Zhouxia Wang, Ziyang Yuan, Xintao Wang, Yaowei Li,
+Tianshui Chen, Menghan Xia, Ping Luo, and Ying Shan.
+Motionctrl: A unified and flexible motion controller for
+video generation. In ACM SIGGRAPH 2024 Conference Pa-
+pers, pages 1–11, 2024. 2, 3, 5, 6, 7
+[55] Dejia Xu, Yifan Jiang, Chen Huang, Liangchen Song,
+Thorsten Gernoth, Liangliang Cao, Zhangyang Wang, and
+Hao Tang.
+Cavia: Camera-controllable multi-view video
+diffusion with view-integrated attention.
+arXiv preprint
+arXiv:2410.10774, 2024. 3
+[56] Dejia Xu, Weili Nie, Chao Liu, Sifei Liu, Jan Kautz,
+Zhangyang Wang, and Arash Vahdat.
+Camco: Camera-
+controllable 3d-consistent image-to-video generation. arXiv
+preprint arXiv:2406.02509, 2024. 2, 3, 5
+[57] Hongwei Xue, Tiankai Hang, Yanhong Zeng, Yuchong Sun,
+Bei Liu, Huan Yang, Jianlong Fu, and Baining Guo. Ad-
+vancing high-resolution video-language representation with
+large-scale video transcriptions.
+In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 5036–5045, 2022. 2
+[58] Zhuoyi Yang, Jiayan Teng, Wendi Zheng, Ming Ding, Shiyu
+Huang, Jiazheng Xu, Yuanming Yang, Wenyi Hong, Xiao-
+han Zhang, Guanyu Feng, et al. Cogvideox: Text-to-video
+diffusion models with an expert transformer. arXiv preprint
+arXiv:2408.06072, 2024. 2, 3
+[59] Jiwen Yu, Yiran Qin, Xintao Wang, Pengfei Wan, Di Zhang,
+and Xihui Liu. Gamefactory: Creating new games with gen-
+erative interactive videos. arXiv preprint arXiv:2501.08325,
+2025. 2
+[60] Lijun Yu, Jos´e Lezama, Nitesh B Gundavarapu, Luca Ver-
+sari, Kihyuk Sohn, David Minnen, Yong Cheng, Vighnesh
+Birodkar, Agrim Gupta, Xiuye Gu, et al. Language model
+beats diffusion–tokenizer is key to visual generation. arXiv
+preprint arXiv:2310.05737, 2023. 3, 6
+[61] Shangzhan Zhang, Jianyuan Wang, Yinghao Xu, Nan Xue,
+Christian Rupprecht, Xiaowei Zhou, Yujun Shen, and Gor-
+don Wetzstein. Flare: Feed-forward geometry, appearance
+and camera estimation from uncalibrated sparse views. arXiv
+preprint arXiv:2502.12138, 2025. 9, 10
+[62] Tinghui Zhou, Richard Tucker, John Flynn, Graham Fyffe,
+and Noah Snavely.
+Stereo magnification:
+Learning
+view synthesis using multiplane images.
+arXiv preprint
+arXiv:1805.09817, 2018. 2, 3, 7, 8
+13

@@ -1,0 +1,41 @@
+\section{Extended Ablation Studies}
+\label{sec:ablation}
+
+We perform extended ablation studies on latent-space image generation. Specifically, we vary the error tolerance $\delta$, the number of resolution stages $S$, and the spectral transformation $T_\Phi$, and report wall-clock latency, speedup, and ImageReward in Table~\ref{tab:ablation-quan}, with qualitative comparisons in Figures~\ref{fig:ablation-T} to \ref{fig:ablation-s}.
+
+\input{tables/ablation_quan_fixed}
+
+\paragraph{Computational efficiency and scaling.} The inference cost of Spectral Progressive Diffusion is determined by the number of denoising steps and the token count processed at each resolution stage. For a fixed pretrained model and resolution schedule, the per-sample cost is independent of the dataset size, so generating or evaluating more samples scales linearly with the number of samples. The spectral transformation and noise-expansion operations add only lightweight per-transition overhead compared to the DiT forward passes. 
+
+\paragraph{Spectral Transformation $T_\Phi$.} In Fig. \ref{fig:ablation-T}, we observe that DCT, DWT, and FFT achieve similar high-fidelity performance. We default to DCT for its real-valued computation and native support of non-power-of-two resolution scaling.
+
+\paragraph{Error tolerance $\delta$.} In Fig. \ref{fig:ablation-delta}, we observe that increasing $\delta$ improves efficiency, but results in ghosting and halo artifacts near detailed edges.
+
+\paragraph{Resolution stages $S$.} In Fig. \ref{fig:ablation-s}, we find that increasing $S$ leads to marginal speedup improvements and little image quality degradation. Since the primary speedup derives from bypassing native high-resolution steps, $S=2$ achieves the largest speedup while higher $S$ provides diminishing efficiency gains by further optimizing the already-inexpensive low-resolution trajectory.
+
+
+
+
+\newpage
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/ablation_T.pdf}
+    \caption{\textbf{Qualitative ablation on $T_\Phi$.} We see that all spectral transformations attain similar image quality. }
+    \label{fig:ablation-T}
+\end{figure}
+
+\newpage
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/ablation_delta.pdf}
+    \caption{\textbf{Qualitative ablation on $\delta$.} We observe that increasing $\delta$ improves efficiency, but results in ghosting and halo artifacts near detailed edges. }
+    \label{fig:ablation-delta}
+\end{figure}
+
+\newpage
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/ablation_s.pdf}
+    \caption{\textbf{Qualitative ablation on $S$.} We find that increasing $S$ leads to marginal speedup improvements and little image quality degradation.}
+    \label{fig:ablation-s}
+\end{figure}

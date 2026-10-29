@@ -1,0 +1,1224 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{96}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{#1}\fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Ahrenberg et~al\mbox{.}(2008)]%
+        {ahrenberg2008computer}
+\bibfield{author}{\bibinfo{person}{Lukas Ahrenberg}, \bibinfo{person}{Philip
+  Benzie}, \bibinfo{person}{Marcus Magnor}, {and} \bibinfo{person}{John
+  Watson}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Computer generated holograms from three dimensional
+  meshes using an analytic light transport model}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{47},
+  \bibinfo{number}{10} (\bibinfo{year}{2008}), \bibinfo{pages}{1567--1574}.
+\newblock
+
+
+\bibitem[Aliev et~al\mbox{.}(2019)]%
+        {aliev2019point}
+\bibfield{author}{\bibinfo{person}{K. Aliev}, \bibinfo{person}{A.
+  Sevastopolsky}, \bibinfo{person}{M. Kolos}, \bibinfo{person}{D. Ulyanov},
+  {and} \bibinfo{person}{V. Lempitsky}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \bibinfo{title}{{Neural Point-Based Graphics}}.
+\newblock
+\showeprint[arxiv]{1906.08240}
+\newblock
+\shownote{arXiv preprint}.
+
+
+\bibitem[Amako et~al\mbox{.}(1995)]%
+        {amako1995speckle}
+\bibfield{author}{\bibinfo{person}{Jun Amako}, \bibinfo{person}{Hirotsuna
+  Miura}, {and} \bibinfo{person}{Tomio Sonehara}.}
+  \bibinfo{year}{1995}\natexlab{}.
+\newblock \showarticletitle{Speckle-noise reduction on kinoform reconstruction
+  using a phase-only spatial light modulator}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{34},
+  \bibinfo{number}{17} (\bibinfo{year}{1995}), \bibinfo{pages}{3165--3171}.
+\newblock
+
+
+\bibitem[Askari et~al\mbox{.}(2017)]%
+        {askari2017occlusion}
+\bibfield{author}{\bibinfo{person}{Mehdi Askari}, \bibinfo{person}{Seong-Bok
+  Kim}, \bibinfo{person}{Kwang-Soo Shin}, \bibinfo{person}{Seok-Bum Ko},
+  \bibinfo{person}{Sang-Hoo Kim}, \bibinfo{person}{Dae-Youl Park},
+  \bibinfo{person}{Yeon-Gyeong Ju}, {and} \bibinfo{person}{Jae-Hyeung Park}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Occlusion handling using angular spectrum
+  convolution in fully analytical mesh based computer generated hologram}.
+\newblock \bibinfo{journal}{\emph{Optics Express}} \bibinfo{volume}{25},
+  \bibinfo{number}{21} (\bibinfo{year}{2017}), \bibinfo{pages}{25867--25878}.
+\newblock
+
+
+\bibitem[Bao et~al\mbox{.}(2022)]%
+        {neumesh}
+\bibfield{author}{\bibinfo{person}{Chong Bao}, \bibinfo{person}{Bangbang Yang},
+  \bibinfo{person}{Zeng Junyi}, \bibinfo{person}{Bao Hujun},
+  \bibinfo{person}{Zhang Yinda}, \bibinfo{person}{Cui Zhaopeng}, {and}
+  \bibinfo{person}{Zhang Guofeng}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{NeuMesh: Learning Disentangled Neural Mesh-Based
+  Implicit Field for Geometry and Texture Editing}}. In
+  \bibinfo{booktitle}{\emph{ECCV}}.
+\newblock
+
+
+\bibitem[Barron et~al\mbox{.}(2022)]%
+        {barron2022mipnerf360}
+\bibfield{author}{\bibinfo{person}{Jonathan~T. Barron}, \bibinfo{person}{Ben
+  Mildenhall}, \bibinfo{person}{Dor Verbin}, \bibinfo{person}{Pratul~P.
+  Srinivasan}, {and} \bibinfo{person}{Peter Hedman}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Mip-NeRF 360: Unbounded Anti-Aliased Neural
+  Radiance Fields}}. In \bibinfo{booktitle}{\emph{CVPR}}.
+\newblock
+
+
+\bibitem[Benton(1983)]%
+        {benton1983survey}
+\bibfield{author}{\bibinfo{person}{Stephen~A Benton}.}
+  \bibinfo{year}{1983}\natexlab{}.
+\newblock \showarticletitle{Survey of holographic stereograms}. In
+  \bibinfo{booktitle}{\emph{Processing and Display of Three-Dimensional Data}},
+  Vol.~\bibinfo{volume}{367}. SPIE, \bibinfo{pages}{15--19}.
+\newblock
+
+
+\bibitem[Bracewell et~al\mbox{.}(1993)]%
+        {bracewell1993affine}
+\bibfield{author}{\bibinfo{person}{R.~N. Bracewell}, \bibinfo{person}{K.-Y.
+  Chang}, \bibinfo{person}{A.~K. Jha}, {and} \bibinfo{person}{Y.-H. Wang}.}
+  \bibinfo{year}{1993}\natexlab{}.
+\newblock \showarticletitle{Affine theorem for two-dimensional Fourier
+  transform}.
+\newblock \bibinfo{journal}{\emph{Electronics Letters}} \bibinfo{volume}{29},
+  \bibinfo{number}{3} (\bibinfo{year}{1993}), \bibinfo{pages}{304--304}.
+\newblock
+
+
+\bibitem[Chakravarthula et~al\mbox{.}(2022)]%
+        {Chakravarthula2022pupil}
+\bibfield{author}{\bibinfo{person}{Praneeth Chakravarthula},
+  \bibinfo{person}{Seung-Hwan Baek}, \bibinfo{person}{Florian Schiffers},
+  \bibinfo{person}{Ethan Tseng}, \bibinfo{person}{Grace Kuo},
+  \bibinfo{person}{Andrew Maimone}, \bibinfo{person}{Nathan Matsuda},
+  \bibinfo{person}{Oliver Cossairt}, \bibinfo{person}{Douglas Lanman}, {and}
+  \bibinfo{person}{Felix Heide}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Pupil-aware Holography}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{41}, \bibinfo{number}{6}, Article \bibinfo{articleno}{212}
+  (\bibinfo{year}{2022}).
+\newblock
+
+
+\bibitem[Chakravarthula et~al\mbox{.}(2019)]%
+        {chakravarthula2019wirtinger}
+\bibfield{author}{\bibinfo{person}{Praneeth Chakravarthula},
+  \bibinfo{person}{Yifan Peng}, \bibinfo{person}{Joel Kollin},
+  \bibinfo{person}{Henry Fuchs}, {and} \bibinfo{person}{Felix Heide}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Wirtinger holography for near-eye displays}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{38}, \bibinfo{number}{6} (\bibinfo{year}{2019}),
+  \bibinfo{pages}{1--13}.
+\newblock
+
+
+\bibitem[Chang et~al\mbox{.}(2020)]%
+        {chang2020toward}
+\bibfield{author}{\bibinfo{person}{Chenliang Chang}, \bibinfo{person}{Kiseung
+  Bang}, \bibinfo{person}{Gordon Wetzstein}, \bibinfo{person}{Byoungho Lee},
+  {and} \bibinfo{person}{Liang Gao}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Toward the next-generation VR/AR optics: a review
+  of holographic near-eye displays from a human-centric perspective}.
+\newblock \bibinfo{journal}{\emph{Optica}} \bibinfo{volume}{7},
+  \bibinfo{number}{11} (\bibinfo{year}{2020}), \bibinfo{pages}{1563--1578}.
+\newblock
+
+
+\bibitem[Chao et~al\mbox{.}(2024)]%
+        {chao2024large}
+\bibfield{author}{\bibinfo{person}{Brian Chao}, \bibinfo{person}{Manu
+  Gopakumar}, \bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Jonghyun Kim},
+  \bibinfo{person}{Liang Shi}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Large {\'E}tendue 3D Holographic Display with
+  Content-adaptive Dynamic Fourier Modulation}. In
+  \bibinfo{booktitle}{\emph{SIGGRAPH Asia 2024 Conference Papers}}.
+  \bibinfo{pages}{1--12}.
+\newblock
+
+
+\bibitem[Chen et~al\mbox{.}(2021)]%
+        {Chen2021complex}
+\bibfield{author}{\bibinfo{person}{Chun Chen}, \bibinfo{person}{Byounghyo Lee},
+  \bibinfo{person}{Nan-Nan Li}, \bibinfo{person}{Minseok Chae},
+  \bibinfo{person}{Di Wang}, \bibinfo{person}{Qiong-Hua Wang}, {and}
+  \bibinfo{person}{Byoungho Lee}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Multi-depth hologram generation using stochastic
+  gradient descent algorithm with complex loss function}.
+\newblock \bibinfo{journal}{\emph{Opt. Express}} \bibinfo{volume}{29},
+  \bibinfo{number}{10} (\bibinfo{date}{May} \bibinfo{year}{2021}),
+  \bibinfo{pages}{15089--15103}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1364/OE.425077}
+\showDOI{\tempurl}
+
+
+\bibitem[Chen and Wang(2024)]%
+        {chen2024survey}
+\bibfield{author}{\bibinfo{person}{Guikun Chen} {and} \bibinfo{person}{Wenguan
+  Wang}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{A survey on 3d gaussian splatting}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2401.03890}}
+  (\bibinfo{year}{2024}).
+\newblock
+
+
+\bibitem[Chen and Wilkinson(2009a)]%
+        {h2009computer}
+\bibfield{author}{\bibinfo{person}{Rick H.-Y. Chen} {and}
+  \bibinfo{person}{Timothy~D Wilkinson}.} \bibinfo{year}{2009}\natexlab{a}.
+\newblock \showarticletitle{Computer generated hologram from point cloud using
+  graphics processor}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{48},
+  \bibinfo{number}{36} (\bibinfo{year}{2009}), \bibinfo{pages}{6841--6850}.
+\newblock
+
+
+\bibitem[Chen and Wilkinson(2009b)]%
+        {chen2009computer}
+\bibfield{author}{\bibinfo{person}{Rick H.-Y. Chen} {and}
+  \bibinfo{person}{Timothy~D Wilkinson}.} \bibinfo{year}{2009}\natexlab{b}.
+\newblock \showarticletitle{Computer generated hologram with geometric
+  occlusion using GPU-accelerated depth buffer rasterization for
+  three-dimensional display}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{48},
+  \bibinfo{number}{21} (\bibinfo{year}{2009}), \bibinfo{pages}{4246--4255}.
+\newblock
+
+
+\bibitem[Choi et~al\mbox{.}(2022)]%
+        {choi2022time}
+\bibfield{author}{\bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Manu
+  Gopakumar}, \bibinfo{person}{Yifan Peng}, \bibinfo{person}{Jonghyun Kim},
+  \bibinfo{person}{Matthew O'Toole}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Time-multiplexed neural holography: a flexible
+  framework for holographic near-eye displays with fast heavily-quantized
+  spatial light modulators}. In \bibinfo{booktitle}{\emph{ACM SIGGRAPH 2022
+  Conference Proceedings}}. \bibinfo{pages}{1--9}.
+\newblock
+
+
+\bibitem[Choi et~al\mbox{.}(2021)]%
+        {choi2021neural}
+\bibfield{author}{\bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Manu
+  Gopakumar}, \bibinfo{person}{Yifan Peng}, \bibinfo{person}{Jonghyun Kim},
+  {and} \bibinfo{person}{Gordon Wetzstein}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Neural 3d holography: Learning accurate wave
+  propagation models for 3d holographic virtual and augmented reality
+  displays}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{40}, \bibinfo{number}{6} (\bibinfo{year}{2021}),
+  \bibinfo{pages}{1--12}.
+\newblock
+
+
+\bibitem[Cuypers et~al\mbox{.}(2012)]%
+        {cuypers2012reflectance}
+\bibfield{author}{\bibinfo{person}{Tom Cuypers}, \bibinfo{person}{Tom Haber},
+  \bibinfo{person}{Philippe Bekaert}, \bibinfo{person}{Se~Baek Oh}, {and}
+  \bibinfo{person}{Ramesh Raskar}.} \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{Reflectance model for diffraction}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{31}, \bibinfo{number}{5} (\bibinfo{year}{2012}),
+  \bibinfo{pages}{1--11}.
+\newblock
+
+
+\bibitem[Fridovich-Keil et~al\mbox{.}(2022)]%
+        {yu_and_fridovichkeil2021plenoxels}
+\bibfield{author}{\bibinfo{person}{Sara Fridovich-Keil}, \bibinfo{person}{Alex
+  Yu}, \bibinfo{person}{Matthew Tancik}, \bibinfo{person}{Qinhong Chen},
+  \bibinfo{person}{Benjamin Recht}, {and} \bibinfo{person}{Angjoo Kanazawa}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Plenoxels: Radiance Fields without Neural
+  Networks}}. In \bibinfo{booktitle}{\emph{CVPR}}.
+\newblock
+
+
+\bibitem[Gerchberg(1972)]%
+        {gerchberg1972practical}
+\bibfield{author}{\bibinfo{person}{Ralph~W Gerchberg}.}
+  \bibinfo{year}{1972}\natexlab{}.
+\newblock \showarticletitle{A practical algorithm for the determination of
+  plane from image and diffraction pictures}.
+\newblock \bibinfo{journal}{\emph{Optik}} \bibinfo{volume}{35},
+  \bibinfo{number}{2} (\bibinfo{year}{1972}), \bibinfo{pages}{237--246}.
+\newblock
+
+
+\bibitem[Goodman(2005)]%
+        {goodman2005introduction}
+\bibfield{author}{\bibinfo{person}{Joseph~W Goodman}.}
+  \bibinfo{year}{2005}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Introduction to Fourier optics}}.
+\newblock \bibinfo{publisher}{Roberts and Company publishers}.
+\newblock
+
+
+\bibitem[Gopakumar et~al\mbox{.}(2021)]%
+        {Gopakumar2021unfiltered}
+\bibfield{author}{\bibinfo{person}{Manu Gopakumar}, \bibinfo{person}{Jonghyun
+  Kim}, \bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Yifan Peng}, {and}
+  \bibinfo{person}{Gordon Wetzstein}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Unfiltered holography: optimizing high diffraction
+  orders without optical filtering for compact holographic displays}.
+\newblock \bibinfo{journal}{\emph{Opt. Lett.}} \bibinfo{volume}{46},
+  \bibinfo{number}{23} (\bibinfo{date}{Dec} \bibinfo{year}{2021}),
+  \bibinfo{pages}{5822--5825}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1364/OL.442851}
+\showDOI{\tempurl}
+
+
+\bibitem[Gopakumar et~al\mbox{.}(2024)]%
+        {gopakumar2024full}
+\bibfield{author}{\bibinfo{person}{Manu Gopakumar}, \bibinfo{person}{Gun-Yeal
+  Lee}, \bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Brian Chao},
+  \bibinfo{person}{Yifan Peng}, \bibinfo{person}{Jonghyun Kim}, {and}
+  \bibinfo{person}{Gordon Wetzstein}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Full-colour 3D holographic augmented-reality
+  displays with metasurface waveguides}.
+\newblock \bibinfo{journal}{\emph{Nature}} (\bibinfo{year}{2024}),
+  \bibinfo{pages}{1--7}.
+\newblock
+
+
+\bibitem[Guo et~al\mbox{.}(2023)]%
+        {guo2023vmesh}
+\bibfield{author}{\bibinfo{person}{Yuan-Chen Guo}, \bibinfo{person}{Yan-Pei
+  Cao}, \bibinfo{person}{Chen Wang}, \bibinfo{person}{Yu He},
+  \bibinfo{person}{Ying Shan}, {and} \bibinfo{person}{Song-Hai Zhang}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{{VMesh: Hybrid Volume-Mesh Representation for
+  Efficient View Synthesis}}. In \bibinfo{booktitle}{\emph{SIGGRAPH Asia}}.
+\newblock
+
+
+\bibitem[Halle et~al\mbox{.}(1991)]%
+        {halle1991ultragram}
+\bibfield{author}{\bibinfo{person}{Michael~W Halle}, \bibinfo{person}{Stephen~A
+  Benton}, \bibinfo{person}{Michael~A Klug}, {and} \bibinfo{person}{John~S
+  Underkoffler}.} \bibinfo{year}{1991}\natexlab{}.
+\newblock \showarticletitle{Ultragram: a generalized holographic stereogram}.
+  In \bibinfo{booktitle}{\emph{Practical Holography V}},
+  Vol.~\bibinfo{volume}{1461}. SPIE, \bibinfo{pages}{142--155}.
+\newblock
+
+
+\bibitem[Hanocka et~al\mbox{.}(2020)]%
+        {hanocka2020point2mesh}
+\bibfield{author}{\bibinfo{person}{Rana Hanocka}, \bibinfo{person}{Gal Metzer},
+  \bibinfo{person}{Raja Giryes}, {and} \bibinfo{person}{Daniel Cohen-Or}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Point2Mesh: a self-prior for Deformable Meshes}.
+\newblock \bibinfo{journal}{\emph{ACM TOG}} \bibinfo{volume}{39},
+  \bibinfo{number}{4} (\bibinfo{date}{Aug} \bibinfo{year}{2020}).
+\newblock
+
+
+\bibitem[Horisaki et~al\mbox{.}(2021)]%
+        {horisaki2021three}
+\bibfield{author}{\bibinfo{person}{Ryoichi Horisaki}, \bibinfo{person}{Yohei
+  Nishizaki}, \bibinfo{person}{Katsuhisa Kitaguchi}, \bibinfo{person}{Mamoru
+  Saito}, {and} \bibinfo{person}{Jun Tanida}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Three-dimensional deeply generated holography}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{60},
+  \bibinfo{number}{4} (\bibinfo{year}{2021}), \bibinfo{pages}{A323--A328}.
+\newblock
+
+
+\bibitem[Hsueh and Sawchuk(1978)]%
+        {hsueh1978computer}
+\bibfield{author}{\bibinfo{person}{Chung-Kai Hsueh} {and}
+  \bibinfo{person}{Alexander~A Sawchuk}.} \bibinfo{year}{1978}\natexlab{}.
+\newblock \showarticletitle{Computer-generated double-phase holograms}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{17},
+  \bibinfo{number}{24} (\bibinfo{year}{1978}), \bibinfo{pages}{3874--3883}.
+\newblock
+
+
+\bibitem[Hu et~al\mbox{.}(2023)]%
+        {hu2023multiscale}
+\bibfield{author}{\bibinfo{person}{Dongting Hu}, \bibinfo{person}{Zhenkai
+  Zhang}, \bibinfo{person}{Tingbo Hou}, \bibinfo{person}{Tongliang Liu},
+  \bibinfo{person}{Huan Fu}, {and} \bibinfo{person}{Mingming Gong}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Multiscale representation for real-time
+  anti-aliasing neural rendering}. In \bibinfo{booktitle}{\emph{Proceedings of
+  the IEEE/CVF International Conference on Computer Vision}}.
+  \bibinfo{pages}{17772--17783}.
+\newblock
+
+
+\bibitem[Hu et~al\mbox{.}(2021)]%
+        {hu2021worldsheet}
+\bibfield{author}{\bibinfo{person}{Ronghang Hu}, \bibinfo{person}{Nikhila
+  Ravi}, \bibinfo{person}{Alexander~C. Berg}, {and} \bibinfo{person}{Deepak
+  Pathak}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{{Worldsheet: Wrapping the World in a 3D Sheet for
+  View Synthesis from a Single Image}}. In \bibinfo{booktitle}{\emph{ICCV}}.
+\newblock
+
+
+\bibitem[Huang et~al\mbox{.}(2024)]%
+        {huang20242d}
+\bibfield{author}{\bibinfo{person}{Binbin Huang}, \bibinfo{person}{Zehao Yu},
+  \bibinfo{person}{Anpei Chen}, \bibinfo{person}{Andreas Geiger}, {and}
+  \bibinfo{person}{Shenghua Gao}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{2d gaussian splatting for geometrically accurate
+  radiance fields}. In \bibinfo{booktitle}{\emph{ACM SIGGRAPH 2024 Conference
+  Papers}}. \bibinfo{pages}{1--11}.
+\newblock
+
+
+\bibitem[Im et~al\mbox{.}(2015)]%
+        {im2015accelerated}
+\bibfield{author}{\bibinfo{person}{Dajeong Im}, \bibinfo{person}{Jaebum Cho},
+  \bibinfo{person}{Joonku Hahn}, \bibinfo{person}{Byoungho Lee}, {and}
+  \bibinfo{person}{Hwi Kim}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Accelerated synthesis algorithm of polygon
+  computer-generated holograms}.
+\newblock \bibinfo{journal}{\emph{Optics Express}} \bibinfo{volume}{23},
+  \bibinfo{number}{3} (\bibinfo{year}{2015}), \bibinfo{pages}{2863--2871}.
+\newblock
+
+
+\bibitem[Jang et~al\mbox{.}(2024)]%
+        {jang2024waveguide}
+\bibfield{author}{\bibinfo{person}{Changwon Jang}, \bibinfo{person}{Kiseung
+  Bang}, \bibinfo{person}{Minseok Chae}, \bibinfo{person}{Byoungho Lee}, {and}
+  \bibinfo{person}{Douglas Lanman}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Waveguide holography for 3D augmented reality
+  glasses}.
+\newblock \bibinfo{journal}{\emph{Nature Communications}} \bibinfo{volume}{15},
+  \bibinfo{number}{1} (\bibinfo{year}{2024}), \bibinfo{pages}{66}.
+\newblock
+
+
+\bibitem[Javidi et~al\mbox{.}(2021)]%
+        {javidi2021roadmap}
+\bibfield{author}{\bibinfo{person}{Bahram Javidi}, \bibinfo{person}{Artur
+  Carnicer}, \bibinfo{person}{Arun Anand}, \bibinfo{person}{George
+  Barbastathis}, \bibinfo{person}{Wen Chen}, \bibinfo{person}{Pietro Ferraro},
+  \bibinfo{person}{JW Goodman}, \bibinfo{person}{Ryoichi Horisaki},
+  \bibinfo{person}{Kedar Khare}, \bibinfo{person}{Malgorzata Kujawinska},
+  {et~al\mbox{.}}} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Roadmap on digital holography}.
+\newblock \bibinfo{journal}{\emph{Optics Express}} \bibinfo{volume}{29},
+  \bibinfo{number}{22} (\bibinfo{year}{2021}), \bibinfo{pages}{35078--35118}.
+\newblock
+
+
+\bibitem[Kajiya and Von~Herzen(1984)]%
+        {kajiya1984ray}
+\bibfield{author}{\bibinfo{person}{James~T Kajiya} {and}
+  \bibinfo{person}{Brian~P Von~Herzen}.} \bibinfo{year}{1984}\natexlab{}.
+\newblock \showarticletitle{Ray tracing volume densities}.
+\newblock \bibinfo{journal}{\emph{ACM SIGGRAPH computer graphics}}
+  \bibinfo{volume}{18}, \bibinfo{number}{3} (\bibinfo{year}{1984}),
+  \bibinfo{pages}{165--174}.
+\newblock
+
+
+\bibitem[Kang et~al\mbox{.}(2016)]%
+        {kang2016fast}
+\bibfield{author}{\bibinfo{person}{Hoonjong Kang}, \bibinfo{person}{Elena
+  Stoykova}, {and} \bibinfo{person}{Hiroshi Yoshikawa}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Fast phase-added stereogram algorithm for
+  generation of photorealistic 3D content}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{55},
+  \bibinfo{number}{3} (\bibinfo{year}{2016}), \bibinfo{pages}{A135--A143}.
+\newblock
+
+
+\bibitem[Kang et~al\mbox{.}(2008)]%
+        {kang2008accurate}
+\bibfield{author}{\bibinfo{person}{Hoonjong Kang}, \bibinfo{person}{Takeshi
+  Yamaguchi}, {and} \bibinfo{person}{Hiroshi Yoshikawa}.}
+  \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Accurate phase-added stereogram to improve the
+  coherent stereogram}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{47},
+  \bibinfo{number}{19} (\bibinfo{year}{2008}), \bibinfo{pages}{D44--D54}.
+\newblock
+
+
+\bibitem[Kato et~al\mbox{.}(2018)]%
+        {kato2018meshrenderer}
+\bibfield{author}{\bibinfo{person}{Hiroharu Kato}, \bibinfo{person}{Yoshitaka
+  Ushiku}, {and} \bibinfo{person}{Tatsuya Harada}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Neural 3d mesh renderer}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the IEEE conference on computer
+  vision and pattern recognition}}. \bibinfo{pages}{3907--3916}.
+\newblock
+
+
+\bibitem[Kavakl{\i} et~al\mbox{.}(2023)]%
+        {kavakli2023realistic}
+\bibfield{author}{\bibinfo{person}{Koray Kavakl{\i}}, \bibinfo{person}{Yuta
+  Itoh}, \bibinfo{person}{Hakan Urey}, {and} \bibinfo{person}{Kaan
+  Ak{\c{s}}it}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Realistic defocus blur for multiplane
+  computer-generated holography}. In \bibinfo{booktitle}{\emph{2023 IEEE
+  Conference Virtual Reality and 3D User Interfaces (VR)}}. IEEE,
+  \bibinfo{pages}{418--426}.
+\newblock
+
+
+\bibitem[Kazhdan et~al\mbox{.}(2006)]%
+        {kazhdan2006poisson}
+\bibfield{author}{\bibinfo{person}{Michael Kazhdan}, \bibinfo{person}{Matthew
+  Bolitho}, {and} \bibinfo{person}{Hugues Hoppe}.}
+  \bibinfo{year}{2006}\natexlab{}.
+\newblock \showarticletitle{Poisson Surface Reconstruction}. In
+  \bibinfo{booktitle}{\emph{SGP}}.
+\newblock
+
+
+\bibitem[Kerbl et~al\mbox{.}(2023)]%
+        {kerbl3Dgaussians}
+\bibfield{author}{\bibinfo{person}{Bernhard Kerbl}, \bibinfo{person}{Georgios
+  Kopanas}, \bibinfo{person}{Thomas Leimk{\"u}hler}, {and}
+  \bibinfo{person}{George Drettakis}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{{3D Gaussian Splatting for Real-Time Radiance Field
+  Rendering}}.
+\newblock \bibinfo{journal}{\emph{ACM TOG}} \bibinfo{volume}{42},
+  \bibinfo{number}{4} (\bibinfo{date}{July} \bibinfo{year}{2023}).
+\newblock
+
+
+\bibitem[Kheradmand et~al\mbox{.}(2024)]%
+        {kheradmand20243dgsmcmc}
+\bibfield{author}{\bibinfo{person}{Shakiba Kheradmand}, \bibinfo{person}{Daniel
+  Rebain}, \bibinfo{person}{Gopal Sharma}, \bibinfo{person}{Weiwei Sun},
+  \bibinfo{person}{Yang-Che Tseng}, \bibinfo{person}{Hossam Isack},
+  \bibinfo{person}{Abhishek Kar}, \bibinfo{person}{Andrea Tagliasacchi}, {and}
+  \bibinfo{person}{Kwang~Moo Yi}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{3D Gaussian Splatting as Markov Chain Monte Carlo}.
+  In \bibinfo{booktitle}{\emph{NeurIPS}}.
+\newblock
+
+
+\bibitem[Kim et~al\mbox{.}(2024)]%
+        {kim2024holographic}
+\bibfield{author}{\bibinfo{person}{Dongyeon Kim}, \bibinfo{person}{Seung-Woo
+  Nam}, \bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Jong-Mo Seo},
+  \bibinfo{person}{Gordon Wetzstein}, {and} \bibinfo{person}{Yoonchan Jeong}.}
+  \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Holographic parallax improves 3D perceptual
+  realism}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{43}, \bibinfo{number}{4} (\bibinfo{year}{2024}),
+  \bibinfo{pages}{1--13}.
+\newblock
+
+
+\bibitem[Kim et~al\mbox{.}(2008)]%
+        {kim2008mathematical}
+\bibfield{author}{\bibinfo{person}{Hwi Kim}, \bibinfo{person}{Joonku Hahn},
+  {and} \bibinfo{person}{Byoungho Lee}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Mathematical modeling of triangle-mesh-modeled
+  three-dimensional surface objects for digital holography}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{47},
+  \bibinfo{number}{19} (\bibinfo{year}{2008}), \bibinfo{pages}{D117--D127}.
+\newblock
+
+
+\bibitem[Kim et~al\mbox{.}(2022)]%
+        {kim:HolographicGlasses}
+\bibfield{author}{\bibinfo{person}{Jonghyun Kim}, \bibinfo{person}{Manu
+  Gopakumar}, \bibinfo{person}{Suyeon Choi}, \bibinfo{person}{Yifan Peng},
+  \bibinfo{person}{Ward Lopes}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Holographic Glasses for Virtual Reality}. In
+  \bibinfo{booktitle}{\emph{ACM SIGGRAPH 2022 Conference Proceedings}}
+  (Vancouver, BC, Canada) \emph{(\bibinfo{series}{SIGGRAPH '22})}.
+  \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, Article \bibinfo{articleno}{33},
+  \bibinfo{numpages}{9}~pages.
+\newblock
+\showISBNx{9781450393379}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3528233.3530739}
+\showDOI{\tempurl}
+
+
+\bibitem[Kim and Kim(2008)]%
+        {kim2008effective}
+\bibfield{author}{\bibinfo{person}{Seung-Cheol Kim} {and}
+  \bibinfo{person}{Eun-Soo Kim}.} \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Effective generation of digital holograms of
+  three-dimensional objects using a novel look-up table method}.
+\newblock \bibinfo{journal}{\emph{Applied Optics}} \bibinfo{volume}{47},
+  \bibinfo{number}{19} (\bibinfo{year}{2008}), \bibinfo{pages}{D55--D62}.
+\newblock
+
+
+\bibitem[Kopanas et~al\mbox{.}(2021)]%
+        {KPLD21point}
+\bibfield{author}{\bibinfo{person}{Georgios Kopanas}, \bibinfo{person}{Julien
+  Philip}, \bibinfo{person}{Thomas Leimk{\"u}hler}, {and}
+  \bibinfo{person}{George Drettakis}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{{Point-Based Neural Rendering with Per-View
+  Optimization}}.
+\newblock \bibinfo{journal}{\emph{CGF}} \bibinfo{volume}{40},
+  \bibinfo{number}{4} (\bibinfo{date}{June} \bibinfo{year}{2021}).
+\newblock
+\urldef\tempurl%
+\url{http://www-sop.inria.fr/reves/Basilic/2021/KPLD21}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Kuo et~al\mbox{.}(2023)]%
+        {kuo2023multisource}
+\bibfield{author}{\bibinfo{person}{Grace Kuo}, \bibinfo{person}{Florian
+  Schiffers}, \bibinfo{person}{Douglas Lanman}, \bibinfo{person}{Oliver
+  Cossairt}, {and} \bibinfo{person}{Nathan Matsuda}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Multisource holography}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{42}, \bibinfo{number}{6} (\bibinfo{year}{2023}),
+  \bibinfo{pages}{1--14}.
+\newblock
+
+
+\bibitem[Kuo et~al\mbox{.}(2020)]%
+        {kuo2020high}
+\bibfield{author}{\bibinfo{person}{Grace Kuo}, \bibinfo{person}{Laura Waller},
+  \bibinfo{person}{Ren Ng}, {and} \bibinfo{person}{Andrew Maimone}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{High resolution {\'e}tendue expansion for
+  holographic displays}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{39}, \bibinfo{number}{4} (\bibinfo{year}{2020}),
+  \bibinfo{pages}{66--1}.
+\newblock
+
+
+\bibitem[Lohmann and Paris(1967)]%
+        {lohmann1967binary}
+\bibfield{author}{\bibinfo{person}{Adoph~W Lohmann} {and} \bibinfo{person}{DP
+  Paris}.} \bibinfo{year}{1967}\natexlab{}.
+\newblock \showarticletitle{Binary Fraunhofer holograms, generated by
+  computer}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{6},
+  \bibinfo{number}{10} (\bibinfo{year}{1967}), \bibinfo{pages}{1739--1748}.
+\newblock
+
+
+\bibitem[Lombardi et~al\mbox{.}(2018)]%
+        {Lombardi2018deepappearance}
+\bibfield{author}{\bibinfo{person}{Stephen Lombardi}, \bibinfo{person}{Jason
+  Saragih}, \bibinfo{person}{Tomas Simon}, {and} \bibinfo{person}{Yaser
+  Sheikh}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{{Deep Appearance Models for Face Rendering}}.
+\newblock \bibinfo{journal}{\emph{ACM TOG}} \bibinfo{volume}{37},
+  \bibinfo{number}{4} (\bibinfo{date}{July} \bibinfo{year}{2018}).
+\newblock
+
+
+\bibitem[Lorensen and Cline(1987)]%
+        {marchingcubes}
+\bibfield{author}{\bibinfo{person}{William~E. Lorensen} {and}
+  \bibinfo{person}{Harvey~E. Cline}.} \bibinfo{year}{1987}\natexlab{}.
+\newblock \showarticletitle{Marching cubes: A High Resolution 3D Surface
+  Construction Algorithm}. In \bibinfo{booktitle}{\emph{ACM SIGGRAPH}}.
+\newblock
+
+
+\bibitem[Lucente(1993)]%
+        {lucente1993interactive}
+\bibfield{author}{\bibinfo{person}{Mark~E Lucente}.}
+  \bibinfo{year}{1993}\natexlab{}.
+\newblock \showarticletitle{Interactive computation of holograms using a
+  look-up table}.
+\newblock \bibinfo{journal}{\emph{Journal of Electronic Imaging}}
+  \bibinfo{volume}{2}, \bibinfo{number}{1} (\bibinfo{year}{1993}),
+  \bibinfo{pages}{28--34}.
+\newblock
+
+
+\bibitem[Maimone et~al\mbox{.}(2017)]%
+        {maimone2017holographic}
+\bibfield{author}{\bibinfo{person}{Andrew Maimone}, \bibinfo{person}{Andreas
+  Georgiou}, {and} \bibinfo{person}{Joel~S Kollin}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Holographic near-eye displays for virtual and
+  augmented reality}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (Tog)}}
+  \bibinfo{volume}{36}, \bibinfo{number}{4} (\bibinfo{year}{2017}),
+  \bibinfo{pages}{1--16}.
+\newblock
+
+
+\bibitem[Makowski et~al\mbox{.}(2022)]%
+        {Makowski2022}
+\bibfield{author}{\bibinfo{person}{Michal Makowski}, \bibinfo{person}{Jaroslaw
+  Bomba}, \bibinfo{person}{Antoni Frej}, \bibinfo{person}{Mateusz
+  Kolodziejczyk}, \bibinfo{person}{Maciej Sypek}, \bibinfo{person}{Tomoyoshi
+  Shimobaba}, \bibinfo{person}{Tomoyoshi Ito}, \bibinfo{person}{Andrei
+  Kirilyuk}, {and} \bibinfo{person}{Andrzej Stupakiewicz}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Dynamic complex opto-magnetic holography}.
+\newblock \bibinfo{journal}{\emph{Nature Communications}} \bibinfo{volume}{13},
+  \bibinfo{number}{1} (\bibinfo{year}{2022}), \bibinfo{pages}{7286}.
+\newblock
+
+
+\bibitem[Matsushima(2020)]%
+        {matsushima2020introduction}
+\bibfield{author}{\bibinfo{person}{Kyoji Matsushima}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Introduction to Computer Holography:
+  Creating Computer-Generated Holograms as the Ultimate 3D Image}}.
+\newblock \bibinfo{publisher}{Springer Nature}.
+\newblock
+
+
+\bibitem[Matsushima and Nakahara(2009)]%
+        {matsushima2009extremely}
+\bibfield{author}{\bibinfo{person}{Kyoji Matsushima} {and}
+  \bibinfo{person}{Sumio Nakahara}.} \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{Extremely high-definition full-parallax
+  computer-generated hologram created by the polygon-based method}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{48},
+  \bibinfo{number}{34} (\bibinfo{year}{2009}), \bibinfo{pages}{H54--H63}.
+\newblock
+
+
+\bibitem[Matsushima et~al\mbox{.}(2014)]%
+        {matsushima2014silhouette}
+\bibfield{author}{\bibinfo{person}{Kyoji Matsushima}, \bibinfo{person}{Masaki
+  Nakamura}, {and} \bibinfo{person}{Sumio Nakahara}.}
+  \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{Silhouette method for hidden surface removal in
+  computer holography and its acceleration using the switch-back technique}.
+\newblock \bibinfo{journal}{\emph{Optics express}} \bibinfo{volume}{22},
+  \bibinfo{number}{20} (\bibinfo{year}{2014}), \bibinfo{pages}{24450--24465}.
+\newblock
+
+
+\bibitem[Matsushima et~al\mbox{.}(2003)]%
+        {matsushima2003fast}
+\bibfield{author}{\bibinfo{person}{Kyoji Matsushima}, \bibinfo{person}{Hagen
+  Schimmel}, {and} \bibinfo{person}{Frank Wyrowski}.}
+  \bibinfo{year}{2003}\natexlab{}.
+\newblock \showarticletitle{Fast calculation method for optical diffraction on
+  tilted planes by use of the angular spectrum of plane waves}.
+\newblock \bibinfo{journal}{\emph{JOSA A}} \bibinfo{volume}{20},
+  \bibinfo{number}{9} (\bibinfo{year}{2003}), \bibinfo{pages}{1755--1762}.
+\newblock
+
+
+\bibitem[Matsushima and Shimobaba(2009)]%
+        {matsushima2009band}
+\bibfield{author}{\bibinfo{person}{Kyoji Matsushima} {and}
+  \bibinfo{person}{Tomoyoshi Shimobaba}.} \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{Band-limited angular spectrum method for numerical
+  simulation of free-space propagation in far and near fields}.
+\newblock \bibinfo{journal}{\emph{Optics express}} \bibinfo{volume}{17},
+  \bibinfo{number}{22} (\bibinfo{year}{2009}), \bibinfo{pages}{19662--19673}.
+\newblock
+
+
+\bibitem[McGuire and Bavoil(2013)]%
+        {mcguire2013weighted}
+\bibfield{author}{\bibinfo{person}{Morgan McGuire} {and} \bibinfo{person}{Louis
+  Bavoil}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{Weighted Blended Order-Independent transparency}.
+\newblock \bibinfo{journal}{\emph{Journal of Computer Graphics Techniques}}
+  \bibinfo{volume}{2}, \bibinfo{number}{4} (\bibinfo{year}{2013}).
+\newblock
+
+
+\bibitem[Mildenhall et~al\mbox{.}(2020)]%
+        {mildenhall2020nerf}
+\bibfield{author}{\bibinfo{person}{Ben Mildenhall}, \bibinfo{person}{Pratul~P.
+  Srinivasan}, \bibinfo{person}{Matthew Tancik}, \bibinfo{person}{Jonathan~T.
+  Barron}, \bibinfo{person}{Ravi Ramamoorthi}, {and} \bibinfo{person}{Ren Ng}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{{NeRF: Representing Scenes as Neural Radiance
+  Fields for View Synthesis}}. In \bibinfo{booktitle}{\emph{ECCV}}.
+\newblock
+
+
+\bibitem[M\"uller et~al\mbox{.}(2022)]%
+        {mueller2022instant}
+\bibfield{author}{\bibinfo{person}{Thomas M\"uller}, \bibinfo{person}{Alex
+  Evans}, \bibinfo{person}{Christoph Schied}, {and} \bibinfo{person}{Alexander
+  Keller}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Instant Neural Graphics Primitives with a
+  Multiresolution Hash Encoding}}.
+\newblock \bibinfo{journal}{\emph{ACM TOG}} \bibinfo{volume}{41},
+  \bibinfo{number}{4} (\bibinfo{date}{July} \bibinfo{year}{2022}).
+\newblock
+
+
+\bibitem[Padmanaban et~al\mbox{.}(2019)]%
+        {padmanaban2019holographic}
+\bibfield{author}{\bibinfo{person}{Nitish Padmanaban}, \bibinfo{person}{Yifan
+  Peng}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Holographic near-eye displays based on overlap-add
+  stereograms}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{38}, \bibinfo{number}{6} (\bibinfo{year}{2019}),
+  \bibinfo{pages}{1--13}.
+\newblock
+
+
+\bibitem[Park(2017)]%
+        {park2017recent}
+\bibfield{author}{\bibinfo{person}{Jae-Hyeung Park}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Recent progress in computer-generated holography
+  for three-dimensional scenes}.
+\newblock \bibinfo{journal}{\emph{Journal of Information Display}}
+  \bibinfo{volume}{18}, \bibinfo{number}{1} (\bibinfo{year}{2017}),
+  \bibinfo{pages}{1--12}.
+\newblock
+
+
+\bibitem[Peng et~al\mbox{.}(2020)]%
+        {peng2020neural}
+\bibfield{author}{\bibinfo{person}{Yifan Peng}, \bibinfo{person}{Suyeon Choi},
+  \bibinfo{person}{Nitish Padmanaban}, {and} \bibinfo{person}{Gordon
+  Wetzstein}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Neural holography with camera-in-the-loop
+  training}.
+\newblock \bibinfo{journal}{\emph{ACM Transactions on Graphics (TOG)}}
+  \bibinfo{volume}{39}, \bibinfo{number}{6} (\bibinfo{year}{2020}),
+  \bibinfo{pages}{1--14}.
+\newblock
+
+
+\bibitem[Schiffers et~al\mbox{.}(2023)]%
+        {schiffers2023stochastic}
+\bibfield{author}{\bibinfo{person}{Florian Schiffers},
+  \bibinfo{person}{Praneeth Chakravarthula}, \bibinfo{person}{Nathan Matsuda},
+  \bibinfo{person}{Grace Kuo}, \bibinfo{person}{Ethan Tseng},
+  \bibinfo{person}{Douglas Lanman}, \bibinfo{person}{Felix Heide}, {and}
+  \bibinfo{person}{Oliver Cossairt}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Stochastic light field holography}. In
+  \bibinfo{booktitle}{\emph{2023 IEEE International Conference on Computational
+  Photography (ICCP)}}. IEEE, \bibinfo{pages}{1--12}.
+\newblock
+
+
+\bibitem[Shi et~al\mbox{.}(2021)]%
+        {shi2021towards}
+\bibfield{author}{\bibinfo{person}{Liang Shi}, \bibinfo{person}{Beichen Li},
+  \bibinfo{person}{Changil Kim}, \bibinfo{person}{Petr Kellnhofer}, {and}
+  \bibinfo{person}{Wojciech Matusik}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Towards real-time photorealistic 3D holography with
+  deep neural networks}.
+\newblock \bibinfo{journal}{\emph{Nature}} \bibinfo{volume}{591},
+  \bibinfo{number}{7849} (\bibinfo{year}{2021}), \bibinfo{pages}{234--239}.
+\newblock
+
+
+\bibitem[Shi et~al\mbox{.}(2022)]%
+        {shi2022end}
+\bibfield{author}{\bibinfo{person}{Liang Shi}, \bibinfo{person}{Beichen Li},
+  {and} \bibinfo{person}{Wojciech Matusik}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{End-to-end learning of 3d phase-only holograms for
+  holographic display}.
+\newblock \bibinfo{journal}{\emph{Light: Science \& Applications}}
+  \bibinfo{volume}{11}, \bibinfo{number}{1} (\bibinfo{year}{2022}),
+  \bibinfo{pages}{247}.
+\newblock
+
+
+\bibitem[Sitzmann et~al\mbox{.}(2020)]%
+        {sitzmann2020implicit}
+\bibfield{author}{\bibinfo{person}{Vincent Sitzmann}, \bibinfo{person}{Julien
+  Martel}, \bibinfo{person}{Alexander Bergman}, \bibinfo{person}{David
+  Lindell}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Implicit neural representations with periodic
+  activation functions}.
+\newblock \bibinfo{journal}{\emph{Advances in neural information processing
+  systems}}  \bibinfo{volume}{33} (\bibinfo{year}{2020}),
+  \bibinfo{pages}{7462--7473}.
+\newblock
+
+
+\bibitem[Sitzmann et~al\mbox{.}(2019a)]%
+        {sitzmann2019deepvoxels}
+\bibfield{author}{\bibinfo{person}{Vincent Sitzmann}, \bibinfo{person}{Justus
+  Thies}, \bibinfo{person}{Felix Heide}, \bibinfo{person}{Matthias
+  Nie{\ss}ner}, \bibinfo{person}{Gordon Wetzstein}, {and}
+  \bibinfo{person}{Michael Zollhofer}.} \bibinfo{year}{2019}\natexlab{a}.
+\newblock \showarticletitle{Deepvoxels: Learning persistent 3d feature
+  embeddings}. In \bibinfo{booktitle}{\emph{Proceedings of the IEEE/CVF
+  Conference on Computer Vision and Pattern Recognition}}.
+  \bibinfo{pages}{2437--2446}.
+\newblock
+
+
+\bibitem[Sitzmann et~al\mbox{.}(2019b)]%
+        {sitzmann2019srns}
+\bibfield{author}{\bibinfo{person}{Vincent Sitzmann}, \bibinfo{person}{Michael
+  Zollh{\"o}fer}, {and} \bibinfo{person}{Gordon Wetzstein}.}
+  \bibinfo{year}{2019}\natexlab{b}.
+\newblock \showarticletitle{{Scene Representation Networks: Continuous
+  3D-Structure-Aware Neural Scene Representations}}. In
+  \bibinfo{booktitle}{\emph{NeurIPS}}.
+\newblock
+
+
+\bibitem[Tang et~al\mbox{.}(2023)]%
+        {tang2022nerf2mesh}
+\bibfield{author}{\bibinfo{person}{Jiaxiang Tang}, \bibinfo{person}{Hang Zhou},
+  \bibinfo{person}{Xiaokang Chen}, \bibinfo{person}{Tianshu Hu},
+  \bibinfo{person}{Errui Ding}, \bibinfo{person}{Jingdong Wang}, {and}
+  \bibinfo{person}{Gang Zeng}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Delicate Textured Mesh Recovery from NeRF via
+  Adaptive Surface Refinement}. In \bibinfo{booktitle}{\emph{ICCV}}.
+\newblock
+
+
+\bibitem[Tewari et~al\mbox{.}(2020)]%
+        {tewari2020state}
+\bibfield{author}{\bibinfo{person}{Ayush Tewari}, \bibinfo{person}{Ohad Fried},
+  \bibinfo{person}{Justus Thies}, \bibinfo{person}{Vincent Sitzmann},
+  \bibinfo{person}{Stephen Lombardi}, \bibinfo{person}{Kalyan Sunkavalli},
+  \bibinfo{person}{Ricardo Martin-Brualla}, \bibinfo{person}{Tomas Simon},
+  \bibinfo{person}{Jason Saragih}, \bibinfo{person}{Matthias Nie{\ss}ner},
+  {et~al\mbox{.}}} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{State of the art on neural rendering}. In
+  \bibinfo{booktitle}{\emph{Computer Graphics Forum}},
+  Vol.~\bibinfo{volume}{39}. Wiley Online Library, \bibinfo{pages}{701--727}.
+\newblock
+
+
+\bibitem[Tewari et~al\mbox{.}(2022)]%
+        {tewari2022advances}
+\bibfield{author}{\bibinfo{person}{Ayush Tewari}, \bibinfo{person}{Justus
+  Thies}, \bibinfo{person}{Ben Mildenhall}, \bibinfo{person}{Pratul
+  Srinivasan}, \bibinfo{person}{Edgar Tretschk}, \bibinfo{person}{Wang Yifan},
+  \bibinfo{person}{Christoph Lassner}, \bibinfo{person}{Vincent Sitzmann},
+  \bibinfo{person}{Ricardo Martin-Brualla}, \bibinfo{person}{Stephen Lombardi},
+  {et~al\mbox{.}}} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Advances in neural rendering}. In
+  \bibinfo{booktitle}{\emph{Computer Graphics Forum}},
+  Vol.~\bibinfo{volume}{41}. Wiley Online Library, \bibinfo{pages}{703--735}.
+\newblock
+
+
+\bibitem[Wakunami et~al\mbox{.}(2013)]%
+        {wakunami2013occlusion}
+\bibfield{author}{\bibinfo{person}{Koki Wakunami}, \bibinfo{person}{Hiroaki
+  Yamashita}, {and} \bibinfo{person}{Masahiro Yamaguchi}.}
+  \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{Occlusion culling for computer generated hologram
+  based on ray-wavefront conversion}.
+\newblock \bibinfo{journal}{\emph{Optics express}} \bibinfo{volume}{21},
+  \bibinfo{number}{19} (\bibinfo{year}{2013}), \bibinfo{pages}{21811--21822}.
+\newblock
+
+
+\bibitem[Wang et~al\mbox{.}(2024)]%
+        {Wang2024liquidholo}
+\bibfield{author}{\bibinfo{person}{Di Wang}, \bibinfo{person}{Zhao-Song Li},
+  \bibinfo{person}{Yi Zheng}, \bibinfo{person}{You-Ran Zhao},
+  \bibinfo{person}{Chao Liu}, \bibinfo{person}{Jin-Bo Xu},
+  \bibinfo{person}{Yi-Wei Zheng}, \bibinfo{person}{Qian Huang},
+  \bibinfo{person}{Chen-Liang Chang}, \bibinfo{person}{Da-Wei Zhang},
+  {et~al\mbox{.}}} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{Liquid lens based holographic camera for real 3D
+  scene hologram acquisition using end-to-end physical model-driven network}.
+\newblock \bibinfo{journal}{\emph{Light: Science \& Applications}}
+  \bibinfo{volume}{13}, \bibinfo{number}{1} (\bibinfo{year}{2024}),
+  \bibinfo{pages}{62}.
+\newblock
+
+
+\bibitem[Wang et~al\mbox{.}(2023)]%
+        {wang2023high}
+\bibfield{author}{\bibinfo{person}{Fan Wang}, \bibinfo{person}{Tomoyoshi Ito},
+  {and} \bibinfo{person}{Tomoyoshi Shimobaba}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{High-speed rendering pipeline for polygon-based
+  holograms}.
+\newblock \bibinfo{journal}{\emph{Photonics Research}} \bibinfo{volume}{11},
+  \bibinfo{number}{2} (\bibinfo{year}{2023}), \bibinfo{pages}{313--328}.
+\newblock
+
+
+\bibitem[Wang et~al\mbox{.}(2021b)]%
+        {wang2021acceleration}
+\bibfield{author}{\bibinfo{person}{Fan Wang}, \bibinfo{person}{Tomoyoshi
+  Shimobaba}, \bibinfo{person}{Yaping Zhang}, \bibinfo{person}{Takashi Kakue},
+  {and} \bibinfo{person}{Tomoyoshi Ito}.} \bibinfo{year}{2021}\natexlab{b}.
+\newblock \showarticletitle{Acceleration of polygon-based computer-generated
+  holograms using look-up tables and reduction of the table size via principal
+  component analysis}.
+\newblock \bibinfo{journal}{\emph{Optics Express}} \bibinfo{volume}{29},
+  \bibinfo{number}{22} (\bibinfo{year}{2021}), \bibinfo{pages}{35442--35455}.
+\newblock
+
+
+\bibitem[Wang et~al\mbox{.}(2021a)]%
+        {wang2021neus}
+\bibfield{author}{\bibinfo{person}{Peng Wang}, \bibinfo{person}{Lingjie Liu},
+  \bibinfo{person}{Yuan Liu}, \bibinfo{person}{Christian Theobalt},
+  \bibinfo{person}{Taku Komura}, {and} \bibinfo{person}{Wenping Wang}.}
+  \bibinfo{year}{2021}\natexlab{a}.
+\newblock \showarticletitle{NeuS: Learning Neural Implicit Surfaces by Volume
+  Rendering for Multi-view Reconstruction}. In
+  \bibinfo{booktitle}{\emph{NeurIPS}}.
+\newblock
+
+
+\bibitem[Xu et~al\mbox{.}(2022)]%
+        {xu2022point}
+\bibfield{author}{\bibinfo{person}{Qiangeng Xu}, \bibinfo{person}{Zexiang Xu},
+  \bibinfo{person}{Julien Philip}, \bibinfo{person}{Sai Bi},
+  \bibinfo{person}{Zhixin Shu}, \bibinfo{person}{Kalyan Sunkavalli}, {and}
+  \bibinfo{person}{Ulrich Neumann}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Point-Nerf: Point-Based Neural Radiance Fields}}.
+  In \bibinfo{booktitle}{\emph{CVPR}}.
+\newblock
+
+
+\bibitem[Yamamoto et~al\mbox{.}(2022)]%
+        {Yamamoto2022}
+\bibfield{author}{\bibinfo{person}{Yota Yamamoto}, \bibinfo{person}{Tomoyoshi
+  Shimobaba}, {and} \bibinfo{person}{Tomoyoshi Ito}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{HORN-9: Special-purpose computer for
+  electroholography with the Hilbert transform}.
+\newblock \bibinfo{journal}{\emph{Opt. Express}} \bibinfo{volume}{30},
+  \bibinfo{number}{21} (\bibinfo{date}{Oct} \bibinfo{year}{2022}),
+  \bibinfo{pages}{38115--38127}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1364/OE.471720}
+\showDOI{\tempurl}
+
+
+\bibitem[Yang et~al\mbox{.}(2022)]%
+        {yang2022diffraction}
+\bibfield{author}{\bibinfo{person}{Daeho Yang}, \bibinfo{person}{Wontaek Seo},
+  \bibinfo{person}{Hyeonseung Yu}, \bibinfo{person}{Sun~Il Kim},
+  \bibinfo{person}{Bongsu Shin}, \bibinfo{person}{Chang-Kun Lee},
+  \bibinfo{person}{Seokil Moon}, \bibinfo{person}{Jungkwuen An},
+  \bibinfo{person}{Jong-Young Hong}, \bibinfo{person}{Geeyoung Sung},
+  {et~al\mbox{.}}} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Diffraction-engineered holography: Beyond the depth
+  representation limit of holographic displays}.
+\newblock \bibinfo{journal}{\emph{Nature Communications}} \bibinfo{volume}{13},
+  \bibinfo{number}{1} (\bibinfo{year}{2022}), \bibinfo{pages}{6012}.
+\newblock
+
+
+\bibitem[Yara{\c{s}} et~al\mbox{.}(2010)]%
+        {yaracs2010state}
+\bibfield{author}{\bibinfo{person}{Fahri Yara{\c{s}}},
+  \bibinfo{person}{Hoonjong Kang}, {and} \bibinfo{person}{Levent Onural}.}
+  \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{State of the art in holographic displays: a
+  survey}.
+\newblock \bibinfo{journal}{\emph{Journal of display technology}}
+  \bibinfo{volume}{6}, \bibinfo{number}{10} (\bibinfo{year}{2010}),
+  \bibinfo{pages}{443--454}.
+\newblock
+
+
+\bibitem[Yariv et~al\mbox{.}(2021)]%
+        {yariv2021volume}
+\bibfield{author}{\bibinfo{person}{Lior Yariv}, \bibinfo{person}{Jiatao Gu},
+  \bibinfo{person}{Yoni Kasten}, {and} \bibinfo{person}{Yaron Lipman}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Volume Rendering of Neural Implicit Surfaces}. In
+  \bibinfo{booktitle}{\emph{NeurIPS}}.
+\newblock
+
+
+\bibitem[Ye et~al\mbox{.}(2024)]%
+        {ye2024gsplat}
+\bibfield{author}{\bibinfo{person}{Vickie Ye}, \bibinfo{person}{Ruilong Li},
+  \bibinfo{person}{Justin Kerr}, \bibinfo{person}{Matias Turkulainen},
+  \bibinfo{person}{Brent Yi}, \bibinfo{person}{Zhuoyang Pan},
+  \bibinfo{person}{Otto Seiskari}, \bibinfo{person}{Jianbo Ye},
+  \bibinfo{person}{Jeffrey Hu}, \bibinfo{person}{Matthew Tancik}, {and}
+  \bibinfo{person}{Angjoo Kanazawa}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{gsplat: An Open-Source Library for {Gaussian}
+  Splatting}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:2409.06765}}
+  (\bibinfo{year}{2024}).
+\newblock
+\showeprint[arxiv]{2409.06765}~[cs.CV]
+\urldef\tempurl%
+\url{https://arxiv.org/abs/2409.06765}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Yeom and Park(2016)]%
+        {yeom2016calculation}
+\bibfield{author}{\bibinfo{person}{Han-Ju Yeom} {and}
+  \bibinfo{person}{Jae-Hyeung Park}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Calculation of reflectance distribution using
+  angular spectrum convolution in mesh-based computer generated hologram}.
+\newblock \bibinfo{journal}{\emph{Optics Express}} \bibinfo{volume}{24},
+  \bibinfo{number}{17} (\bibinfo{year}{2016}), \bibinfo{pages}{19801--19813}.
+\newblock
+
+
+\bibitem[Yoo et~al\mbox{.}(2021)]%
+        {yoo2021optimization}
+\bibfield{author}{\bibinfo{person}{Dongheon Yoo}, \bibinfo{person}{Youngjin
+  Jo}, \bibinfo{person}{Seung-Woo Nam}, \bibinfo{person}{Chun Chen}, {and}
+  \bibinfo{person}{Byoungho Lee}.} \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Optimization of computer-generated holograms
+  featuring phase randomness control}.
+\newblock \bibinfo{journal}{\emph{Optics Letters}} \bibinfo{volume}{46},
+  \bibinfo{number}{19} (\bibinfo{year}{2021}), \bibinfo{pages}{4769--4772}.
+\newblock
+
+
+\bibitem[Yu et~al\mbox{.}(2021)]%
+        {yu2021plenoctrees}
+\bibfield{author}{\bibinfo{person}{Alex Yu}, \bibinfo{person}{Ruilong Li},
+  \bibinfo{person}{Matthew Tancik}, \bibinfo{person}{Hao Li},
+  \bibinfo{person}{Ren Ng}, {and} \bibinfo{person}{Angjoo Kanazawa}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{{PlenOctrees for Real-Time Rendering of Neural
+  Radiance Fields}}. In \bibinfo{booktitle}{\emph{ICCV}}.
+\newblock
+
+
+\bibitem[Yu et~al\mbox{.}(2023)]%
+        {Yu2023holocam}
+\bibfield{author}{\bibinfo{person}{Hyeonseung Yu}, \bibinfo{person}{Youngrok
+  Kim}, \bibinfo{person}{Daeho Yang}, \bibinfo{person}{Wontaek Seo},
+  \bibinfo{person}{Yunhee Kim}, \bibinfo{person}{Jong-Young Hong},
+  \bibinfo{person}{Hoon Song}, \bibinfo{person}{Geeyoung Sung},
+  \bibinfo{person}{Younghun Sung}, \bibinfo{person}{Sung-Wook Min}, {and}
+  \bibinfo{person}{Hong-Seok Lee}.} \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Deep learning-based incoherent holographic camera
+  enabling acquisition of real-world holograms for holographic streaming
+  system}.
+\newblock \bibinfo{journal}{\emph{Nature Communications}} \bibinfo{volume}{14},
+  \bibinfo{number}{1} (\bibinfo{year}{2023}), \bibinfo{pages}{3534}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1038/s41467-023-39329-0}
+\showDOI{\tempurl}
+
+
+\bibitem[Zhang et~al\mbox{.}(2017a)]%
+        {zhang2017computer}
+\bibfield{author}{\bibinfo{person}{Hao Zhang}, \bibinfo{person}{Liangcai Cao},
+  {and} \bibinfo{person}{Guofan Jin}.} \bibinfo{year}{2017}\natexlab{a}.
+\newblock \showarticletitle{Computer-generated hologram with occlusion effect
+  using layer-based processing}.
+\newblock \bibinfo{journal}{\emph{Applied optics}} \bibinfo{volume}{56},
+  \bibinfo{number}{13} (\bibinfo{year}{2017}), \bibinfo{pages}{F138--F143}.
+\newblock
+
+
+\bibitem[Zhang et~al\mbox{.}(2017b)]%
+        {zhang20173d}
+\bibfield{author}{\bibinfo{person}{Jingzhao Zhang}, \bibinfo{person}{Nicolas
+  P{\'e}gard}, \bibinfo{person}{Jingshan Zhong}, \bibinfo{person}{Hillel
+  Adesnik}, {and} \bibinfo{person}{Laura Waller}.}
+  \bibinfo{year}{2017}\natexlab{b}.
+\newblock \showarticletitle{3D computer-generated holography by non-convex
+  optimization}.
+\newblock \bibinfo{journal}{\emph{Optica}} \bibinfo{volume}{4},
+  \bibinfo{number}{10} (\bibinfo{year}{2017}), \bibinfo{pages}{1306--1313}.
+\newblock
+
+
+\bibitem[Zhang et~al\mbox{.}(2022)]%
+        {zhang2022polygon}
+\bibfield{author}{\bibinfo{person}{Yaping Zhang}, \bibinfo{person}{Houxin Fan},
+  \bibinfo{person}{Fan Wang}, \bibinfo{person}{Xianfeng Gu},
+  \bibinfo{person}{Xiaofan Qian}, {and} \bibinfo{person}{Ting-Chung Poon}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Polygon-based computer-generated holography: a
+  review of fundamentals and recent progress}.
+\newblock \bibinfo{journal}{\emph{Applied Optics}} \bibinfo{volume}{61},
+  \bibinfo{number}{5} (\bibinfo{year}{2022}), \bibinfo{pages}{B363--B374}.
+\newblock
+
+
+\bibitem[Zhang(2011)]%
+        {zhang2011analysis}
+\bibfield{author}{\bibinfo{person}{Zhengyun Zhang}.}
+  \bibinfo{year}{2011}\natexlab{}.
+\newblock \bibinfo{booktitle}{\emph{Analysis and synthesis of three-dimensional
+  illumination using partial coherence}}.
+\newblock \bibinfo{publisher}{Stanford University}.
+\newblock
+
+
+\bibitem[Zwicker et~al\mbox{.}(2001)]%
+        {zwicker2001ewa}
+\bibfield{author}{\bibinfo{person}{Matthias Zwicker},
+  \bibinfo{person}{Hanspeter Pfister}, \bibinfo{person}{Jeroen Van~Baar}, {and}
+  \bibinfo{person}{Markus Gross}.} \bibinfo{year}{2001}\natexlab{}.
+\newblock \showarticletitle{EWA volume splatting}. In
+  \bibinfo{booktitle}{\emph{Proceedings Visualization, 2001. VIS'01.}} IEEE,
+  \bibinfo{pages}{29--538}.
+\newblock
+
+
+\end{thebibliography}

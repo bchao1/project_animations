@@ -1,0 +1,34 @@
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{supplement/figures/fig_supp_setup.pdf}
+    \caption{\textbf{Holographic display prototype used for the experimental results.} }
+    \label{fig:setup}  
+\end{figure}
+\noindentparagraph{\bf{Experimental setup.}}  
+To experimentally validate our algorithms, we build a holographic display benchtop prototype using a FISBA READYBeam™ Bio2 fiber-coupled module with three optically aligned laser diodes with wavelengths of 638, 520, and 488 nm, respectively, and a Holoeye PLUTO phase-only liquid crystal on silicon (LCOS) SLM with a resolution of $1920 \times 1080$ pixels, a pixel pitch of 8~$\mu$m, and a precision of 8 bits. We follow an optical configuration similar to those used in Choi et al.~\cite{choi2021neural} and Shi et al.
+~\cite{shi2021towards}, which is shown in Fig.~\ref{fig:setup}. Color images are captured with separate exposures for each wavelength and combined in post-processing. All images are captured with a FLIR Grasshopper3 2.3 MP color USB3 vision sensor. In our setup, the depth range in hologram space is approximately 1cm, which is equivalent to total depth range of 2D in view space, from optical infinity to approx. 0.5 m.
+
+
+
+\noindentparagraph{\bf{Phase encoding.}}  
+Our CGH algorithm encodes Gaussian-based scene representations into a complex-valued wavefront, similar to other primitive-based methods. While one can build a hardware setup with multiple SLMs to modulate complex-valued wavefronts~\cite{shi2017near, reichelt2012full}, most holographic display setups use phase-only SLMs, requiring phase encoding techniques. To encode the complex-valued wavefront splatted onto the SLM plane into a phase-only pattern, we use the double-phase amplitude coding method (DPAC) as described in recent literature~\cite{hsueh1978computer, maimone2017holographic, shi2021towards}. The double-phase method directly encodes amplitude and phase into two phase values. Specifically, this method converts a complex-valued wavefront $ae^{j\phi}$ into two phase values, $P_1$ and $P_2$:
+\begin{align}
+    P_1 = a - cos^{-1} \phi \\
+    P_2 = a + cos^{-1} \phi,
+\end{align}
+and interlaces $P_1$ and $P_2$ like a checkerboard pattern~\cite{maimone2017holographic}. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{supplement/figures/supp_lut_calibrated.pdf}
+    \caption{\textbf{Spatially varying, calibrated LUTs.} We visualize the spatially varying, calibrated lookup table (LUT) for red, green, and blue channel using the described procedure. This LUT maps the phase difference to the 8-bit image index that is dictated by the SLM. The blue line represents the mean values across all pixels, while the gray shades indicate the standard deviation over all pixels. For all pixels, we rectify the LUT by assigning a very large value to ensure that the nearest neighbor search does not return values exceeding $\pi$. Note that discontinuities indicate an inability to represent certain phase differences, resulting in image quality degradation. For a better illustration of this, we show an unideal LUT for the red channel; however, in our experiments, we use a better-calibrated LUT for red as well as illustrated for the other channels.}
+    \label{fig:lut}  
+\end{figure}
+
+\noindentparagraph{\bf{Hardware calibration}}
+
+To address hardware imperfections, we account for laser beam intensity variations and perform spatially varying lookup table (LUT) calibration~\cite{choi2021neural, shi2021towards, shi2022end}. The calibration procedure is as follows: first, we carefully align the setup, ensuring that the camera sensor is focused on the Fourier plane, and match the filter size optimal for the double-phase method~\cite{shi2021towards}. Next, we set the initial reference phase level to 127, construct checkerboard patterns, and incrementally increase the difference between $P_2$ and $P_1$, and vice versa, measuring the corresponding intensity per $2\times 2$ superpixel to generate the phase LUT (see Fig.~\ref{fig:lut}). To avoid phase-wrapping artifacts, we use $3\pi$ range modulation for each wavelength~\cite{maimone2017holographic}.
+
+We observed that adding additional LUT entries for reference levels ranging from 42 (corresponding to $-\pi$ in $3\pi$ modulation) to 212 (corresponding to +$\pi$ in $3\pi$ modulation) and addressing anti-aliasing also marginally improves image quality. While we do not claim the calibration techniques as our contribution, we open-source the code used for calibration along with \texttt{hsplat}\footnote{\href{https://github.com/computational-imaging/hsplat}{https://github.com/computational-imaging/hsplat}}.
+

@@ -1,0 +1,932 @@
+=== page 1 ===
+Random-phase Wave Splatting of Translucent
+Primitives for Computer-generated Holography
+Brian Chao1,†, Jacqueline Yang1,†, Suyeon Choi1,2,
+Manu Gopakumar1, Ryota Koiso1,3, and Gordon Wetzstein1,∗
+1Stanford University, United States of America
+2Seoul National University, Seoul, South Korea
+3KDDI Research, Inc., Japan
+†These authors contributed equally to this work.
+∗Corresponding author: gordonwz@stanford.edu
+Holographic near-eye displays offer compact, eyeglasses-like form factors for virtual and
+augmented reality, but require computer-generated holography (CGH) algorithms that
+convert expressive 3D scene representations into physically faithful holograms. Here we
+introduce Random-phase Wave Splatting (RPWS), a new primitive-based CGH formula-
+tion for composing large collections of continuously translucent random-phase wavefronts
+into holograms with correct color, occlusion, defocus, and parallax. The central challenge
+is that independently phase-modulated primitives do not obey conventional alpha com-
+positing: interference cross terms alter the reconstructed intensity and require a differ-
+ent compositing law. We derive this law in the intensity domain and show that translu-
+cent random-phase wavefronts alpha blend linearly in expectation, leading naturally to
+square-root wave compositing and establishing time multiplexing as the statistically exact
+mechanism for realizing alpha blending of random-phase primitives. Because the RPWS
+formulation depends on phase statistics and continuous alpha rather than a particular
+primitive geometry, it applies to arbitrary translucent primitives, including Gaussians
+and soft-edged triangles. Simulations and experiments validate accurate color and occlu-
+sion together with large eyebox, natural defocus blur, parallax, and high-quality 3D focal
+stack and 4D light ﬁeld reconstruction.
+Introduction
+Holographic near-eye displays offer eyeglasses-like device form factors with unprecedented
+compactness for virtual and augmented reality display systems,2–6 but require computer-generated
+1
+
+=== page 2 ===
+RPWS (ours)
+(b) Time-multiplexed random-
+phase holograms
+Time-multiplexed 
+random phases 
+Coherent illumination
+(a) Primitive-based Scene Representation
+(c) GWS - front focus
+(e) RPWS (ours) – back focus
+(d) GWS-NRP – front focus
+Unnatural defocus, small eyebox ✗
+Incorrect appearance  ✗
+Natural defocus, large eyebox ✓
+Correct appearance ✓
+(f) RPWS (ours) – front focus
+GWS [Choi, Chao et al., 2025]
+Gaussians [Kerbel et al., 2023]
+Soft-edged triangles [Held et al., 2025] 
+Fig. 1 Random-phase Wave Splatting (RPWS) directly converts translucent primitive-based 3D
+scene representations, including Gaussians and triangles, into time-multiplexed random-phase
+holograms (a, b). Existing smooth-phase wave splatting, represented by Gaussian Wave Splat-
+ting (GWS),1 reconstructs sharp in-focus content but provides limited depth-dependent defocus
+and angular diversity (c). Simply assigning random phase to the same primitives while re-
+taining the smooth-phase compositing rule (GWS-NRP) breaks the correspondence to alpha
+compositing and produces incorrect appearance (d). RPWS introduces the wave-compositing
+and intensity-domain alpha-blending formulation required for translucent random-phase prim-
+itives, enabling accurate color and occlusion together with natural defocus and wide parallax
+across the eyebox (e, f). Here we show Gaussian-based results for direct comparison, while the
+same RPWS formulation also applies to other translucent 2D primitive types.
+holography (CGH) algorithms that convert a target 3D scene into an interference pattern dis-
+played on a spatial light modulator (SLM).7,8 A central challenge is how to represent increas-
+ingly complex 3D scenes in a form that can be efﬁciently converted into holograms while pre-
+serving the spatio-angular structure of the underlying light ﬁeld. CGH algorithms have been de-
+veloped for point clouds,9,10 meshes,11–13 wireframes,14 light ﬁelds,15–19 and image layers;20,21
+more recently, Gaussian Wave Splatting (GWS)1 introduced direct hologram synthesis from
+Gaussian primitives,22,23 establishing wave splatting as a promising route for connecting mod-
+ern primitive-based scene representations with holographic displays. Primitive-based represen-
+tations are particularly attractive because a complex scene can be described by thousands to
+millions of locally parameterized elements that are efﬁciently optimized, rendered, and alpha
+blended. Unlike a rasterized image or layered depth map, these representations retain an explicit
+decomposition of scene appearance and geometry into individual primitives, making them nat-
+urally compatible with wave-optical rendering in which each primitive generates a complex
+wavefront that is propagated to the SLM. Yet modern neural scene representations increasingly
+rely on translucent primitives with continuous opacity, including Gaussians22,23 and soft-edged
+triangles.24–26 Their image formation depends critically on continuously valued alpha blend-
+2
+
+=== page 3 ===
+ing across overlapping primitives, rather than binary visibility alone. Translating this rendering
+paradigm from ray-based graphics to coherent wave optics therefore raises a fundamental ques-
+tion for CGH: how should the complex wavefronts generated by large collections of translucent
+primitives be physically composited into a single hologram while retaining the appearance and
+visibility encoded by the original scene representation?
+The difﬁculty becomes acute when the primitive wavefronts carry random phase. Although
+phase is not directly observable, its distribution determines the spatio-angular behavior of the
+reconstructed light ﬁeld.27–30 Smooth-phase holograms31 can achieve high in-focus image qual-
+ity,1,2,32,33 but concentrate energy in the low frequencies of the angular spectrum, producing
+a restricted eyebox, limited depth-dependent defocus, and increased sensitivity to pupil posi-
+tion.29,34 Random-phase holograms are well established in CGH and distribute energy over a
+substantially larger angular range, enabling wide parallax and natural defocus blur;34 their rapid
+phase variations, however, create interference and speckle that are commonly mitigated through
+partial coherence or time multiplexing.19,35–40 Existing primitive-based CGH methods do not
+provide a general solution for combining this random-phase behavior with continuously translu-
+cent scene primitives. Polygon-based CGH can assign random phase to mesh surfaces,41–47 but
+generally relies on opaque triangles and silhouette-based occlusion, preventing the continuous
+alpha blending central to modern splatting representations. This makes ﬁne scene appearance
+dependent on dense polygonal geometry and per-face texturing, rather than allowing multiple
+soft primitives to overlap and jointly explain image content. GWS, conversely, efﬁciently alpha
+blends millions of translucent Gaussian wavefronts, but its formulation assumes a near-constant
+or smooth phase across primitive surfaces.1 GWS brieﬂy postulates a heuristic for introducing
+random phase to an individual Gaussian primitive, but does not derive a random-phase wave-
+splatting formulation or a mechanism for compositing large numbers of overlapping translucent
+random-phase primitives. Applying this heuristic independently to every primitive while re-
+taining the same amplitude-domain blending rule does not produce valid random-phase wave
+splatting: once independently phased wavefronts overlap, interference cross terms alter the re-
+sulting intensity and break the correspondence to conventional alpha compositing. The resulting
+hologram exhibits incorrect color and occlusion together with erroneous defocus and parallax,
+as we demonstrate in Table 1, Fig. 1, and throughout the paper. Thus, while random-phase
+holography itself is well established, a principled wave-splatting framework for compositing
+thousands or millions of translucent random-phase primitives has remained unresolved.
+Here we derive the compositing principle required for Random-phase Wave Splatting
+(RPWS). The key distinction is that smooth-phase and random-phase primitive wavefronts
+obey fundamentally different alpha-blending rules. For smooth-phase primitives whose ﬁelds
+add coherently, conventional alpha blending can be formulated in the amplitude domain, as
+in GWS.1 For independently randomized primitive wavefronts, however, the interference cross
+terms are nonzero for any single phase realization and conventional amplitude-domain blending
+fails. We show that these cross terms vanish statistically over independent random-phase real-
+izations and that the desired alpha composite is instead recovered in expectation in the intensity
+domain. Matching this expected intensity to the standard ray-based alpha-compositing equation
+directly yields a square-root alpha-blending rule for the constituent wave amplitudes and makes
+3
+
+=== page 4 ===
+time multiplexing an intrinsic component of random-phase wave splatting: rather than serving
+only as an ad-hoc speckle-reduction heuristic, it realizes the statistical expectation required for
+correct alpha compositing. We further prove that only a speciﬁc family of random-phase dis-
+tributions satisﬁes the conditions for unbiased blending and that the conventional uniform 2π
+phase distribution belongs to this family, with interference cross terms converging at the opti-
+mal O(1/
+√
+N) rate. The resulting formulation also explains why applying random phase to a
+smooth-phase wave-splatting equation fails even though both methods use the same underlying
+geometric primitives: changing the primitive phase statistics changes the domain in which their
+alpha weights must be composed. These results provide a statistical-optics foundation for com-
+positing translucent random-phase wavefronts while preserving continuous opacity, color, and
+occlusion, and they apply independently of the particular geometric parameterization used to
+generate each primitive wavefront.
+Building on this principle, RPWS establishes random-phase wave splatting as a new primitive-
+based CGH formulation for compositing continuously translucent random-phase wavefronts.
+RPWS converts 3D representations composed of translucent 2D primitives into time-multiplexed
+random-phase holograms through an intensity-domain square-root alpha rule and back-to-front
+wave propagation, allowing large collections of continuously translucent primitives to be com-
+bined without assuming matched or smooth phase. Because the compositing rule depends on
+phase statistics and continuous alpha rather than a particular primitive geometry, RPWS de-
+ﬁnes a general random-phase wave-splatting framework for a broad class of translucent scene
+representations. Existing primitive-based approaches address only subsets of this problem:
+polygon CGH can incorporate random phase but generally assumes opaque geometry, whereas
+prior wave-splatting methods support continuous alpha under smooth-phase assumptions. We
+demonstrate RPWS with both 2D Gaussians22,23 and soft-edged triangles,24–26 showing that the
+same compositing formulation operates across distinct primitive types. The resulting holograms
+preserve accurate color and occlusion while utilizing substantially more of the SLM space–
+bandwidth product, enabling a larger eyebox, wide parallax, and natural depth-dependent de-
+focus. Through simulated and experimentally captured 3D focal stacks and 4D light ﬁelds, we
+show that RPWS reconstructs sharp in-focus content together with perceptually correct defo-
+cus and view-dependent appearance, while time multiplexing progressively suppresses residual
+interference and converges toward the statistically correct alpha-blended reconstruction. These
+results establish random-phase wave splatting as a general CGH framework for directly trans-
+forming emerging translucent primitive-based 3D scene representations into holograms with the
+spatial and angular ﬁdelity required for next-generation near-eye displays.
+Source code and example datasets will be made public.
+Results
+Random-phase Wave Splatting (RPWS) directly converts 3D scenes represented by translu-
+cent 2D primitives (primitives with continuous alpha values ranging from 0 to 1) into time-
+multiplexed random-phase holograms. The framework couples two operations that are required
+for random-phase wave splatting: a back-to-front wave-compositing procedure that propagates
+4
+
+=== page 5 ===
+Table 1 Capability comparison of wave-splatting formulations. Smooth-phase GWS1 accu-
+rately reconstructs color but concentrates energy near the optical axis and is restricted to Gaus-
+sian primitives. Na¨ıvely assigning random phase to the primitive wavefronts while retaining
+the same compositing rule (GWS-NRP) increases angular diversity but breaks correct color and
+occlusion. RPWS introduces the compositing formulation required for random-phase translu-
+cent primitives, jointly supporting large-eyebox reconstruction, correct color, natural defocus
+and parallax, and multiple primitive types.
+Algorithm
+1. Large eyebox
+2. Correct color
+3. Defocus &
+parallax
+4. Other primitives
+GWS1
+
+
+∆
+
+GWS-NRP
+
+
+∆
+
+RPWS (ours)
+
+
+
+
+primitive wavefronts through depth, and an intensity-domain alpha-blending rule that preserves
+the color and opacity encoded by the underlying scene representation. We ﬁrst describe the
+primitive wavefronts used by RPWS and contrast their compositing with smooth-phase wave
+splatting, before deriving the random-phase formulation and validating it across Gaussian and
+soft-edged triangle representations.
+Random-phase Wave Splatting
+Translucent primitive representations. Since the advent of 3DGS,22 signiﬁcant research has
+focused on developing alternative geometric primitives for 3D scene reconstruction. Among
+these emerging primitive-based representations, 2D translucent primitives are notable for their
+local manifold structures, which enable explicit normal computation and surface extraction.
+Their ﬂat-surface formulation integrates naturally with rasterization pipelines and aligns well
+with silhouette-based methods for polygonal CGH, allowing us to draw inspiration from prior
+work.8,11,41,47
+Examples of such 2D translucent primitives include 2D Gaussians23 and soft-edged trian-
+gles.24–26 For 2D Gaussians, the geometry of each of these i = 1 . . . N Gaussians is described
+by its mean µi ∈R3, 3D covariance Σi = RiSiST
+i RT
+i ∈R3×3 that can be factorized into a
+rotation matrix Ri ∈R3×3 and a scaling matrix Si ∈R3×3. For triangles,48 the geometry of the
+ith triangle is deﬁned by its three vertices Vi ∈R3×3 and a smoothness factor σi ∈R that de-
+scribes the transparency falloff from the edges of the triangle. All of these primitives typically
+also include two additional parameters: opacity oi ∈R that determines its global transparency
+and color ci ∈R (for a single color channel). Please refer to these papers for more details on
+the deﬁnitions of the primitives.
+Smooth-phase wave splatting and its limitations. Gaussian Wave Splatting (GWS)1 is a
+CGH method capable of computing holograms that accurately represent 3D scenes from collec-
+tions of 2D Gaussians23 extracted from any off-the-shelf optimized 2DGS models, e.g., mod-
+els optimized using the gsplat library.49 GWS ﬁrst analytically determines the spectrum of
+each Gaussian described by its mean µi and 3D covariance Σi and computes the wavefront
+ui(x) = ai(x)eikzi, where zi = (µi)z is the Gaussian object depth and k = 2π
+λ . Then, each
+5
+
+=== page 6 ===
+wavefront ui(x) is propagated using the angular spectrum propagation operator P(·; z)50,51 and
+alpha blended from front to back using the opacity oi and color ci associated with each Gaussian
+to get the ﬁnal composited wavefront proﬁle at the SLM, given by Eqs. 1 and 2. We refer to this
+process as alpha wave blending:
+uSLM(x) =
+N
+X
+i
+P
+
+cioi|ui(x)|Ti (x) eikzi; −zi
+
+,
+(1)
+Ti (x) =
+i−1
+Y
+j=1
+(1 −oj|uj(x)|).
+(2)
+GWS inherits the ability of Gaussian splatting to seamlessly merge large numbers of Gaus-
+sians for high-quality reconstruction. GWS further collapses classic alpha blending and volume
+rendering22,52 if we ignore the wave propagation operator and match the phase of all wavefronts
+at all depths (i.e., ∠ui = kzi) such that the composited wavefront at the SLM plane achieves a
+smooth or near-constant phase proﬁle, which we formally derive in the Random-phase Alpha
+Blending section below. Therefore, this formulation of GWS inherently generates “smooth-
+phase” holograms. Although GWS has demonstrated the potential to recreate sharp details with
+photorealistic image quality,1 prior works in holography28,29,53,54 have pointed out that smooth-
+phase holograms are undesirable due to their poor SLM bandwidth utilization, unnatural de-
+focus blur, large depth of ﬁeld (i.e., small blur variation across different depths), and ﬂoater
+artifacts. GWS also requires |ui(x)| to be a 2D Gaussian distribution, thus its generalizability
+to other geometric primitives remains unknown.
+Most importantly, na¨ıvely extending GWS to random-phase primitives (GWS-NRP) by ad-
+ditionally modulating each Gaussian wavefront with a random phase map φi
+iid∼U(−π, π) as
+shown below:
+uSLM(x) =
+N
+X
+i
+P
+
+cioi|ui(x)|Ti (x) eikzi+φi; −zi
+
+(3)
+provably fails, as we demonstrate in the Random-phase Alpha Blending section below.
+Random-phase wave splatting. We develop Random-phase Wave Splatting (RPWS), a CGH
+framework for compositing random-phase translucent primitives with continuous alpha values
+into a single holographic wavefront. In RPWS, each primitive wavefront is effectively modu-
+lated by a random phase map φi(x) to distribute the light passing through each primitive away
+from the optical axis. The primitive wavefronts are then composited from back to front with
+respect to the SLM using a wave-propagation rule coupled to intensity-domain alpha blending,
+and multiple independently sampled random-phase realizations are time multiplexed to realize
+the desired intensity distribution. This formulation makes random-phase wave splatting possi-
+ble without assuming that overlapping primitive wavefronts share a matched or smooth phase,
+while preserving continuous opacity, color, and occlusion across large collections of primitives.
+In Eq. 4, let gi(x) denote the back-to-front composited wavefront starting from the N th
+primitive up to the ith primitive and Mi(x) be the transmittance mask of the ith primitive. The
+6
+
+=== page 7 ===
+primitive wavefront ui(x) denotes the wavefront generated from primitives such as Gaussians
+or translucent triangles (the Results section), making RPWS a plug-and-play framework for
+arbitrary translucent wavefronts. The wavefront at the i −1th parallel plane where the next
+primitive is located, which is a propagation distance ∆z = zi−1 −zi away, is given by:
+g(t)
+i−1(x) = P
+
+Mi(x) gi(x) + √ci
+p
+oi|ui(x)| ei∠ui(x)+φ(t)
+i
+(x); ∆z
+
+,
+(4)
+Mi(x) =
+p
+(1 −oi|ui(x)|),
+(5)
+where t, 1 ≤t ≤T is the index of the time-multiplexed frame, T is the total number of
+multiplexed frames, and φ(t)
+i
+is the sampled random phase for the ith primitive at the tth frame.
+The ﬁnal composited wavefront at the SLM plane that is located at z0 = 0 is simply deﬁned
+by u(t)
+SLM(x) = g(t)
+0 (x). We highlight that the above procedure is highly similar to the over
+operation,55 or Painter’s algorithm, in traditional graphics, with additional wave propagation and
+square root operations. This is because in RPWS, we use primitives optimized to reconstruct
+the square (i.e., intensity) of the target scene, instead of the amplitude like in GWS, which we
+explain in detail in the following Random-phase Alpha Blending section.
+The intensity of reconstructed images of the time-multiplexed hologram is ﬂexibly described
+by the operator O(·; ·) as
+I(x) = 1
+T
+T
+X
+t=1
+O
+
+u(t)
+SLM(x); ·
+
+2
+,
+(6)
+where the operator O(·; ·) could describe a single propagation that reconstructs a 2D image,
+multiple propagations that reconstruct a 3D focal stack, or the Short-time Fourier Transform
+(STFT) that reconstructs a 4D light ﬁeld.19
+With random-phase modulation, combined with the novel wave compositing and alpha
+blending schemes, the bandwidth of the SLM can be maximally utilized while enabling accurate
+reconstruction of occlusion and color. This leads to a large eyebox and parallax, shallow depth
+of ﬁeld (i.e., signiﬁcant blur variation across depths), and natural defocus blur, as illustrated in
+the Results section. Please refer to the supplemental materials for a detailed statistical-optics
+analysis quantifying bandwidth and defocus.
+Random-phase Alpha Blending
+RPWS departs fundamentally from GWS1 and prior silhouette-based methods47 in its treatment
+of alpha blending. While earlier smooth-phase CGH approaches assumed amplitude-domain
+alpha compositing, we show that for random-phase wavefronts alpha blending is linear in the
+intensity domain in expectation. This crucial distinction, which is largely overlooked in prior
+work and GWS, directly leads to our wave compositing equation (Eq. 5), where square-root
+terms and time-multiplexing naturally emerge, in contrast to GWS. We analyze different alpha
+blending formulations in detail in Fig. 3 and further below in this section.
+7
+
+=== page 8 ===
+For simplicity, consider two primitive wavefronts at the same depth, u1 = α1eiφ1, u2 =
+α2eiφ2 ∈C2, with u1 in front of u2. Here α1, α2 ∈R2 are alpha maps deﬁned as α = o · M, the
+product of the primitive opacity o ∈R and its transparency falloff M ∈R2 (from the Gaussian
+covariance/mean or the σ parameter of a translucent triangle26). Let c1, c2 ∈R denote the scalar
+colors. In standard ray-based splatting,22,23,26 the alpha-blended color is
+c = α1c1 + (1 −α1)α2c2,
+(7)
+where c is the resulting amplitude of the blended wavefront.
+In wave splatting, the key question is how to alpha-blend primitive wavefronts in the pres-
+ence of phase. Formally, this requires ﬁnding blending weights w1(α1, α2, c1, c2), w2(α1, α2, c1, c2) ∈
+R such that the amplitude of the blended wavefront
+u = w1(α1, α2, c1, c2)eiφ1 + w2(α1, α2, c1, c2)eiφ2
+(8)
+matches the target color c reconstructed from the input primitives.
+Squaring the amplitude of both sides of Eq. 8 yields
+c2 = |u|2 =
+w1eiφ1 + w2eiφ22
+(9)
+= w2
+1 + w2
+2 + w1w2
+ ei(φ1−φ2) + ei(φ2−φ1)
+(10)
+= w2
+1 + w2
+2 + 2w1w2 cos(φ1 −φ2),
+(11)
+which shows explicit dependence on the phase distribution of φ1 −φ2, as analyzed below.
+Smooth-phase (GWS): φ1 −φ2 = 2kπ. When two primitive wavefronts are in phase at the
+same depth, cos(φ1 −φ2) = 1, and Eq. 11 reduces to (w1 + w2)2, i.e., |u| = c = w1 + w2.
+Comparing with Eq. 7, we set w1 = α1c1 and w2 = (1 −α1)α2c2, yielding
+u = α1c1eiφ1 + (1 −α1)α2c2eiφ2.
+(12)
+which is linear in the amplitude domain, exactly the alpha wave blending formulation described
+in GWS.
+Random-phase (RPWS): φ1, φ2
+iid∼U(−π, π). When primitives are modulated by i.i.d. random
+phases drawn from U(−π, π), the cross term cos(φ1 −φ2) in Eq. 11 is nonzero for a single re-
+alization, but only vanishes in expectation, which is essentially time multiplexing. Speciﬁcally,
+the expected intensity is
+E[|u|2] = w2
+1 + w2
+2 + 2w1w2E[cos(φ1 −φ2)]
+(13)
+= w2
+1 + w2
+2 = c2,
+(14)
+showing that cross terms are completely eliminated in the intensity domain.
+To satisfy Eq. 14, we optimize primitives with the standard ray-based alpha blending rule
+on intensity c2,
+c2 = α′
+1c′
+1 + (1 −α′
+1)α′
+2c′
+2,
+(15)
+8
+
+=== page 9 ===
+Ground truth
+GWS-NRP
+RPWS (ours)
+0
+1.3𝒆!𝟐
+Error map
+Error map
+MSE
+Fig. 2 Effectiveness of RPWS sqrt-blending of random-phase wavefronts. We show the
+effectiveness of our sqrt-blending procedure using the toy example described in the Random-
+phase Alpha Blending section with two random-phase Gaussians, where the orange Gaussian
+is in front of the blue Gaussian and alpha blended. The straightforward extension of GWS
+amplitude-based blending with random phase (GWS-NRP) fails to reconstruct the correct ap-
+pearance with signiﬁcant errors near occlusion borders — which is exactly the cross term in Eq.
+11. RPWS sqrt-blending achieves perfect alpha blending results.
+and set
+w1 =
+p
+α′
+1c′
+1,
+w2 =
+p
+(1 −α′
+1)α′
+2c′
+2.
+(16)
+The resulting random-phase compositing rule is
+u =
+p
+α′
+1c′
+1 eiφ1 +
+p
+(1 −α′
+1)α′
+2c′
+2 eiφ2,
+(17)
+where each primitive wavefront is assigned color
+p
+c′
+i from a model optimized to reconstruct
+c2 (intensity) rather than c (amplitude). This formulation generalizes directly to thousands or
+millions of random-phase primitives (see the Random-phase Wave Splatting section), forming
+the basis of our RPWS wave-compositing algorithm in Eq. 4 and 5.
+Evident from Eq. 14, we emphasize that time multiplexing is not merely an optional add-on
+for speckle reduction, but a fundamental requirement for correct alpha blending in our frame-
+work. The alpha blending equation is inherently stochastic: it is only satisﬁed in expectation
+over random phases, and any single realization introduces cross-term interference that corrupts
+the blend. Time multiplexing ensures that these cross terms vanish statistically, thereby real-
+izing the mathematically correct alpha blending behavior in practice. In this sense, speckle
+reduction is only a by-product; the primary role of time multiplexing is to enforce the valid-
+ity of the probabilistic alpha blending formulation itself. We further derive exact convergence
+bounds in the supplemental materials, showing that the uniform 2π phase distribution belongs to
+a class of phase distributions that achieve the optimal O(1/
+√
+N) decay of cross terms, thereby
+providing formal justiﬁcation for our probabilistic alpha blending framework.
+9
+
+=== page 10 ===
+GWS-NRP [Eq. 3]
+GWS with sqrt
+RPWS (full) [Eq. 4, 5]
+RPWS without sqrt
+Focal slice
+Light field view
+Back-to-front compositing
+Square root alpha blending
+✗
+✗
+✗
+✓
+✓
+✗
+✓
+✓
+Ground truth
+Fig. 3 Ablation study on random-phase CGH rendering algorithms.
+We compare our
+RPWS algorithm with three other alpha blending methods on random-phase primitives. (a)
+Na¨ıvely applying random phase to GWS fails to reconstruct accurate appearance. (b) GWS with
+our square root alpha blending formulation generates somewhat accurate appearance. However,
+incorrect occlusion handling at depth discontinuities manifests as light leakage and halo artifacts
+in focal stacks and black holes near occlusion borders. This is an artifact frequently observed in
+conventional multifocal displays.56–58 (c) RPWS without square root-based blending also fails
+to reconstruct accurate colors. (d) Our full RPWS model reconstructs accurate color, natural
+defocus blur, and physically-correct parallax. Please refer to the supplementary materials for
+equations and pseudocodes of all alpha-blending formulations.
+Ablation study on random-phase wave compositing. To our knowledge, no effective method
+was ever presented to alpha-blend complex, translucent wavefronts. We therefore isolate the two
+operations required by RPWS—intensity-domain square-root alpha blending and back-to-front
+wave compositing—and compare them with a na¨ıve random-phase version of smooth-phase
+wave splatting in Fig. 3. Na¨ıvely assigning random phase to GWS (GWS-NRP) while retaining
+amplitude-domain blending fails to reconstruct accurate appearance. Introducing square-root
+alpha blending alone yields somewhat plausible results, but the remaining front-to-back com-
+positing produces prominent dark halos and light leakage at depth discontinuities; in light-ﬁeld
+reconstruction, these errors appear as dark borders around foreground occluders.
+The complete RPWS formulation combines square-root alpha blending and back-to-front
+wave compositing, recovering accurate focal-stack and parallax reconstructions while eliminat-
+ing the depth-discontinuity and occlusion-border artifacts produced when either component is
+omitted.
+Applying random phase to primitives. To generate random-phase primitive wavefronts, we
+use the phase modulation heuristic brieﬂy mentioned for individual Gaussians in the supple-
+mentary materials of GWS.1 RPWS places this operation within a complete statistical-optics
+formulation for compositing many overlapping translucent primitives: we characterize when
+the random-phase construction is unbiased, derive its convergence under time multiplexing,
+and demonstrate practical consequences such as programmatic depth-of-ﬁeld control. Please
+10
+
+=== page 11 ===
+CGH Algorithm
+Blender
+Mip-NeRF 360
+Polygons-RP (1 frame)
+41
+17.02 / 0.14 / 0.75
+12.77 / 0.14 / 0.76
+Polygons-RP (8 frames)
+41
+20.27 / 0.30 / 0.65
+15.63 / 0.27 / 0.69
+RPWS-GS (1 frame)
+18.11 / 0.15 / 0.76
+14.17 / 0.17 / 0.76
+RPWS-GS (8 frames)
+23.42 / 0.36 / 0.64
+19.65 / 0.36 / 0.65
+RPWS-GS (24 frames)
+24.87 / 0.49 / 0.56
+21.21 / 0.48 / 0.58
+GWS1
+14.35 / 0.18 / 0.63
+10.50 / 0.17 / 0.60
+Table 2 Quantitative light-ﬁeld reconstruction performance of different CGH algorithms.
+We evaluate the image quality of 10 × 10 dense light ﬁelds reconstructed from the simulated
+holograms generated using different CGH methods in terms of PSNR (↑) / SSIM (↑) / LPIPS
+(↓). The best performing metrics for all CGH baselines are boldfaced. Our method achieves
+the best image light-ﬁeld reconstruction performance and eyebox uniformity among all CGH
+baselines.
+refer to the supplementary materials of this paper for the full analysis.
+Simulation and Experimental Results
+We generate 3D holograms of scenes from the Blender59 and MipNeRF-36060 datasets using
+2D Gaussians, textured meshes, and translucent triangles, and build a benchtop holographic
+display for experimental validation; see Methods for dataset preparation, implementation, and
+hardware details.
+Baseline comparisons with simulation results. We compare RPWS against several primitive-
+based CGH baselines, including random-phase polygon-based CGH (Polygons-RP) via the sil-
+houette method11,42,43 and its time-multiplexed variants (1 and 8 frames), as well as Gaussian
+Wave Splatting (GWS).1 For all quantitative and qualitative baseline comparisons, we restrict
+RPWS to 2DGS representations (RPWS-GS), where the number of Gaussians can be matched
+directly to the number of polygon primitives (using 3DGS-MCMC61) for fair comparisons, sim-
+ilar to GWS. For RPWS with soft-edged triangle primitives,24–26 which we denote as RPWS-∆,
+we pick triangle splatting26 as the representative method. Since triangle splatting does not allow
+for exact primitive count control, we only show qualitative results of RPWS-∆.
+Fig. 4-(a) and 5-(a) compare simulated focal stacks of the synthesized holograms. GWS
+produces smooth-phase holograms with little depth-dependent variation, yielding unnatural co-
+herent blur with ringing artifacts. Single-frame random-phase holograms (Polygon-RP, RPWS)
+exhibit strong speckle, but quality improves with time multiplexing (8, 24 frames). Polygon-RP
+produces more natural defocus blur, but its in-focus ﬁdelity is limited by the low-quality per-
+face textured mesh representation. Both RPWS-GS and RPWS-∆achieves the most natural
+defocus blur, closely matching incoherent blur, while maintaining in-focus quality comparable
+to GWS.
+11
+
+=== page 12 ===
+Center
+view
+Right
+view
+Epipolar
+image
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+RPWS (1f)
+RPWS (8f)
+RPWS (24f)
+Ground Truth
+Front
+focus
+Rear
+focus
+Zoom-in
+crops
+(a)
+(b)
+Fig. 4 Simulated 3D focal stacks and 4D light ﬁelds reconstructed from various baseline
+CGH algorithms. The image quality of random-phase polygons-based CGH (Polygons-RP) is
+inherently limited by the coarse per-face textured mesh representation, resulting in poor image
+quality even in in-focus regions. GWS1 reconstructs sharp details at in-focus regions, but suf-
+fers from large depth of ﬁeld and unnatural ringing artifacts. Our method (RPWS) generates
+sharp content at focused regions and the resulting hologram has shallow depth of ﬁeld, recon-
+structing natural defocus blur across different depths. With additional time-multiplexing, the
+image quality of RPWS signiﬁcantly improves.
+Fig. 4-(b) and 5-(b) compare simulated light ﬁelds of the synthesized holograms using
+individual views and epipolar images. For smooth-phase GWS, wavefront energy concentrates
+near the eyebox center, causing severe degradation at the periphery. In contrast, RPWS-GS and
+RPWS-∆distribute energy evenly across the eyebox, enabling accurate view reconstruction at
+all pupil positions. Random-phase polygon-based CGH again suffers from the coarse per-face
+textured mesh representation. Quantitative results for dense 10 × 10 light-ﬁeld reconstructions,
+measured with standard image quality metrics, are reported in Table 2 where RPWS clearly
+outperforms all methods.
+Despite belonging to fundamentally different algorithmic classes, we delineate the key dis-
+tinctions between RPWS and STFT-based light ﬁeld CGH methods19,34 and perform additional
+baseline comparisons in the supplementary materials.
+Experimentally captured focal stack and parallax results. We experimentally capture re-
+12
+
+=== page 13 ===
+Front
+focus
+Rear
+focus
+Zoom-in
+crops
+Center
+view
+Right
+view
+Epipolar
+image
+(a)
+(b)
+Fig. 5 Simulated 3D focal stacks and 4D light ﬁelds reconstructed from RPWS of triangle
+splats.26
+We run our RPWS algorithm on Triangle splats proposed by Held et al.26 RPWS
+with triangle splats accurately reconstructs natural defocus blur and parallax on a wide variety
+of scenes, validating the robustness of our method to different translucent primitive types.
+constructed focal stacks and light ﬁelds of RPWS and other CGH baselines to demonstrate
+real-world refocusing capabilities and parallax effects. Individual frames and color channels
+are captured independently and merged in post-processing. The experimentally captured re-
+sults well match the simulation results, as shown in Fig. 6. Our method (both RPWS-GS and
+RPWS-∆) achieves the best balance between high in-focus image quality and natural defocus
+blur, while correctly reconstructing parallax.
+13
+
+=== page 14 ===
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Ground Truth
+RPWS-△(24f)
+Front 
+focus
+Back 
+focus
+Front 
+focus
+Back 
+focus
+Zoom-in 
+crops
+Zoom-in 
+crops
+Left 
+view
+Right 
+view
+Left 
+view
+Right 
+view
+Zoom-in 
+crops
+Zoom-in 
+crops
+(a)
+(b)
+Fig. 6 Experimentally captured 3D focal stacks and 4D light ﬁelds of holograms generated
+using different CGH algorithms.
+Polygon-based CGH (Polygons-RP)41,43,47 achieves low
+image quality due to the low quality of the underlying textured mesh 3D representation. GWS1
+generates smooth-phase holograms, resulting in limited defocus blur with unnatural ringing ar-
+tifacts and little-to-no parallax. Our method, RPWS with Gaussian (-GS) and triangle splatting
+(−∆) variants, achieves good image quality in in-focus regions, reconstructs natural incoher-
+ent blur in defocus regions, and shows signiﬁcantly more parallax than GWS. With 24 frames
+time-multiplexing, RPWS (both -GS and −∆variants) achieves near speckle-free results.
+14
+
+=== page 15 ===
+Discussion
+Random-phase Wave Splatting establishes a new primitive-based CGH regime for wave-optical
+rendering of translucent random-phase primitives. By deriving the intensity-domain composit-
+ing rule required for independently phase-modulated primitive wavefronts, RPWS preserves
+the continuous alpha relationships of modern splatting representations while distributing optical
+energy across the available SLM bandwidth. This combination enables accurate color and oc-
+clusion together with natural depth-dependent defocus, wide parallax, and a larger eyebox. The
+formulation is not speciﬁc to Gaussian geometry: we demonstrate the same wave-compositing
+principle with Gaussian and soft-edged triangle primitives, suggesting a direct path for con-
+verting emerging translucent primitive-based scene representations into holograms without re-
+designing the compositing model for each representation. In this sense, RPWS extends wave
+splatting from the smooth-phase regime to a distinct random-phase regime whose image forma-
+tion is governed by intensity-domain statistics and time multiplexing.
+That said, in RPWS, time multiplexing is used to realize mathematically exact alpha blend-
+ing, hence many frames are required for accurate reconstruction. In practice, the effectiveness of
+time multiplexing is constrained by SLM refresh rates, though this limitation may be alleviated
+by advances in high-speed SLMs, such as the 3600 fps FLCoS used in Holographic Parallax34
+and the recently developed 5760 fps TI MEMS-based PLM; addressing quantization artifacts in
+these devices presents an interesting future direction. Our experiments also show reduced con-
+trast due to random phase, but extending learning-based calibration techniques19,33 to directly
+reconstruct random-phase complex ﬁelds4 may further enhance RPWS holograms. Please refer
+to the supplemental materials for more discussions on contrast enhancement strategies.
+Methods
+Data preparation and hologram synthesis
+We generate 3D holograms of scenes from the Blender59 and MipNeRF-36060 datasets using 2D
+Gaussians, textured meshes, and translucent triangles. Following GWS,1 we prepare 3D scene
+representations with the open-source gsplat library49 for 2DGS, NeRF2Mesh models62 for
+textured meshes, and Triangle Splatting models26 for translucent triangles. Additional data
+preparation details are provided in the supplemental materials.
+We implement our algorithms in PyTorch and build a benchtop holographic display for
+experimental validation. Please refer to the supplementary materials for detailed pseudocode
+and hardware speciﬁcations.
+Statistics and reproducibility
+This work is a methods and algorithms contribution; no statistical hypothesis testing was per-
+formed. Quantitative results (Table 2) report standard deterministic image-quality metrics (PSNR,
+15
+
+=== page 16 ===
+SSIM, LPIPS) averaged over all scenes, once per algorithm conﬁguration, on simulated holo-
+grams, with no random sampling across trials requiring signiﬁcance testing. Experimental cap-
+tures were acquired in a similar manner.
+Data availability
+The Blender59 and Mip-NeRF 36060 datasets used in this study are publicly available. The
+simulation outputs, experimentally captured focal stack and light ﬁeld data, and other data sup-
+porting the ﬁndings of this study will be made available in a GitHub repository upon acceptance
+of this manuscript. Prior to publication, the data are available from the corresponding author
+upon reasonable request.
+Code availability
+The custom code used to implement RPWS and reproduce the simulation and experimental
+results in this paper will be made publicly available in a GitHub repository upon acceptance of
+this manuscript. Prior to publication, the code is available to editors and reviewers upon request.
+References
+1 Choi, S., Chao, B., Yang, J., Gopakumar, M. & Wetzstein, G. Gaussian wave splatting for
+computer generated holography. ACM Transactions on Graphics (TOG) 44, 1–11 (2025).
+2 Maimone, A., Georgiou, A. & Kollin, J. S. Holographic near-eye displays for virtual and
+augmented reality. ACM Transactions on Graphics (Tog) 36, 1–16 (2017).
+3 Kim, J. et al. Holographic glasses for virtual reality. In ACM SIGGRAPH 2022 Conference
+Proceedings, SIGGRAPH ’22 (Association for Computing Machinery, New York, NY, USA,
+2022). URL https://doi.org/10.1145/3528233.3530739.
+4 Jang, C., Bang, K., Chae, M., Lee, B. & Lanman, D. Waveguide holography for 3d augmented
+reality glasses. Nature Communications 15, 66 (2024).
+5 Gopakumar, M. et al. Full-colour 3d holographic augmented-reality displays with metasur-
+face waveguides. Nature 1–7 (2024).
+6 Choi, S., Jang, C., Lanman, D. & Wetzstein, G. Synthetic aperture waveguide holography for
+compact mixed reality displays with large ´etendue. Nature Photonics (2025).
+7 Pi, D., Liu, J. & Wang, Y. Review of computer-generated hologram algorithms for color dy-
+namic holographic three-dimensional display. Light: Science & Applications 11, 231 (2022).
+16
+
+=== page 17 ===
+8 Matsushima, K. Introduction to Computer Holography: Creating Computer-Generated Holo-
+grams as the Ultimate 3D Image (Springer Nature, 2020).
+9 Chen, R. H.-Y. & Wilkinson, T. D. Computer generated hologram from point cloud using
+graphics processor. Applied optics 48, 6841–6850 (2009).
+10 Lucente, M. E.
+Interactive computation of holograms using a look-up table.
+Journal of
+Electronic Imaging 2, 28–34 (1993).
+11 Matsushima, K., Schimmel, H. & Wyrowski, F. Fast calculation method for optical diffraction
+on tilted planes by use of the angular spectrum of plane waves. JOSA A 20, 1755–1762 (2003).
+12 Ahrenberg, L., Benzie, P., Magnor, M. & Watson, J. Computer generated holograms from
+three dimensional meshes using an analytic light transport model. Applied optics 47, 1567–
+1574 (2008).
+13 Meng, X., Zhou, W. & Peng, Y. Mesh-represented and learning-empowered hologram syn-
+thesis for full 3d holographic displays. Nature Communications 17, 7943 (2026).
+14 Blinder, D., Nishitsuji, T. & Schelkens, P.
+Real-time computation of 3d wireframes in
+computer-generated holography. IEEE Transactions on Image Processing 30, 9418–9428
+(2021).
+15 Padmanaban, N., Peng, Y. & Wetzstein, G. Holographic near-eye displays based on overlap-
+add stereograms. ACM Transactions on Graphics (TOG) 38, 1–13 (2019).
+16 Zhang, H., Cao, L. & Jin, G. Three-dimensional computer-generated hologram with fourier
+domain segmentation. Optics express 27, 11689–11697 (2019).
+17 Park, J.-H. & Askari, M. Non-hogel-based computer generated hologram from light ﬁeld
+using complex ﬁeld recovery technique from wigner distribution function. Optics express 27,
+2562–2574 (2019).
+18 Kang, H., Yamaguchi, T. & Yoshikawa, H. Accurate phase-added stereogram to improve the
+coherent stereogram. Applied optics 47, D44–D54 (2008).
+19 Choi, S. et al. Time-multiplexed neural holography: a ﬂexible framework for holographic
+near-eye displays with fast heavily-quantized spatial light modulators. In ACM SIGGRAPH
+2022 Conference Proceedings, 1–9 (2022).
+20 Chen, J.-S. & Chu, D. Improved layer-based method for rapid hologram generation and real-
+time interactive holographic display applications. Optics express 23, 18143–18155 (2015).
+21 Shi, L., Li, B. & Matusik, W. End-to-end learning of 3d phase-only holograms for holo-
+graphic display. Light: Science & Applications 11, 247 (2022).
+17
+
+=== page 18 ===
+22 Kerbl, B., Kopanas, G., Leimk¨uhler, T. & Drettakis, G. 3D Gaussian Splatting for Real-Time
+Radiance Field Rendering. ACM TOG 42 (2023).
+23 Huang, B., Yu, Z., Chen, A., Geiger, A. & Gao, S. 2d gaussian splatting for geometrically
+accurate radiance ﬁelds. In ACM SIGGRAPH 2024 Conference Papers, 1–11 (2024).
+24 Sheng, K., Zhou, Z., Peng, Y. & Wang, Q. 2d triangle splatting for direct differentiable mesh
+training (2025). URL https://arxiv.org/abs/2506.18575. arXiv:2506.18575.
+25 Burgdorfer, N. & Mordohai, P. Radiant triangle soup with soft connectivity forces for 3d re-
+construction and novel view synthesis (2025). URL https://arxiv.org/abs/2505.
+23642. arXiv:2505.23642.
+26 Held, J. et al. Triangle splatting for real-time radiance ﬁeld rendering. arXiv (2025).
+27 St-Hilaire, P. Phase proﬁles for holographic stereograms. Optical Engineering 34, 83–89
+(1995).
+28 Schiffers, F. et al. Stochastic light ﬁeld holography. In 2023 IEEE International Conference
+on Computational Photography (ICCP), 1–12 (IEEE, 2023).
+29 Kim, D., Nam, S.-W., Lee, B., Seo, J.-M. & Lee, B. Accommodative holography: improving
+accommodation response for perceptually realistic holographic displays. ACM Trans. Graph.
+41 (2022). URL https://doi.org/10.1145/3528223.3530147.
+30 Chakravarthula, P. et al. Pupil-aware holography. ACM Transactions on Graphics (TOG) 41
+(2022).
+31 Shimobaba, T. & Ito, T. Random phase-free computer-generated hologram. Optics express
+23, 9549–9554 (2015).
+32 Shi, L., Li, B., Kim, C., Kellnhofer, P. & Matusik, W. Towards real-time photorealistic 3d
+holography with deep neural networks. Nature 591, 234–239 (2021).
+33 Peng, Y., Choi, S., Padmanaban, N. & Wetzstein, G. Neural holography with camera-in-the-
+loop training. ACM Transactions on Graphics (TOG) 39, 1–14 (2020).
+34 Kim, D. et al. Holographic parallax improves 3d perceptual realism. ACM Transactions on
+Graphics (TOG) 43, 1–13 (2024).
+35 Goodman, J. W. Speckle phenomena in optics: theory and applications (Roberts and Com-
+pany Publishers, 2007).
+36 Lee, S. et al.
+Light source optimization for partially coherent holographic displays with
+consideration of speckle contrast, resolution, and depth of ﬁeld. Scientiﬁc reports 10, 18832
+(2020).
+18
+
+=== page 19 ===
+37 Chao, B. et al. Large ´etendue 3d holographic display with content-adaptive dynamic fourier
+modulation. In SIGGRAPH Asia 2024 Conference Papers, 1–12 (2024).
+38 Kuo, G., Schiffers, F., Lanman, D., Cossairt, O. & Matsuda, N. Multisource holography.
+ACM Transactions on Graphics (TOG) 42, 1–14 (2023).
+39 Curtis, V. R., Caira, N. W., Xu, J., Sata, A. G. & P´egard, N. C. Dcgh: dynamic computer
+generated holography for speckle-free, high ﬁdelity 3d displays. In 2021 IEEE Virtual Reality
+and 3D User Interfaces (VR), 1–9 (IEEE, 2021).
+40 Peng, Y., Choi, S., Kim, J. & Wetzstein, G. Speckle-free holography with partially coherent
+light sources and camera-in-the-loop calibration. Science advances 7, eabg5040 (2021).
+41 Matsushima, K. Computer-generated holograms for three-dimensional surface objects with
+shade and texture. Applied optics 44, 4607–4614 (2005).
+42 Matsushima, K. Exact hidden-surface removal in digitally synthetic full-parallax holograms.
+In Practical Holography XIX: Materials and Applications, Vol. 5742, 25–32 (SPIE, 2005).
+43 Matsushima, K. & Nakahara, S. Extremely high-deﬁnition full-parallax computer-generated
+hologram created by the polygon-based method. Applied optics 48, H54–H63 (2009).
+44 Askari, M. et al. Occlusion handling using angular spectrum convolution in fully analytical
+mesh based computer generated hologram. Optics Express 25, 25867–25878 (2017).
+45 Chen, R. H.-Y. & Wilkinson, T. D. Computer generated hologram with geometric occlusion
+using gpu-accelerated depth buffer rasterization for three-dimensional display. Applied optics
+48, 4246–4255 (2009).
+46 Matsushima, K. & Sonobe, N. Full-color digitized holography for large-scale holographic 3d
+imaging of physical and nonphysical objects. Applied Optics 57, A150–A156 (2018).
+47 Matsushima, K., Nakamura, M. & Nakahara, S. Silhouette method for hidden surface removal
+in computer holography and its acceleration using the switch-back technique. Optics express
+22, 24450–24465 (2014).
+48 Held, J. et al. 3D convex splatting: Radiance ﬁeld rendering with 3D smooth convexes. In Pro-
+ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)
+(2025).
+49 Ye, V. et al.
+gsplat:
+An open-source library for Gaussian splatting.
+arXiv preprint
+arXiv:2409.06765 (2024). URL https://arxiv.org/abs/2409.06765.
+50 Goodman, J. W. Introduction to Fourier optics (Roberts and Company publishers, 2005).
+19
+
+=== page 20 ===
+51 Matsushima, K. & Shimobaba, T. Band-limited angular spectrum method for numerical sim-
+ulation of free-space propagation in far and near ﬁelds. Optics express 17, 19662–19673
+(2009).
+52 Kajiya, J. T. & Von Herzen, B. P. Ray tracing volume densities. ACM SIGGRAPH computer
+graphics 18, 165–174 (1984).
+53 Shi, L., Ryu, D. & Matusik, W. Ergonomic-centric holography: Optimizing realism, immer-
+sion, and comfort for holographic display. Laser & Photonics Reviews n/a, 2300651 (2024).
+54 Lee, B., Kim, D., Lee, S., Chen, C. & Lee, B. High-contrast, speckle-free, true 3d holography
+via binary cgh optimization. Scientiﬁc Reports 12, 2811 (2022). URL https://doi.org/
+10.1038/s41598-022-06405-2.
+55 Porter, T. & Duff, T. Compositing digital images. SIGGRAPH Comput. Graph. 18, 253–259
+(1984). URL https://doi.org/10.1145/964965.808606.
+56 Narain, R. et al. Optimal presentation of imagery with focus cues on multi-plane displays.
+ACM Trans. Graph. 34 (2015). URL https://doi.org/10.1145/2766909.
+57 Mercier, O. et al. Fast gaze-contingent optimal decompositions for multifocal displays. ACM
+Trans. Graph. 36, 237–1 (2017).
+58 Chang, C., Bang, K., Wetzstein, G., Lee, B. & Gao, L. Toward the next-generation vr/ar
+optics: a review of holographic near-eye displays from a human-centric perspective. Optica
+7, 1563–1578 (2020).
+59 Mildenhall, B. et al. NeRF: Representing Scenes as Neural Radiance Fields for View Synthe-
+sis. In ECCV (2020).
+60 Barron, J. T., Mildenhall, B., Verbin, D., Srinivasan, P. P. & Hedman, P. Mip-NeRF 360:
+Unbounded Anti-Aliased Neural Radiance Fields. In CVPR (2022).
+61 Kheradmand, S. et al. 3d gaussian splatting as markov chain monte carlo. In NeurIPS (2024).
+62 Tang, J. et al. Delicate textured mesh recovery from nerf via adaptive surface reﬁnement. In
+ICCV (2023).
+Acknowledgements
+B.C. and J.Y. are supported by Stanford Graduate Fellowships and the NSF Graduate Research
+Fellowship Program (GRFP).
+20
+
+=== page 21 ===
+Author contributions
+B.C. developed the experimental hardware setups and captured the results. B.C. and J.Y. imple-
+mented the method and performed software simulations. B.C. and S.C. conceived the method
+with input from M.G. G.W. supervised all aspects of the project. All authors took part in de-
+signing the experiments, writing the paper, and the Supplementary Information.
+Corresponding authors Correspondence to Gordon Wetzstein.
+Ethics declarations
+Competing interests The authors declare no competing interests.
+Additional information
+Publisher’s note Springer Nature remains neutral with regard to jurisdictional claims in pub-
+lished maps and institutional afﬁliations.
+21

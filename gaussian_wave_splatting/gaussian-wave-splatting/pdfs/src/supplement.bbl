@@ -1,0 +1,193 @@
+\begin{thebibliography}{10}
+
+\bibitem{ahrenberg2008computer}
+{\sc Ahrenberg, L., Benzie, P., Magnor, M., and Watson, J.}
+\newblock Computer generated holograms from three dimensional meshes using an analytic light transport model.
+\newblock {\em Applied optics 47}, 10 (2008), 1567--1574.
+
+\bibitem{askari2017occlusion}
+{\sc Askari, M., Kim, S.-B., Shin, K.-S., Ko, S.-B., Kim, S.-H., Park, D.-Y., Ju, Y.-G., and Park, J.-H.}
+\newblock Occlusion handling using angular spectrum convolution in fully analytical mesh based computer generated hologram.
+\newblock {\em Optics Express 25}, 21 (2017), 25867--25878.
+
+\bibitem{barron2022mipnerf360}
+{\sc Barron, J.~T., Mildenhall, B., Verbin, D., Srinivasan, P.~P., and Hedman, P.}
+\newblock {Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields}.
+\newblock In {\em CVPR\/} (2022).
+
+\bibitem{basri2003lambertian}
+{\sc Basri, R., and Jacobs, D.~W.}
+\newblock Lambertian reflectance and linear subspaces.
+\newblock {\em IEEE transactions on pattern analysis and machine intelligence 25}, 2 (2003), 218--233.
+
+\bibitem{blinn1996jim}
+{\sc Blinn, J.}
+\newblock {\em Jim Blinn's corner: a trip down the graphics pipeline}.
+\newblock Morgan Kaufmann, 1996.
+
+\bibitem{bracewell1993affine}
+{\sc Bracewell, R.~N., Chang, K.-Y., Jha, A.~K., and Wang, Y.-H.}
+\newblock Affine theorem for two-dimensional fourier transform.
+\newblock {\em Electronics Letters 29}, 3 (1993), 304--304.
+
+\bibitem{chen2009computer}
+{\sc Chen, R. H.-Y., and Wilkinson, T.~D.}
+\newblock Computer generated hologram with geometric occlusion using gpu-accelerated depth buffer rasterization for three-dimensional display.
+\newblock {\em Applied optics 48}, 21 (2009), 4246--4255.
+
+\bibitem{choi2022time}
+{\sc Choi, S., Gopakumar, M., Peng, Y., Kim, J., O'Toole, M., and Wetzstein, G.}
+\newblock Time-multiplexed neural holography: a flexible framework for holographic near-eye displays with fast heavily-quantized spatial light modulators.
+\newblock In {\em ACM SIGGRAPH 2022 Conference Proceedings\/} (2022), pp.~1--9.
+
+\bibitem{choi2021neural}
+{\sc Choi, S., Gopakumar, M., Peng, Y., Kim, J., and Wetzstein, G.}
+\newblock Neural 3d holography: Learning accurate wave propagation models for 3d holographic virtual and augmented reality displays.
+\newblock {\em ACM Transactions on Graphics (TOG) 40}, 6 (2021), 1--12.
+
+\bibitem{foley1996computer}
+{\sc Foley, J.~D.}
+\newblock {\em Computer graphics: principles and practice}, vol.~12110.
+\newblock Addison-Wesley Professional, 1996.
+
+\bibitem{yu_and_fridovichkeil2021plenoxels}
+{\sc Fridovich-Keil, S., Yu, A., Tancik, M., Chen, Q., Recht, B., and Kanazawa, A.}
+\newblock {Plenoxels: Radiance Fields without Neural Networks}.
+\newblock In {\em CVPR\/} (2022).
+
+\bibitem{hamann2018time}
+{\sc Hamann, S., Shi, L., Solgaard, O., and Wetzstein, G.}
+\newblock Time-multiplexed light field synthesis via factored wigner distribution function.
+\newblock {\em Optics letters 43}, 3 (2018), 599--602.
+
+\bibitem{hsueh1978computer}
+{\sc Hsueh, C.-K., and Sawchuk, A.~A.}
+\newblock Computer-generated double-phase holograms.
+\newblock {\em Applied optics 17}, 24 (1978), 3874--3883.
+
+\bibitem{kerbl3Dgaussians}
+{\sc Kerbl, B., Kopanas, G., Leimk{\"u}hler, T., and Drettakis, G.}
+\newblock {3D Gaussian Splatting for Real-Time Radiance Field Rendering}.
+\newblock {\em ACM TOG 42}, 4 (July 2023).
+
+\bibitem{kheradmand20243dgsmcmc}
+{\sc Kheradmand, S., Rebain, D., Sharma, G., Sun, W., Tseng, Y.-C., Isack, H., Kar, A., Tagliasacchi, A., and Yi, K.~M.}
+\newblock 3d gaussian splatting as markov chain monte carlo.
+\newblock In {\em NeurIPS\/} (2024).
+
+\bibitem{kim2024holographic}
+{\sc Kim, D., Nam, S.-W., Choi, S., Seo, J.-M., Wetzstein, G., and Jeong, Y.}
+\newblock Holographic parallax improves 3d perceptual realism.
+\newblock {\em ACM Transactions on Graphics (TOG) 43}, 4 (2024), 1--13.
+
+\bibitem{kim2008mathematical}
+{\sc Kim, H., Hahn, J., and Lee, B.}
+\newblock Mathematical modeling of triangle-mesh-modeled three-dimensional surface objects for digital holography.
+\newblock {\em Applied optics 47}, 19 (2008), D117--D127.
+
+\bibitem{maimone2017holographic}
+{\sc Maimone, A., Georgiou, A., and Kollin, J.~S.}
+\newblock Holographic near-eye displays for virtual and augmented reality.
+\newblock {\em ACM Transactions on Graphics (Tog) 36}, 4 (2017), 1--16.
+
+\bibitem{matsushima2020introduction}
+{\sc Matsushima, K.}
+\newblock {\em Introduction to Computer Holography: Creating Computer-Generated Holograms as the Ultimate 3D Image}.
+\newblock Springer Nature, 2020.
+
+\bibitem{matsushima2009extremely}
+{\sc Matsushima, K., and Nakahara, S.}
+\newblock Extremely high-definition full-parallax computer-generated hologram created by the polygon-based method.
+\newblock {\em Applied optics 48}, 34 (2009), H54--H63.
+
+\bibitem{matsushima2014silhouette}
+{\sc Matsushima, K., Nakamura, M., and Nakahara, S.}
+\newblock Silhouette method for hidden surface removal in computer holography and its acceleration using the switch-back technique.
+\newblock {\em Optics express 22}, 20 (2014), 24450--24465.
+
+\bibitem{matsushima2003fast}
+{\sc Matsushima, K., Schimmel, H., and Wyrowski, F.}
+\newblock Fast calculation method for optical diffraction on tilted planes by use of the angular spectrum of plane waves.
+\newblock {\em JOSA A 20}, 9 (2003), 1755--1762.
+
+\bibitem{mildenhall2020nerf}
+{\sc Mildenhall, B., Srinivasan, P.~P., Tancik, M., Barron, J.~T., Ramamoorthi, R., and Ng, R.}
+\newblock {NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis}.
+\newblock In {\em ECCV\/} (2020).
+
+\bibitem{padmanaban2019holographic}
+{\sc Padmanaban, N., Peng, Y., and Wetzstein, G.}
+\newblock Holographic near-eye displays based on overlap-add stereograms.
+\newblock {\em ACM Transactions on Graphics (TOG) 38}, 6 (2019), 1--13.
+
+\bibitem{park2017recent}
+{\sc Park, J.-H.}
+\newblock Recent progress in computer-generated holography for three-dimensional scenes.
+\newblock {\em Journal of Information Display 18}, 1 (2017), 1--12.
+
+\bibitem{park2015removal}
+{\sc Park, J.-H., Yeom, H.-J., Kim, H.-J., Zhang, H., Li, B., Ji, Y.-M., and Kim, S.-H.}
+\newblock Removal of line artifacts on mesh boundary in computer generated hologram by mesh phase matching.
+\newblock {\em Optics Express 23}, 6 (2015), 8006--8013.
+
+\bibitem{reichelt2012full}
+{\sc Reichelt, S., H{\"a}ussler, R., F{\"u}tterer, G., Leister, N., Kato, H., Usukura, N., and Kanbayashi, Y.}
+\newblock Full-range, complex spatial light modulator for real-time holography.
+\newblock {\em Optics letters 37}, 11 (2012), 1955--1957.
+
+\bibitem{shi2017near}
+{\sc Shi, L., Huang, F.-C., Lopes, W., Matusik, W., and Luebke, D.}
+\newblock Near-eye light field holographic rendering with spherical waves for wide field of view interactive 3d computer graphics.
+\newblock {\em ACM Transactions on Graphics (TOG) 36}, 6 (2017), 1--17.
+
+\bibitem{shi2021towards}
+{\sc Shi, L., Li, B., Kim, C., Kellnhofer, P., and Matusik, W.}
+\newblock Towards real-time photorealistic 3d holography with deep neural networks.
+\newblock {\em Nature 591}, 7849 (2021), 234--239.
+
+\bibitem{shi2022end}
+{\sc Shi, L., Li, B., and Matusik, W.}
+\newblock End-to-end learning of 3d phase-only holograms for holographic display.
+\newblock {\em Light: Science \& Applications 11}, 1 (2022), 247.
+
+\bibitem{shimobaba2009simple}
+{\sc Shimobaba, T., Masuda, N., and Ito, T.}
+\newblock Simple and fast calculation algorithm for computer-generated hologram with wavefront recording plane.
+\newblock {\em Optics letters 34}, 20 (2009), 3133--3135.
+
+\bibitem{tancik2023nerfstudio}
+{\sc Tancik, M., Weber, E., Ng, E., Li, R., Yi, B., Wang, T., Kristoffersen, A., Austin, J., Salahi, K., Ahuja, A., et~al.}
+\newblock Nerfstudio: A modular framework for neural radiance field development.
+\newblock In {\em ACM SIGGRAPH 2023 Conference Proceedings\/} (2023), pp.~1--12.
+
+\bibitem{ye2024gsplat}
+{\sc Ye, V., Li, R., Kerr, J., Turkulainen, M., Yi, B., Pan, Z., Seiskari, O., Ye, J., Hu, J., Tancik, M., and Kanazawa, A.}
+\newblock gsplat: An open-source library for {Gaussian} splatting.
+\newblock {\em arXiv preprint arXiv:2409.06765\/} (2024).
+
+\bibitem{yeom2016calculation}
+{\sc Yeom, H.-J., and Park, J.-H.}
+\newblock Calculation of reflectance distribution using angular spectrum convolution in mesh-based computer generated hologram.
+\newblock {\em Optics Express 24}, 17 (2016), 19801--19813.
+
+\bibitem{zhang2022polygon}
+{\sc Zhang, Y., Fan, H., Wang, F., Gu, X., Qian, X., and Poon, T.-C.}
+\newblock Polygon-based computer-generated holography: a review of fundamentals and recent progress.
+\newblock {\em Applied Optics 61}, 5 (2022), B363--B374.
+
+\bibitem{zhang2018fast}
+{\sc Zhang, Y.-P., Wang, F., Poon, T.-C., Fan, S., and Xu, W.}
+\newblock Fast generation of full analytical polygon-based computer-generated holograms.
+\newblock {\em Optics express 26}, 15 (2018), 19206--19224.
+
+\bibitem{zhang2011analysis}
+{\sc Zhang, Z.}
+\newblock {\em Analysis and synthesis of three-dimensional illumination using partial coherence}.
+\newblock Stanford University, 2011.
+
+\bibitem{zwicker2001ewa}
+{\sc Zwicker, M., Pfister, H., Van~Baar, J., and Gross, M.}
+\newblock Ewa volume splatting.
+\newblock In {\em Proceedings Visualization, 2001. VIS'01.\/} (2001), IEEE, pp.~29--538.
+
+\end{thebibliography}

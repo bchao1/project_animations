@@ -1,0 +1,99 @@
+\begin{table*}[t!]
+    \centering
+    \caption{\textbf{Ablation studies on the spectral transformation $T_\Phi$, error tolerance $\delta$, and number of resolution stages $S$.} Speedup is calculated relative to the 7-step FLUX.1-dev baseline wall-clock runtime on a single H100 GPU.}
+    \label{tab:ablation-quan}
+    \centering
+    \begin{tiny}
+    \begin{tabular}{cccccc}
+        \toprule
+        $T_\Phi$ & $\delta$ & $S$ & Latency (s) $\downarrow$ & Speedup (s) $\uparrow$ & ImageReward $\uparrow$ \\
+        \midrule
+        FLUX (7 steps) & - & - & 2.08 & 1.00$\times$ & 0.920 \\
+        \midrule
+        DCT & 0.001 & 2 & \textbf{2.08} & \textbf{1.00$\times$} & 1.032 \\
+        DWT & 0.001 & 2 & \underline{2.08} & \textbf{1.00$\times$} & \textbf{1.038} \\
+        FFT & 0.001 & 2 & 2.08 & \textbf{1.00$\times$} & \underline{1.036} \\
+        \midrule
+        DCT & 0.001 & 3 & \textbf{2.05} & \textbf{1.01$\times$} & \underline{1.034} \\
+        DWT & 0.001 & 3 & \underline{2.06} & \textbf{1.01$\times$} & \underline{1.034} \\
+        FFT & 0.001 & 3 & 2.06 & \textbf{1.01$\times$} & \textbf{1.040} \\
+        \midrule
+        DCT & 0.001 & 4 & \textbf{2.05} & \textbf{1.02$\times$} & \textbf{1.008} \\
+        DWT & 0.001 & 4 & \underline{2.05} & \underline{1.01$\times$} & \underline{1.002} \\
+        FFT & 0.001 & 4 & 2.06 & \underline{1.01$\times$} & 0.992 \\
+        \midrule
+        DCT & 0.002 & 2 & \textbf{2.07} & \textbf{1.01$\times$} & \underline{1.032} \\
+        DWT & 0.002 & 2 & \underline{2.08} & \underline{1.00$\times$} & 1.031 \\
+        FFT & 0.002 & 2 & 2.08 & \underline{1.00$\times$} & \textbf{1.036} \\
+        \midrule
+        DCT & 0.002 & 3 & \textbf{2.05} & \textbf{1.02$\times$} & \underline{1.034} \\
+        DWT & 0.002 & 3 & \underline{2.06} & \underline{1.01$\times$} & \underline{1.034} \\
+        FFT & 0.002 & 3 & 2.06 & \underline{1.01$\times$} & \textbf{1.040} \\
+        \midrule
+        DCT & 0.002 & 4 & \textbf{2.05} & \textbf{1.02$\times$} & \textbf{1.008} \\
+        DWT & 0.002 & 4 & \underline{2.05} & \underline{1.01$\times$} & \underline{1.002} \\
+        FFT & 0.002 & 4 & 2.06 & \underline{1.01$\times$} & 0.992 \\
+        \midrule
+        DCT & 0.005 & 2 & \textbf{1.91} & \textbf{1.09$\times$} & \underline{1.019} \\
+        DWT & 0.005 & 2 & \underline{1.92} & \textbf{1.09$\times$} & \textbf{1.026} \\
+        FFT & 0.005 & 2 & 1.92 & \underline{1.08$\times$} & 1.014 \\
+        \midrule
+        DCT & 0.005 & 3 & \textbf{1.87} & \textbf{1.12$\times$} & \underline{1.009} \\
+        DWT & 0.005 & 3 & \underline{1.88} & \underline{1.11$\times$} & \underline{1.009} \\
+        FFT & 0.005 & 3 & 1.88 & \underline{1.11$\times$} & \textbf{1.028} \\
+        \midrule
+        DCT & 0.005 & 4 & \textbf{1.87} & \textbf{1.12$\times$} & \underline{1.005} \\
+        DWT & 0.005 & 4 & \underline{1.87} & \underline{1.11$\times$} & \textbf{1.008} \\
+        FFT & 0.005 & 4 & 1.87 & \underline{1.11$\times$} & 0.994 \\
+        \midrule
+        DCT & 0.01 & 2 & \textbf{1.75} & \textbf{1.19$\times$} & \textbf{1.039} \\
+        DWT & 0.01 & 2 & \underline{1.76} & \underline{1.18$\times$} & \underline{1.025} \\
+        FFT & 0.01 & 2 & 1.76 & \underline{1.18$\times$} & 1.016 \\
+        \midrule
+        DCT & 0.01 & 3 & \textbf{1.71} & \textbf{1.22$\times$} & 1.015 \\
+        DWT & 0.01 & 3 & \underline{1.72} & \underline{1.21$\times$} & \underline{1.018} \\
+        FFT & 0.01 & 3 & 1.72 & \underline{1.21$\times$} & \textbf{1.030} \\
+        \midrule
+        DCT & 0.01 & 4 & \textbf{1.71} & \textbf{1.22$\times$} & \textbf{1.014} \\
+        DWT & 0.01 & 4 & \underline{1.71} & \textbf{1.22$\times$} & \underline{1.006} \\
+        FFT & 0.01 & 4 & 1.72 & \underline{1.21$\times$} & 0.996 \\
+        \midrule
+        DCT & 0.02 & 2 & \textbf{1.60} & \textbf{1.30$\times$} & \underline{1.009} \\
+        DWT & 0.02 & 2 & \underline{1.61} & \textbf{1.30$\times$} & \textbf{1.010} \\
+        FFT & 0.02 & 2 & \underline{1.61} & \textbf{1.30$\times$} & 1.002 \\
+        \midrule
+        DCT & 0.02 & 3 & \textbf{1.53} & \textbf{1.36$\times$} & \underline{0.967} \\
+        DWT & 0.02 & 3 & \underline{1.53} & \textbf{1.36$\times$} & 0.966 \\
+        FFT & 0.02 & 3 & 1.53 & \textbf{1.36$\times$} & \textbf{0.980} \\
+        \midrule
+        DCT & 0.02 & 4 & \textbf{1.53} & \textbf{1.36$\times$} & \textbf{0.964} \\
+        DWT & 0.02 & 4 & \underline{1.53} & \textbf{1.36$\times$} & \underline{0.955} \\
+        FFT & 0.02 & 4 & 1.53 & \textbf{1.36$\times$} & 0.949 \\
+        \midrule
+        DCT & 0.05 & 2 & \textbf{1.44} & \textbf{1.44$\times$} & \underline{0.989} \\
+        DWT & 0.05 & 2 & \underline{1.45} & \textbf{1.44$\times$} & \textbf{0.991} \\
+        FFT & 0.05 & 2 & 1.45 & \underline{1.43$\times$} & 0.972 \\
+        \midrule
+        DCT & 0.05 & 3 & \textbf{1.34} & \textbf{1.55$\times$} & \underline{0.936} \\
+        DWT & 0.05 & 3 & \underline{1.34} & \textbf{1.55$\times$} & \textbf{0.937} \\
+        FFT & 0.05 & 3 & 1.35 & \underline{1.54$\times$} & 0.933 \\
+        \midrule
+        DCT & 0.05 & 4 & \textbf{1.33} & \textbf{1.56$\times$} & \textbf{0.918} \\
+        DWT & 0.05 & 4 & \underline{1.34} & \textbf{1.56$\times$} & \underline{0.902} \\
+        FFT & 0.05 & 4 & 1.34 & \underline{1.55$\times$} & 0.895 \\
+        \midrule
+        DCT & 0.1 & 2 & \textbf{1.29} & \textbf{1.62$\times$} & \underline{0.966} \\
+        DWT & 0.1 & 2 & \underline{1.29} & \textbf{1.62$\times$} & \textbf{0.977} \\
+        FFT & 0.1 & 2 & 1.30 & \underline{1.61$\times$} & 0.944 \\
+        \midrule
+        DCT & 0.1 & 3 & \textbf{1.15} & \textbf{1.81$\times$} & \underline{0.880} \\
+        DWT & 0.1 & 3 & 1.17 & 1.78$\times$ & \textbf{0.892} \\
+        FFT & 0.1 & 3 & \underline{1.17} & \underline{1.79$\times$} & 0.877 \\
+        \midrule
+        DCT & 0.1 & 4 & \textbf{1.15} & \textbf{1.82$\times$} & \underline{0.864} \\
+        DWT & 0.1 & 4 & \underline{1.15} & \underline{1.81$\times$} & \textbf{0.867} \\
+        FFT & 0.1 & 4 & 1.16 & 1.80$\times$ & 0.841 \\
+        \bottomrule
+    \end{tabular}
+    \end{tiny}
+\end{table*}

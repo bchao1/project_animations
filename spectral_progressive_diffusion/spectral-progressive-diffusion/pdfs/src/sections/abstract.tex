@@ -1,0 +1,10 @@
+\begin{abstract}
+Diffusion models have been shown to implicitly generate visual content autoregressively in the frequency domain, where low-frequency components are generated earlier in the denoising process while high-frequency details emerge only in later timesteps. 
+This structure offers a natural opportunity for efficient generation, as high-resolution computation on noise-dominated frequencies is largely redundant.
+We propose \emph{Spectral Progressive Diffusion}, a general framework that progressively grows resolution along the denoising trajectory of pretrained diffusion models. 
+To this end, we develop a spectral noise expansion mechanism and derive an optimal resolution schedule from the model's power spectrum. Our framework supports training-free acceleration and a novel fine-tuning recipe that further improves efficiency and quality.
+We demonstrate significant speedups on state-of-the-art pretrained image and video generation models while preserving visual quality.
+
+% In this work, we propose \methodname, a token-efficient visual generation method based on progressive frequency processing. We exploit the spectral autoregressive structure of diffusion models to integrate frequency-domain transitions \textit{within a single denoising trajectory}, eliminating computation on noise-dominated high-frequency components. We derive optimal resolution transition times from the resolution schedule with minimal, \textit{single-hyper-parameter} tuning for our training-free setting, and introduce an optional fine-tuning procedure to further improve quality, achieving significant speedups when applied to state-of-the-art pretrained image and video generation models.
+
+\end{abstract}

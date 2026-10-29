@@ -1,0 +1,182 @@
+% \noindent \textbf{Datasets and 3D Scene Representations. }
+
+
+
+\subsection{Implementation Details}
+\noindentparagraph{\bf{Datasets and 3D Scene Representations. }}
+We create 3D holograms of selected scenes from the synthetic Blender dataset \cite{mildenhall2020nerf} and the MipNeRF-360 dataset \cite{barron2022mipnerf360} using different 3D scene representations, including 2D Gaussians, meshes, and point clouds.
+
+We use the open-source Gaussian splatting software library \texttt{gsplat} \cite{ye2024gsplat} to optimize naive 2DGS models used for our \textit{exact} Gaussian Wave Splatting (Sec~\ref{subsec:gaussian-wave-splatting}). Additionally, we implement custom kernels and integrate them into \texttt{gsplat} to optimize our 2DGS-OIT models for the \textit{fast} variant of GWS (Sec~\ref{subsec:fast-alpha-wave-blending}). To flexibly control the final number of optimized Gaussians, we leverage the 3DGS-MCMC densification strategy \cite{kheradmand20243dgsmcmc} and cap the maximum number of Gaussians.
+
+To be able to apply polygon-based CGH on meshes, the meshes are required to have per-face colors since it is unclear how to apply texture mapping in polygon-based CGH.  However, a disproportionate number of triangles is required to reconstruct detailed appearance when using per-face colors, therefore almost all high-quality mesh models do not use per-face colors and leverage texture mapping. Therefore, we start from optimized textured mesh models released by the NeRF2Mesh \cite{tang2022nerf2mesh} authors and calculate per-face colors by averaging the per-vertex colors to acquire the textured meshes that are applicable for polygon-based CGH. 
+
+For point cloud representations, we used provided SfM points for the MipNeRF-360 scenes and points uniformly sampled on the NeRF2Mesh meshes for the Blender scenes.
+
+% \noindent \textbf{Algorithm Implementations. } 
+\noindentparagraph{\bf{Algorithm Implementations.}} We implement GWS and all baseline methods in PyTorch, and additionally implement fast GWS in CUDA. Since most prior primitive-based CGH methods lack reliable open-source reference implementations, one of the major goals of this project is to create a unified primitive-based CGH algorithms development framework that allows for hologram generation from the various 3D representations, such as point clouds, meshes, and Gaussian splats. To this end, we create the \href{https://github.com/computational-imaging/hsplat}{\texttt{hsplat} PyTorch library} for primitive-based CGH. Please refer to the Supplementary Materials for pseudocode and implementation details.
+
+
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{main_paper/figures_camera_ready/fig3_awb.pdf}
+    \caption{\textbf{\revision{Simulated comparisons} on wavefront blending \revision{strategies}.} We ablate wavefront blending strategies to reconstruct a scene represented by a collection of Gaussians \revision{in simulation}. Na\"ively adding up all the Gaussians without considering occlusion leads to oversaturated colors (\textit{left}). State-of-the-art occlusion handling techniques ~\cite{matsushima2014silhouette} employ a binary aperture to attenuate wavefront contributions from the rear based on the opacity of the front object, and do not appropriately handle smooth Gaussian falloffs and alpha blending (\textit{center left}). Our alpha wave blending method (\textit{center right}) performs exact alpha blending and faithfully reconstructs the 3D scene. On the right, we show the target image rendered with ray-based alpha blending.}  \label{fig:blending}
+\end{figure*}
+
+
+\begin{table}[ht!]
+   \footnotesize
+   \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+   \caption{\textbf{Quantitative performance of different CGH algorithms. } We evaluate the image quality of simulated holograms generated using different CGH methods in terms of PSNR $(\uparrow)$ / SSIM $(\uparrow)$ / LPIPS $(\downarrow)$. Our methods achieve 5--11dB PSNR improvement over baseline methods.}
+   \renewcommand{\arraystretch}{1.2} 
+   \begin{tabular}{@{}P{0.48\linewidth}P{0.22 \linewidth}P{0.22 \linewidth}@{}}
+   \toprule
+   \makecell[l]{Method - 3D representation} &
+   Blender &
+   Mip-NeRF 360 \\
+   \midrule
+   \makecell[l]{\scalebox{0.95}{\citet{chen2009computer} - Point Cloud}} & 18.34 / 0.77 / 0.20 & 9.45 / 0.074 / 0.70 \\
+   \makecell[l]{\scalebox{0.95}{\citet{matsushima2014silhouette} - Mesh}} & 20.79 / 0.81 / 0.18 & 15.77 / 0.27 / 0.65 \\
+   %\midrule
+   \makecell[l]{Ours (fast) - Gaussians} & 26.55 / 
+   \textbf{0.92} / \textbf{0.10} & 20.70 / \textbf{0.59} / 0.42 \\
+   \makecell[l]{Ours (exact) - Gaussians} & \textbf{27.30} / 0.91 / 0.11 & \textbf{22.37} / 0.58 / \textbf{0.40}\\
+   \bottomrule
+   \end{tabular}
+
+\label{tab:quan_metrics}
+\end{table}
+
+
+\noindentparagraph{\bf{Experimental Setup.}} \revision{To experimentally validate our algorithms, we build a holographic display benchtop prototype using a FISBA READYBeam™ Bio2 fiber-coupled module and a Holoeye PLUTO phase-only liquid crystal on silicon (LCoS) SLM. Color images are captured with separate exposures for each wavelength and combined in post-processing. In our setup, the depth range in hologram space is approximately 1cm, corresponding to a total depth range in view space from optical infinity to approximately 0.5m. To address hardware imperfections, we account for laser beam intensity variations and perform spatially varying lookup table calibration~\cite{choi2021neural, shi2022end}.} We refer readers to the Supplementary Materials for details on the experimental setup and its calibration procedures.
+
+% \bc{Since GWS is a 3D representation-to-complex wavefront conversion algorithm, we need to encode the complex wavefronts to be able to display them on phase-only SLMs. We adopt the widely-used double-phase amplitude coding method (DPAC) \cite{maimone2017holographic, shi2021towards, Hsueh1978dpac} for this phase-only conversion.} 
+
+
+\noindentparagraph{\bf{\revision{Displaying GWS holograms with Phase-only SLMs.}}}
+\revision{
+Our GWS algorithms compute a complex-valued hologram $u_{\textrm{SLM}}$, similar to other primitive-based methods. To encode the complex-valued wavefront splatted onto the SLM plane into a phase-only pattern, we use the double phase--amplitude coding method (DPAC) described in the literature~\cite{hsueh1978computer, maimone2017holographic}. DPAC directly encodes a complex-valued wavefront $ae^{j\phi}$ into two phase values, $P_\pm = a \pm cos^{-1} \phi,$ and interlaces $P_+$ and $P_-$ like a checkerboard pattern~\cite{maimone2017holographic}. 
+}
+
+
+% \iffalse
+% \begin{figure}[ht!]
+%     \centering
+%     \includegraphics[width=1.0\columnwidth]{main_paper/figures/fig_alpha.pdf}
+%     \caption{Comparisons of alpha blending. We compare no occlusion, silhouette, ours, and the target (geometric rendering) ... \sy{better to put a toy example (two Gaussians with binary opacity and continuous opacity) and show this complex scene for the main results}}
+%     \label{fig:alpha}
+% \end{figure}
+% \fi
+
+
+%%%%%%%%%%%%%% TEMPORAL VSPACE %%%%%%%%%%%%
+% \vspace{-50pt} % Adjust the value as needed
+
+\subsection{Simulation and Experimental Results}
+\noindentparagraph{\bf{\revision{Occlusion Handling.}}}
+
+In Gaussian splatting, occlusion is handled via alpha compositing, and we evaluate occlusion handling for the wave counterpart in Fig.~\ref{fig:blending}. The left column shows simulated reconstructions using holograms generated without occlusion handling, where all rear Gaussians contribute to the hologram. The second column presents results with a silhouette-based method emulating alpha blending~\cite{matsushima2020introduction}, which attenuates rear wavefront contributions with a translucent mask of the front object. Our alpha wave blending (third column) uniquely achieves accurate scene reconstruction from a collection of Gaussians, \revision{which is shown in the rightmost column}.
+
+% \noindent \textbf{Baseline Comparisons using simulation results.} 
+\noindentparagraph{\bf{Baseline Comparisons with Simulations and Experiment\revision{s.}}} We compare our exact GWS algorithm and our fast variant of GWS with various primitive-based CGH methods, including point-based methods \cite{chen2009computer} and polygon-based methods \cite{matsushima2014silhouette, matsushima2009extremely}. Please refer to the supplemental materials for comparisons with a more extensive set of baselines.
+
+\iffalse
+% compare with RGBD? We only compare with 2 baselines without RGBD
+For CGH from dense point clouds, we use RGB-D as input and treat each pixel as an individual primitve; then, we simply add up the wavefronts of all pixels at the SLM plane. For all methods, we set the phase of each primitive such that its phase is zero at the SLM plane. \bc{merge with experimental results, remove RGBD, and merge fast and full algo in one fig}
+\fi
+
+We show experimentally captured 3D focal stacks of holograms generated from different 3D representations in Fig. \ref{fig:baseline_simulation}. Point clouds are inherently sparse, thus visible holes are present in both the target rendering and the synthesized 3D hologram and the point sizes need to be heuristically tuned to achieve a merely passing image quality. Meshes with per-face colors lead to overly smooth colors and cannot reconstruct high-frequency details unless paired with a texture map or using a disproportionate number of primitives. However, texture mapping is infeasible in the context of polygon-based CGH and a large number of primitives leads to infeasible processing times. Our GWS method achieves superior 3D hologram quality with sharp reconstruction in focused regions as shown in the insets with colored borders. Furthermore, GWS delivers superior image quality despite using an equal or reduced number of geometric primitives compared to the mesh models.
+
+%\sy{mg: and more natural blur in defocus regions: Here we do not want to highlight blur vs in focus as much, so maybe we discuss the benefits of our method with different terms}
+
+\iffalse 
+\sy{marker for RGB-D in case we leave it out }CGH from RGB-D achieves better results than meshes and point clouds, but the defocus regions suffer from unnatural blur. 
+\fi
+
+We additionally show experimentally captured focal stacks of exact GWS holograms generated from various novel viewpoints of an optimized 2DGS model in Fig. \ref{fig:nvs_fs_captured}. GWS achieves accurate refocusing effects at \textit{every} viewpoint, demonstrating the robustness of our method. Please refer to the supplemental video for the full circular trajectory novel-view rendering and captured 3D focal stacks at each novel viewpoint. \revision{To generate the hologram for each individual frame, we transform the Gaussians into the hologram space using the view transform corresponding to each video frame, following the \textit{holographics} pipeline described in the supplemental materials.}
+
+
+
+Finally, we report quantitative results of simulated baseline comparisons in terms of various image quality metrics in Table~\ref{tab:quan_metrics}. We evaluate the in-focus image quality by merging simulated focal stacks rendered from the generated holograms into an all-in-focus image using RGB-D masks computed from depth maps rendered from optimized 2DGS models, and compare this all-in-focus image with ground-truth images from the training dataset. Both the fast and exact version of our Gaussian Wave Splatting algorithm consistently outperform other primitive-based CGH algorithms in terms of all image quality metrics. \revision{Note that since Gaussian splatting uses a weighted photometric loss that prioritizes pixel-wise reconstruction (PSNR) over structural similarity and perceptual quality, fast GWS achieves slightly better performance in SSIM and LPIPS compared to exact GWS.}
+
+
+
+
+% \begin{figure}[t!]
+%     \centering
+%     \includegraphics[width=\columnwidth]{main_paper/figures/runtime_analysis.pdf}
+%     \caption{\textbf{Runtime comparisons of Gaussian Wave Splatting variants. } \bc{move to supplemental} We show Gaussian Wave Splatting CGH calculation time using varying target hologram resolutions and number of Gaussians as a 2D heatmap. An isocurve representing the runtime of 100 seconds is plotted as a white dashed line. The fast variant achieves nearly 30$\times$ speedup over the exact algorithm, and can generate holograms of much higher resolution and fidelity, which is positively correlated to the number of Gaussians, compared to the exact method given the same runtime. }
+%     \label{fig:runtime}
+% \end{figure}
+
+
+% \noindent \textbf{Full and Fast Gaussian Wave Splatting.}
+%%%%%%%%%%%%% TEMPROARY MANUAL SPACING %%%%%%%%%%
+% \vspace{-10pt}
+%%%%%%%%%%%%% TEMPROARY MANUAL SPACING %%%%%%%%%%
+
+\noindentparagraph{\bf{Exact and Fast Gaussian Wave Splatting.}} In the rightmost two columns of Fig. \ref{fig:baseline_simulation}, we show experimentally captured focal stacks of holograms generated using our GWS algorithms. The experimentally captured results of the fast variant suffers from slight contrast reduction and background color leakage artifacts in some regions due to the lack of accurate order information among Gaussians, although these artifacts are already greatly mitigated with the view-dependent opacities described in Section 4 as shown in the target rendering. The exact version achieves better results due to the accurate modeling of occlusions through alpha wave blending at the cost of longer CGH calculation time.
+
+
+\begin{table}[t!]
+   \footnotesize
+   \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+   \caption{\textbf{Runtime comparison of primitive-based CGH.} We report the runtime of other primitive-based algorithms and both variants of GWS. Since prior methods lack open-source implementations, we directly borrow the reported runtime from the corresponding papers, and evaluate GWS using the same target resolution and number of primitives specified in the papers. Given the same target hologram resolution and number of primitives, fast GWS achieves a runtime comparable to prior methods while greatly exceeding their image quality with a 30$\times$ speedup compared to exact GWS. }
+   \renewcommand{\arraystretch}{1.2} 
+    \resizebox{\columnwidth}{!}{
+   \begin{tabular}{@{}l l l l@{}}
+   \toprule
+   \makecell[l]{Method} & \makecell[l]{Resolution} &
+   \makecell[l]{Number of primitives} &
+   \makecell[l]{Runtime} \\
+   \midrule
+   \citet{chen2009computer} & 1024 $\times$ 1280 & 15k points & 2.47s \\
+   \citet{matsushima2014silhouette} & 2000 $\times$  2000 & 15k triangles & 13.5s \\
+   \midrule
+   Ours (fast) & 1024 $\times$  1280 & 15k Gaussians & 6.84s \\
+    & 2000 $\times$  2000 & 15k Gaussians & 18.06s \\
+    \midrule
+   Ours (exact) & 1024 $\times$  1280 & 15k Gaussians & 180s \\
+    & 2000 $\times$  2000 & 15k Gaussians & 470s \\
+   \bottomrule
+   \end{tabular}
+   }
+   
+
+\label{tab:runtime_baselines}
+\end{table}
+
+
+We show runtime comparisons of exact and fast GWS and prior primitive-based CGH methods in Table \ref{tab:runtime_baselines}. Fast GWS achieves a nearly $30\times$ speedup over exact GWS at the cost of a slight drop in image quality, and achieves a runtime comparable to prior methods while greatly exceeding their image quality. Please refer to the supplemental materials for a more detailed runtime analysis.
+
+
+\noindentparagraph{\bf{Partially Coherent GWS For View-Dependent Effects}.}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{main_paper/figures_camera_ready/fig4_vde.pdf}
+    \caption{\textbf{Simulated comparisons on parallax.} RGB-D data lacks information about objects behind occluders, resulting in blank regions when viewed from other viewpoints. The silhouette-based method~\cite{matsushima2014silhouette}, designed for binary apertures, masks the wavefronts from the rear, leading to inaccurate wavefront masking and blending of continuous Gaussian profiles. Our alpha wave blending method effectively handles the occlusion of Gaussians, naturally blends them according to their smooth falloffs from all viewpoints, and best matches the target shown on the right.}
+    \label{fig:occlusion}
+\end{figure}
+
+% To encode a wider parallax, we can use multiple reference illuminations incident on objects from different directions. This process can be approximated as an efficient convolution in the Fourier domain, specifically of our derived angular spectrum with a kernel defined by the spherical harmonics~\cite{yeom2016calculation, askari2017occlusion}. 
+\revision{
+Directional effects in primitive-based CGHs have primarily been discussed in the context of representing the reflectance distribution of surfaces~\cite{cuypers2012reflectance, park2017recent}. Pioneering work has attempted to control the angular emission profile using subtriangles~\cite{kim2008mathematical} and appropriate phase profiles for them. Yeom et al. demonstrated that the desired reflectance distribution could be approximated as a convolution between the angular spectrum of the mesh and the angular distribution~\cite{askari2017occlusion, yeom2016calculation}. In our general, partially coherent GWS formulation, Eq.~\ref{eq:gaussian_to_hologram_new} can be adapted as follows:
+\begin{align}
+    \angularspectrum_{\textrm{SH}_l^m} ( \mathbf{k} ) = \textrm{det} ( \mathbf{J}) \textrm{det}(\mathbf{S}_\idx) \Big( \angularspectrum_\canonicalspace \left( \mathbf{S}_\idx \rot_\idx^{-1}\mathbf{k} \right) \ast_{\mathbf{k}} Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})} \Big) e^{j  \mathbf{k} \cdot \mean_\idx}, \label{eq:convolution}
+\end{align}
+where $\ast_{\mathbf{k}}$ is the convolution operator in the spatial frequency domain and $Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})}$ denotes the angular kernel, having the spherical harmonics function $Y_l^m$ of degree $l$ and order $m$ as its amplitude.}
+
+Importantly, the phase profile of this kernel $\phi (\mathbf{k})$ plays a crucial role as it might affect the intensity profile in the spatial domain, and the degree of freedom to represent arbitrary spatio-angular light field is inherently limited by the rank-1 constraint of coherent wavefronts~\cite{zhang2011analysis}. To address this, one can rely on partial coherence, expecting the average of the amplitude of the kernel to be unity in the spatial domain to keep the amplitude profile of our Gaussians. To achieve this, we sample multiple phases for \revision{$\phi (\mathbf{k})$} from a uniform distribution in the range $[-\pi, \pi]$. Please refer to the Supplementary Materials for more details.
+
+In Fig.~\ref{fig:occlusion}, we \revision{compare various CGH methods based on} the parallax effects observed from different viewpoints. To this end, we generate partially coherent wavefronts using \revision{24 frames} for a toy scene\revision{,} in which a red Gaussian is located at the zero-disparity plane and a blue Gaussian is positioned 2 cm behind it. As the viewpoint shifts from right to left, the blue Gaussian moves as expected, and our alpha wave blending, shown in the third column, faithfully represents the desirable occlusion effects corresponding to the viewpoints. The previous state-of-the-art occlusion handling technique, i.e., the silhouette-based method~\cite{matsushima2014silhouette}, and the basic point-based method using RGB-D~\cite{shi2021towards}, fail to model the occlusions for Gaussians due to incorrect masking or incomplete scene representation. Our method is the only one that takes continuous falloffs into account, uniquely reconstructing the blended purple color in the overlapped region (right view)\revision{, whereas other binary-mask-based methods, or data representations which do not support alpha maps, cannot represent such blends}. Both baselines require a heuristic threshold to discretize the depth map or mask the Gaussian~\cite{chen2009computer}, which we set to 0.1. In contrast, our alpha wave blending eliminates the need for such hyperparameter tuning while accurately alpha blending Gaussians from all perspectives. 
+
+\iffalse
+\noindentparagraph{\bf{Experimental results}}
+
+
+In Fig.~\ref{fig:experiments_baselines}, we present experimentally captured results using CGHs generated from different 3D representations, including point clouds, meshes, and our method. Consistent with the trends observed in simulated results, our GWS achieves the best image quality in both in-focus (colored insets) and out-of-focus regions (white insets), demonstrating that our method can reconstruct photorealistic 3D scenes. \sy{Figure requires labels}
+
+In Fig.~\ref{fig:experiments_fast_ours}, we compare our Gaussian wave splatting method with its fast CUDA variants. The top row shows the geometric rendering using OIT with view-dependent opacity (left) and normal Gaussian splatting (right), while the second row displays a focal slice focused on the table. Insets highlight various parts of the scene with different focal stacks, where colored insets denote the focused region. The first column contains insets from the geometric rendering shown in the top row. \sy{Figure requires labels}
+\fi

@@ -1,0 +1,135 @@
+CGH has a long history of algorithmic and display innovations. In the next section, we highlight prior work most relevant to our approach and point interested readers to broader surveys of holographic displays~\cite{yaracs2010state,park2017recent,chang2020toward,javidi2021roadmap,pi2022review}.
+
+\paragraph{\bf{Computer-generated Holography}}
+
+
+\iffalse
+Computer-generated holography (CGH) is at the heart of holographic display systems, converting 3D scene information into two-dimensional complex interference patterns suitable for spatial light modulators (SLMs). The CGH pipeline starts with a target 3D scene and 3D reconstruction algorithms that convert the scene into different 3D formats, such as point clouds, meshes, layered representations, Gaussians, and etc. CGH algorithms then take these 3D representations as input and convert them into complex wavefronts that encode scene depth and parallax information. An optional wavefront encoding step is used to convert complex wavefronts into amplitude- or phase-only patterns that are suited for different SLMs. In this paper, we develop a dedicated CGH algorithm tailored to existing multiplane images.
+\fi
+
+Computer-generated holography (CGH) is a process that maps a three-dimensional volume onto the 2D plane of a spatial light modulator (SLM) via simulated interference. This computational process is heavily dependent on the format of the input data; historically, CGH frameworks have been designed to handle inputs ranging from explicit geometric primitives, such as point clouds, meshes, and Gaussians, to layered representations like RGBD images and densely-sampled image sets like light fields and focal stacks.
+
+
+\iffalse
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt} 
+\setlength{\textfloatsep}{10pt}
+
+\begin{table}[t!]
+    \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+    {\footnotesize
+    \caption{\textbf{Comparison of different 3D representations for CGH in terms of efficiency and visual quality.} Point cloud and mesh representations lead to poor appearance reconstruction quality due to the underlying coarse 3D representation. CGH algorithms based on focal stack and light field targets require iterative optimization. RGBD holograms are efficient to synthesize, yet image quality degrades at depth transitions. Gaussian-based holograms, on the other hand, achieve superior quality but suffers from slow generation time. Our MPI-based holograms achieve the best of both worlds of RGBD and Gaussian holograms, simultaneously achieving efficient runtime and high image quality. }
+    \label{tab:cgh_comparison}
+
+    % Adjust column widths to fit linewidth (no font scaling)
+    \begin{tabular}{
+        >{\centering\arraybackslash}m{2.8cm} |
+        >{\centering\arraybackslash}m{1.5cm} |
+        >{\centering\arraybackslash}m{1.5cm} |
+        >{\centering\arraybackslash}m{1.5cm}
+    }
+        \textbf{Methods} & 
+        \makecell{\textbf{Efficient}\\\textbf{inference}} & 
+        \makecell{\textbf{Focal stack}\\\textbf{quality}} & 
+        \makecell{\textbf{Light field}\\\textbf{quality}} \\ 
+        \hline
+        Point cloud \tablerefsize{~\cite{h2009computer, maimone2017holographic}} & \yellowtrcell & \redxcell & \redxcell \\
+        \hline
+        RGBD \tablerefsize{~\cite{peng2020neural, shi2021towards, shi2022end}} & \greenvcell & \yellowtrcell & \yellowtrcell \\
+        \hline
+        Focal stack \tablerefsize{~\cite{choi2022time}} & \yellowtrcell & \greenvcell & \yellowtrcell \\
+        \hline
+        Light field \tablerefsize{~\cite{kang2008accurate, padmanaban2019holographic, choi2022time}} & \yellowtrcell & \greenvcell & \greenvcell \\
+        \hline
+        Mesh \tablerefsize{~\cite{matsushima2003fast, kim2008mathematical}} & \redxcell & \redxcell & \redxcell \\
+        \hline
+        Gaussians \tablerefsize{~\cite{choi2025gaussian, chao2025rpws}}  & \redxcell & \greenvcell & \greenvcell \\
+        \hlineB{3}
+        MPIs & \greenvcell & \greenvcell & \greenvcell \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+\fi
+
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt} 
+\setlength{\textfloatsep}{10pt}
+
+\begin{table}[t!]
+    \centering
+    \captionsetup{aboveskip=0pt, belowskip=3pt}
+    {\footnotesize
+    \caption{\textbf{Comparison of different 3D representations for CGH in terms of efficiency and visual quality.} Point cloud and mesh representations lead to poor appearance reconstruction quality due to the underlying coarse 3D representation. CGH algorithms based on focal stack and light field targets require iterative optimization. RGBD holograms are efficient to synthesize, yet image quality degrades at depth transitions. Gaussian-based holograms, on the other hand, achieve superior quality but suffers from slow generation time. Our MPI-based holograms achieve the best of both worlds of RGBD and Gaussian holograms, simultaneously achieving efficient runtime and high image quality. }
+    \label{tab:cgh_comparison}
+
+    % Clean booktabs style: removed vertical pipes '|'
+    \begin{tabular}{
+        >{\raggedright\arraybackslash}m{2.8cm} 
+        >{\centering\arraybackslash}m{1.5cm} 
+        >{\centering\arraybackslash}m{1.5cm} 
+        >{\centering\arraybackslash}m{1.5cm}
+    }
+        \toprule % Top thick line
+        \textbf{Methods} & 
+        \makecell{\textbf{Efficient}\\\textbf{inference}} & 
+        \makecell{\textbf{Focal stack}\\\textbf{quality}} & 
+        \makecell{\textbf{Light field}\\\textbf{quality}} \\ 
+        \midrule % Middle separator
+        
+        Point cloud & \yellowtrcell & \redxcell & \redxcell \\
+        \addlinespace % Adds subtle vertical space between rows for readability
+        
+        RGBD & \greenvcell & \yellowtrcell & \yellowtrcell \\
+        \addlinespace
+        
+        Focal stack & \yellowtrcell & \greenvcell & \yellowtrcell \\
+        \addlinespace
+        
+        Light field & \yellowtrcell & \greenvcell & \greenvcell \\
+        \addlinespace
+        
+        Mesh & \redxcell & \redxcell & \redxcell \\
+        \addlinespace
+        
+        Gaussians  & \redxcell & \greenvcell & \greenvcell \\
+        
+        \midrule % Separator before the final 'Ours' row
+        \rowcolor{rowhighlight} % Optional: Highlights the MPI row subtly
+        \textbf{MPIs} & \greenvcell & \greenvcell & \greenvcell \\
+        \bottomrule % Final thick line
+    \end{tabular}
+    }
+\end{table}
+
+
+Regardless of the input representation, the computational efficiency of CGH algorithms is fundamentally determined by the choice between optimization-based and direct algorithms. Optimization-based approaches, while capable of reconstructing focal stacks and light fields with high fidelity through error minimization ~\cite{chakravarthula2019wirtinger, zhang20173d, peng2020neural, fienup1980iterative, gerchberg1972practical, schiffers2023stochastic}, suffer from prohibitive runtime costs. These methods require tens to hundreds of wave propagation steps and gradient updates per frame, making them unsuitable for real-time operation.
+
+In contrast, direct methods offer a pathway to interactive frame rates by synthesizing holograms in a single forward computation. However, the efficiency of direct methods is strictly bounded by the complexity of the input representation. Methods that model scenes with primitives, such as points, triangular meshes, or Gaussians, must propagate millions of individual wavefronts and employ complex compositing schemes for occlusion~\cite{matsushima2014silhouette, choi2025gaussian, chao2025rpws}, often reintroducing significant latency. To address this, learning-based variants use neural networks to predict holograms directly from 3D inputs~\cite{shi2021towards, yang2022diffraction}, though often at the cost of high memory usage or training overhead. This highlights the need for direct algorithms that operate on structurally efficient representations to maximize throughput. Please refer to Table \ref{tab:cgh_comparison} for a detailed comparison of CGH algorithms based on different 3D representations.
+
+% cite phase encoding papers
+In this work, we develop a \textit{direct} CGH pipeline that transforms multiplane images (MPIs) 3D representations into complex holograms, offering a practical balance between quality and efficiency. We distinguish this algorithm from \textit{phase- or amplitude-encoding} techniques that map complex holograms to phase-only or amplitude-only patterns for standard SLMs, including double-phase amplitude coding (DPAC) \cite{dpac}, single-sideband encoding \cite{sideband}, stochastic optimization \cite{peng2020neural}, and learned phase-retrieval networks \cite{shi2021towards}.
+
+
+
+\paragraph{\bf{3D Scene Representations}} The selection of a 3D scene representation for CGH is governed by an explicit trade-off between reconstruction fidelity and computational efficiency. Simple representations favor efficiency but compromise on quality. For example, point clouds~\cite{maimone2017holographic} are fast to process but inherently sparse, resulting in holes in reconstruction. On the other hand, RGBD images~\cite{choi2021neural, peng2020neural} enable rapid hologram synthesis but lack continuous volumetric information, leading to severe artifacts at occlusion boundaries.
+
+Other geometric primitive representations prioritize visual quality at the expense of runtime. While Gaussian splats~\cite{choi2025gaussian, chao2025rpws} provide more geometric accuracy and photorealism, they incur massive computational costs due to the need to process millions of individual primitives and handle their occlusions. Other formats, such as densely-sampled light fields~\cite{schiffers2023stochastic, choi2022time, kim2024holographic}, offer high fidelity but face fundamental spatio–angular resolution tradeoffs and immense data requirements. Consequently, identifying a representation that bridges the gap between the efficiency of sparse and layered inputs and the visual quality of densely populated primitives remains an open challenge.
+
+To address this trade-off between efficiency and quality, we propose leveraging \textit{multiplane images (MPIs)} as an effective 3D representation for CGH. MPIs combine the efficiency of layered RGBD-style depth rendering with the continuous volumetric expressiveness of Gaussian representations. Each slice of an MPI is a plane with RGBA information. Novel views can be rendered by applying planar homographies to each layer and compositing the warped RGBA images using alpha blending~\cite{zhou2018mpi}.
+
+MPIs have been shown to reconstruct front-facing scenes and moderate parallax with high fidelity using only a small number of layers (typically fewer than 100), and can be synthesized in real time with feed-forward neural networks~\cite{pu2023sinmpi, khan2023tiledmpi, han2022adaptivempi, tucker2020singlempi, flynn2019deepviewmpi, zhao2022generativempi, luvizon2021adaptivempi, srinivasan2019pushingmpi, zhou2018mpi}. This characteristic is particularly well suited for holographic near-eye displays, which only require accurate reconstruction of front-facing views over a limited eyebox size rather than full 360° scene coverage as in Gaussian splatting. These properties position MPIs as an ideal intermediate representation for computer-generated holography. We demonstrate that MPIs achieve the best of both worlds, matching the visual fidelity of Gaussian-based holograms while maintaining the efficiency of RGBD-based approaches.
+
+\paragraph{\bf{Layer-based 3D Displays and Scene Representations}} There has been extensive prior research on \textit{layer-based, glasses-free 3D displays} that aim to reconstruct light fields directly to the user's eyes~\cite{lanman2010hr3d, wetzstein2012tensor, wetzstein2011layered3d, lee2016additivelf, wetzstein2012compressivelf, maimone2013focus3d, huang2015stereoscope}. These systems typically employ either (1) a stack of attenuating layers that modulate a backlight panel, known as \textit{multiplicative} displays, where the final image corresponds to the product of all layer transmittances, or (2) a stack of diffusive or emissive layers, known as \textit{additive} displays, where the resulting image is formed by summing the contributions from each layer. The display patterns for each layer are determined by solving a nonnegative tensor factorization problem such that the combined emission or transmission of all layers reproduces a target light field. As the viewer moves laterally, the layered stack generates different angular views, thereby reconstructing a full 4D light field.
+
+In computer graphics and, more recently, neural rendering, similar \textit{layered 3D representations} have been proposed to achieve efficient light field synthesis. Notably, the \textit{multiplane images (MPIs)} representation~\cite{zhou2018mpi} models a scene as a set of RGBA images positioned at discrete depth planes. MPIs are compact, differentiable, and renderable in real time using simple planar homographies and alpha compositing. Their fronto-parallel structure enables high-fidelity reconstruction of forward-facing light fields with moderate parallax using only a handful of depth layers~\cite{flynn2019deepviewmpi, srinivasan2019pushingmpi, pu2023sinmpi, khan2023tiledmpi, han2022adaptivempi, tucker2020singlempi, zhao2022generativempi, luvizon2021adaptivempi}. These characteristics are particularly advantageous for holographic near-eye displays, which primarily require accurate reconstruction of front-facing views in a small eyebox rather than full 360° viewing coverage, while also demanding real-time CGH computation.
+
+% swap our gws with random phase
+Motivated by these insights, we propose CGH algorithms that extend layered representations such as MPIs into the wave-optics domain. Our method converts such layered 3D representations into complex holograms that reconstruct full 4D light fields. Layered formats are inherently well-suited for efficient hologram synthesis: they require only a limited number of depth planes (typically fewer than 100) to be propagated, in contrast to the thousands or millions of primitives processed in Gaussian- or polygon-based holography. This structural sparsity leads to orders-of-magnitude acceleration in computation. We demonstrate that optimized layered representations enable hologram synthesis with up to $250,000\times$ speedup compared to state-of-the-art primitive-based CGH algorithm, Random-phase Wave Splatting (RPWS) \cite{chao2025rpws}, while maintaining excellent light field reconstruction quality.
+
+
+\paragraph{\bf{Complex-valued Holographic Radiance Fields.}} In a concurrent work, \citet{zhan2025complexradiance} proposed \textit{Complex-valued Radiance Fields} that optimizes a scene-specific complex representation in which Gaussian primitives carry complex features and are composited along a set of discrete planes during rendering. This yields a layered, plane-wise accumulation procedure reminiscent of multiplane formulations, but the underlying parameterization is a completely new, learned complex scene model. In contrast, our approach operates directly on off-the-shelf layered inputs (e.g., existing multiplane images) and targets hologram synthesis with full $2\pi$ random phase and time multiplexing for \textit{both} focal stack and light-field reconstruction and wide-eyebox viewing.
+
+
+

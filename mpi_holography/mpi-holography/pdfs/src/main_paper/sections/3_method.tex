@@ -1,0 +1,53 @@
+Our approach converts existing multiplane images to \textit{random-phase} holograms that accurately reconstruct 3D focal stacks and 4D light fields. We first describe the MPI image representation in Section \ref{subsec:mpi_representation}, and present our MPI-based CGH rendering pipeline in \ref{subsec:mpi_cgh}. The overall MPI-based CGH pipeline is outlined in Fig. \ref{fig:mpi_pipeline}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{main_paper/draft_figures/mpi_pipeline.pdf}
+    \caption{\textbf{The MPI CGH pipeline.} Our MPI-based CGH pipeline consists of 4 steps. We start with a set of \textbf{(a)} camera frustum-aligned multiplane images defined by Eq. \ref{eq:mpi_representation}, and \textbf{(b)} transform them into complex wavefronts aligned with the SLM plane by applying a random phase map to each RGBA image slice. The complex MPI wavefronts are \textbf{(c)} sequentially propagated and composited at each MPI depth plane using our novel wave compositing procedure defined by Eq. \ref{eq:mpi_random_tm} to get a single-frame MPI hologram at the SLM plane. Finally, multiple MPI holograms with different random phase patterns are \textbf{(d)} time multiplexed as shown in Eq. \ref{eq:tm}. }
+    \label{fig:mpi_pipeline}
+\end{figure}
+
+\subsection{Multiplane Image Representation}
+\label{subsec:mpi_representation}
+
+% come up with a generalized image formation that encompasses MPIs and purely additive models
+Given a reference camera viewpoint (camera extrinsics defined by the camera translation vector $\mathbf{t} \in \mathbb{R}^3$ and rotation matrix $\mathbf{R}\in \mathbb{R}^{3\times3}$) and the camera intrinsics $\mathbf{K} \in \mathbb{R}^{3\times3}$, the \textit{multiplane images (MPIs)} with respect to the given camera viewpoint are a set of $L$ of RGBA images $(\mathbf{c}_i, \boldsymbol{\alpha}_i)$ defined at different depths $d_i \in \mathbb{R}, 1\leq i \leq L$ from the camera:
+\begin{align}
+    \{(\mathbf{c}_i, \boldsymbol{\alpha}_i) \mid \mathbf{c}_i \in \mathbb{R}^{H \times W \times 3}, \ \boldsymbol{\alpha}_i \in \mathbb{R}^{H \times W}, \ i = 1, \dots, L\}.
+    \label{eq:mpi_representation}
+\end{align}
+as shown in Fig. \ref{fig:mpi_pipeline}. 
+
+It has been shown in prior work that optimized MPIs can reconstruct local, front-facing light fields around the reference camera viewpoint exceptionally well \cite{zhou2018mpi}. To render a novel view from a new target camera viewpoint $\mathbf{t}', \mathbf{R}'$ given the MPIs with respect to a reference camera viewpoint $\mathbf{t}, \mathbf{R}$, each MPI layer is warped to the target viewpoint using simple planar homography. The warped MPI layers $(\mathbf{c}'_i, \boldsymbol{\alpha}'_i), 1\leq i \leq L$ are then alpha-composited from back-to-front using the standard \textbf{over} operation \cite{porter1984over}. 
+
+\begin{figure*}[!th]
+    \centering
+    \includegraphics[width=\textwidth]{main_paper/draft_figures/mpi_rgbd_metrics_lf_mipnerf.pdf}
+    \caption{\textbf{Runtime and image quality analysis of different CGH algorithms.} We compare runtime and light field reconstruction quality across CGH algorithms with varying numbers of depth planes for RGBD- and MPI-based methods. We report average metrics on holograms generated from selected scenes of the Mip-NeRF 360 \cite{barron2022mipnerf360} dataset. RPWS achieves the highest image fidelity but is computationally expensive, being more than $2000\times$ slower than layer-based approaches (MPI and RGBD), whose runtime scales approximately linearly with the number of depth layers. Crucially, the computational cost is dictated solely by the layer count, being nearly identical for both MPI and RGBD representations, represented by the overlaid blue and green lines in the runtime plot. RGBD holograms exhibit low image quality that improves with more depth planes yet remains inferior to MPI holograms. In contrast, MPI-based CGH attains a favorable tradeoff, rendering up to $250,000\times$ faster while matching RPWS in SSIM and surpassing RGBD in overall visual quality.}
+    \label{fig:metrics_plot}
+\end{figure*}
+
+
+\subsection{Wave Optics Rendering of MPI Images}
+
+Given a set of multiplane images aligned with the center camera viewpoint and parallel to the \textit{SLM plane} in the holographic display, we transform MPIs to holograms by modulating RGBA images with random phase masks and sequentially propagate and blend them from back to front to get the final composited complex wavefront on the SLM plane. 
+
+We formulate the rendering process recursively in Eq. \ref{eq:mpi_random_tm}, where $u_i(\coordinate)$ represents the accumulated complex field emerging from layer $i$ after integrating all background layers from $N$. Given the opacity channel $\boldsymbol{\alpha}_i(\coordinate)$ of the current slice, we propagate the resulting wavefront across the inter-layer gap $\Delta z = z_{i - 1} - z_{i}$ to the subsequent plane $i-1$ using the angular spectrum method \cite{goodman2005introduction} and composite them using a recently proposed wave optics alpha blending formulation for random-phase wavefronts \cite{chao2025rpws}:
+
+\begin{align}
+    \hspace*{-0.5em}
+    u_{i - 1}^{(t)} (\coordinate) = \mathcal{P} \Big( \sqrt{1 - \boldsymbol{\alpha}_i(\coordinate)} \; u_i(\coordinate) +  \sqrt{c_i} \sqrt{\boldsymbol{\alpha}_i(\coordinate)} \; e^{i \phi_i^{(t)}(\coordinate)} ; \Delta z\Big)
+    \label{eq:mpi_random_tm}
+\end{align}
+We define $t \in \{1, \dots, T\}$ as the frame index of a time-multiplexed MPI hologram with $T$ frames. For each layer $i$ in frame $t$, a unique random phase profile $\phi_i^{(t)}$ is applied. The recursion terminates at the display plane ($z_0=0$), where the target complex field is given by $u_\text{SLM}^{(t)}(\mathbf{x}) = u_0^{(t)}(\mathbf{x})$.
+
+We compute the time-averaged intensity $I(\mathbf{x})$ of the final time-multiplexed MPI hologram by accumulating the intensity of the reconstructed field under a generalized operator $\mathcal{O}(\cdot; \cdot)$:
+\begin{align}
+    I(\mathbf{x})  = \frac{1}{T} \sum_{t=1}^{T} \left| \mathcal{O} \left( u_\text{SLM}^{(t)}(\mathbf{x}); \cdot \right) \right|^2 ,
+    \label{eq:tm}
+\end{align}
+This formulation is agnostic to the operator $\mathcal{O}(\cdot; \cdot)$, which may represent standard free-space propagation for 2D imaging or 3D focal stacks, the Short-time Fourier Transform (STFT) for 4D light field reconstruction~\cite{choi2022time}, or even pupil masking functions for synthesizing specific angular views~\cite{schiffers2023stochastic, shi2024ergonomic}, which we show in Section 4.
+
+With this MPI-based CGH rendering pipeline, we transform MPIs, which are traditionally limited to ray-optics-based rendering of viewpoint-dependent 2D images, into complex-valued holograms that accurately reconstruct 3D focal stacks and 4D light fields under a full wave-optics image formation model, as demonstrated in the following section. 
+
+\label{subsec:mpi_cgh}

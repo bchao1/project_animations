@@ -1,0 +1,1757 @@
+[
+ {
+  "key": "show00",
+  "modality": "mask",
+  "domain": "egocentric",
+  "compression": 2.1564880052485953,
+  "prompt": "Photorealistic first-person craft footage beside an open patio doorway. Two hands carefully use small scissors to trim and adjust a tiny round piece on a tan wooden animal figure decorated with dark spots, while a second matching figure stands upright nearby. Both pieces rest on a round black ribbed work mat, with small craft supplies arranged around the edge and soft greenery visible outside. The hands make precise, unhurried movements and keep the delicate figure steady. The view is a single continuous wide 16:9 shot from a natural first-person head- or chest-mounted camera, with gentle body-driven camera motion and no cuts. The action unfolds at a moderate, believable pace with stable object identity, physically consistent contact, realistic hand motion, and coherent motion parallax. Use natural documentary color, lifelike materials, restrained contrast, crisp but unexaggerated detail, and generic unmarked objects and surfaces.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Primary action region",
+     "color_rgb": [
+      238,
+      78,
+      111
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Secondary object / surface",
+     "color_rgb": [
+      250,
+      166,
+      64
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show01",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.3044828657210892,
+  "prompt": "Photorealistic driving footage on a rain-darkened downtown avenue enclosed by tall stone and glass buildings. A silver crossover waits directly ahead while large city buses pass close on the right, other cars fill the neighboring lanes, and traffic signals glow between the buildings. The damp asphalt carries soft reflections from brake lights and the cool overcast sky. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show02",
+  "modality": "mask",
+  "domain": "robotics",
+  "compression": 1.4995239606474136,
+  "prompt": "In a single uninterrupted 5.4-second shot, an ivory-white lightweight six-joint cobot with joint-torque sensing and a compact end-effector flange performs one controlled placement into a fixed open container maneuver. At the opening frame, the soft-pad servo gripper already holds one red polymer reagent bottle vertically, centered two centimeters above the interior of the clear rectangular storage basket. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist follows one straight downward path of three centimeters along the container normal; the red polymer reagent bottle descends with the jaws as one rigid body, clears the rim on every side, enters the clear rectangular storage basket, and stops before touching its floor. The jaws remain closed and hold the object through the final pose. The clear rectangular storage basket is immobilized in a rigid perimeter frame; its rim, walls, and base remain rigid and exactly stationary. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a locked overhead camera with a 42 mm lens; even daylight-balanced laboratory light, quiet gray palette, physically accurate reflections. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show03",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.6643550624133148,
+  "prompt": "Photorealistic daytime driving at a wide urban intersection beside a long red-brick institutional or industrial building. Bold white crosswalk stripes fill the foreground, a pedestrian in dark clothing crosses close to the camera, other people wait near the corners, and parked cars and a red vehicle frame the side street. The camera car pauses, then begins a careful forward roll as the crossing clears. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show04",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.9740449643575215,
+  "prompt": "Photorealistic rainy-night driving on an urban expressway. Raindrops bead across the windshield, illuminated billboards and streetlights flare softly through the water, red taillights mark several cars ahead, and concrete barriers and dark building facades confine the wet lanes. The camera car continues steadily while reflections stretch across the pavement and the scene remains readable through the rain. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Road obstacles",
+     "color_rgb": [
+      255,
+      143,
+      52
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show05",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.7867271695972773,
+  "prompt": "Photorealistic nighttime driving on a wide multi-lane urban boulevard. Green traffic signals repeat into the distance, scattered sedans travel ahead and alongside the camera car, storefronts and apartment buildings recede on both sides, and bright streetlamps pick out white lane markings. The road is dry and dark with restrained reflections and clear forward depth. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show06",
+  "modality": "mask",
+  "domain": "robotics",
+  "compression": 1.4989887774120634,
+  "prompt": "In a single uninterrupted 5.4-second shot, a compact white six-axis collaborative robot with a rigid black wrist and calibrated force control performs one single constant-contact wiping stroke maneuver. At the opening frame, the wide rubber-pad parallel gripper firmly holds a folded blue microfiber cloth as a flat pad and already presses it against the long wooden kitchen counter with light, uniform normal force. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist performs one straight eight-centimeter wiping stroke at constant height and constant orientation. The cloth stays trapped between gripper and surface, compresses slightly under load, and slides continuously without lifting or folding over. The wrist stops while maintaining contact in the final pose. The long wooden kitchen counter is immobilized by countertop bolted to rigid base cabinets; the worktop, cabinets, nearby objects, and camera remain exactly stationary. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a locked high three-quarter camera with a 40 mm lens; soft neutral overhead laboratory light, restrained color, crisp metal and polymer detail. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show07",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.741654571843251,
+  "prompt": "Photorealistic slow driving inside a tiled urban tunnel with warm amber illumination. A silver crossover fills the lane directly ahead, a tall container truck runs close on the left, another car edges along the right wall, and brake lights reflect across glossy tiles and the camera car's hood. The traffic creeps toward the bright tunnel exit while vehicle scale and clearances remain convincing. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Road obstacles",
+     "color_rgb": [
+      255,
+      143,
+      52
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show08",
+  "modality": "mask",
+  "domain": "robotics",
+  "compression": 1.499375260308205,
+  "prompt": "In a single uninterrupted 5.4-second shot, a compact white six-axis collaborative robot with a rigid black wrist and calibrated force control performs one level insertion of a can onto a fixed cabinet shelf maneuver. At the opening frame, the curved rubber-jaw gripper holds a small silver metal can upright and level with the opening of an open gray cabinet shelf, two centimeters outside the shelf edge. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist translates horizontally inward by five centimeters along the shelf normal. The small silver metal can preserves its vertical orientation, clears the top and sides of the opening, and stops above the shelf without being released. The gripper and canister move as one rigid assembly. The open gray cabinet shelf is immobilized by cabinet frame anchored to the wall and floor; its door, shelf, frame, countertop, and nearby objects remain stationary. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a locked high three-quarter camera with a 40 mm lens; soft neutral overhead laboratory light, restrained color, crisp metal and polymer detail. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show09",
+  "modality": "mask",
+  "domain": "driving",
+  "compression": 1.7620323971565086,
+  "prompt": "Photorealistic rainy-night driving on an urban expressway. Raindrops bead across the windshield, illuminated billboards and streetlights flare softly through the water, red taillights mark several cars ahead, and concrete barriers and dark building facades confine the wet lanes. The camera car continues steadily while reflections stretch across the pavement and the scene remains readable through the rain. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Road obstacles",
+     "color_rgb": [
+      255,
+      143,
+      52
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show10",
+  "modality": "bbox",
+  "domain": "robotics",
+  "compression": 1.4997619425488018,
+  "prompt": "In a single uninterrupted 5.4-second shot, a matte-graphite seven-axis torque-controlled research arm with a compact precision wrist performs one rigid-object placement into a fixed tray maneuver. At the opening frame, the flat-jaw servo gripper holds a blue wooden cube level and centered three centimeters above the open white compartment dish. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist lowers vertically by three centimeters at constant orientation. The blue wooden cube remains rigid between the jaws, clears the four sides of the white compartment dish, reaches a level pose just above the tray floor, and stops. The gripper maintains its grasp instead of releasing during this shot. The white compartment dish is locked into bolted polymer cradle; the tray cannot slide, rotate, flex, or rise from the work surface. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a fixed oblique overhead camera with a 45 mm lens; cool diffused task lighting, realistic contact shadows, detailed rubber and anodized aluminum. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show11",
+  "modality": "bbox",
+  "domain": "driving",
+  "compression": 1.6152810717261714,
+  "prompt": "Photorealistic nighttime driving on a wide multi-lane urban boulevard. Green traffic signals repeat into the distance, scattered sedans travel ahead and alongside the camera car, storefronts and apartment buildings recede on both sides, and bright streetlamps pick out white lane markings. The road is dry and dark with restrained reflections and clear forward depth. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show12",
+  "modality": "bbox",
+  "domain": "driving",
+  "compression": 1.8537590113285274,
+  "prompt": "Photorealistic nighttime driving along a lively, brightly illuminated city boulevard. Multiple lanes of sedans extend toward a sequence of green signals, parked vehicles crowd the right curb, storefront and building lights create pools of color, and oncoming headlights stream past on the left. The camera vehicle advances with the traffic while glossy bodywork and asphalt carry controlled urban reflections. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show13",
+  "modality": "bbox",
+  "domain": "robotics",
+  "compression": 1.4999107196000239,
+  "prompt": "In a single uninterrupted 5.4-second shot, a matte-graphite seven-axis torque-controlled research arm with a compact precision wrist performs one level insertion of a can onto a fixed cabinet shelf maneuver. At the opening frame, the V-groove parallel gripper holds a blue cylindrical canister upright and level with the opening of an open white storage cubby, two centimeters outside the shelf edge. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist translates horizontally inward by five centimeters along the shelf normal. The blue cylindrical canister preserves its vertical orientation, clears the top and sides of the opening, and stops above the shelf without being released. The gripper and canister move as one rigid assembly. The open white storage cubby is immobilized by four-bolt cabinet base; its door, shelf, frame, countertop, and nearby objects remain stationary. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a fixed oblique overhead camera with a 45 mm lens; cool diffused task lighting, realistic contact shadows, detailed rubber and anodized aluminum. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show14",
+  "modality": "bbox",
+  "domain": "game",
+  "compression": 2.015838732901368,
+  "prompt": "An armored monkey warrior carrying a long wooden staff advances across a broad ochre rocky plateau in warm amber light. Weathered stone pagodas, eroded cliffs, dry brush, drifting dust, and distant mountain silhouettes surround the open route. The third-person camera follows from behind as the warrior walks with measured steps, the staff remains secured in his hand, cloth and fur respond subtly, and both feet contact the uneven ground convincingly. The view is one continuous wide 16:9 third-person gameplay shot with a stable camera that follows the player smoothly, coherent parallax, and no cuts. Motion is controlled and physically plausible; the main subject keeps a consistent identity, shape, scale, and contact with the ground. Render it as a polished high-end real-time game cinematic with detailed geometry, believable materials, natural depth, restrained contrast, and generic unmarked surfaces.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Player character + staff",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show15",
+  "modality": "bbox",
+  "domain": "driving",
+  "compression": 1.7548746518105849,
+  "prompt": "Photorealistic nighttime driving along a lively, brightly illuminated city boulevard. Multiple lanes of sedans extend toward a sequence of green signals, parked vehicles crowd the right curb, storefront and building lights create pools of color, and oncoming headlights stream past on the left. The camera vehicle advances with the traffic while glossy bodywork and asphalt carry controlled urban reflections. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Road obstacles",
+     "color_rgb": [
+      255,
+      143,
+      52
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show16",
+  "modality": "bbox",
+  "domain": "driving",
+  "compression": 1.978021978021978,
+  "prompt": "Photorealistic dusk driving on a busy multi-lane arterial that curves gently beside a tall dark industrial wall. A line of white and silver sedans fills the lanes ahead, oncoming headlights pass to the left, leafy trees and municipal streetlamps break the skyline, and brake lights gather toward a signal in the distance. Cool blue evening light mixes naturally with warm vehicle lamps. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Road obstacles",
+     "color_rgb": [
+      255,
+      143,
+      52
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show17",
+  "modality": "bbox",
+  "domain": "robotics",
+  "compression": 1.4554975837970003,
+  "prompt": "In a single uninterrupted 5.4-second shot, an ivory-white lightweight six-joint cobot with joint-torque sensing and a compact end-effector flange performs one single smoothing stroke over restrained fabric maneuver. At the opening frame, the orange linen swatch is spread across the black folding template and held by magnetic edge retainers; the rounded polymer smoothing shoe is already in light contact near one visible wrinkle. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist executes one straight six-centimeter smoothing stroke at constant height and gentle downward pressure. The tool remains tangent to the fabric; the wrinkle diminishes progressively ahead of the tool while the cloth perimeter stays registered. The wrist stops and maintains contact in the final pose. The black folding template and magnetic edge retainers remain rigid and stationary, preventing the fabric from translating as a whole while permitting small local deformation. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a locked overhead camera with a 42 mm lens; even daylight-balanced laboratory light, quiet gray palette, physically accurate reflections. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show18",
+  "modality": "bbox",
+  "domain": "robotics",
+  "compression": 1.4999107196000239,
+  "prompt": "In a single uninterrupted 5.4-second shot, a compact white six-axis collaborative robot with a rigid black wrist and calibrated force control performs one level insertion of a can onto a fixed cabinet shelf maneuver. At the opening frame, the curved rubber-jaw gripper holds a small silver metal can upright and level with the opening of an open gray cabinet shelf, two centimeters outside the shelf edge. The first 0.5 seconds establish a steady initial pose, the commanded maneuver occupies the next 4.1 seconds, and the final 0.8 seconds show a completely stable end pose. From 0.5 to 4.6 seconds, the wrist translates horizontally inward by five centimeters along the shelf normal. The small silver metal can preserves its vertical orientation, clears the top and sides of the opening, and stops above the shelf without being released. The gripper and canister move as one rigid assembly. The open gray cabinet shelf is immobilized by cabinet frame anchored to the wall and floor; its door, shelf, frame, countertop, and nearby objects remain stationary. The robot base, camera, work surface, target fixture, and every uninvolved object remain exactly stationary. Every robot link stays rigid and constant in length; the joints articulate continuously as one connected kinematic chain. The end effector preserves a mechanically valid grasp or surface contact, with consistent contact points and occlusion. The manipulated object keeps constant size, shape, color, and material. Motion is slow, continuous, single-direction, and physically plausible, with smooth acceleration into and out of the maneuver. Recorded by a locked high three-quarter camera with a 40 mm lens; soft neutral overhead laboratory light, restrained color, crisp metal and polymer detail. The frame contains clean generic unbranded equipment and no visible writing, symbols, labels, logos, watermarks, screens, or interface graphics.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Table / workspace",
+     "color_rgb": [
+      70,
+      210,
+      115
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Robot arm + gripper + object of interest",
+     "color_rgb": [
+      45,
+      155,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 4\u00d74"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show19",
+  "modality": "bbox",
+  "domain": "driving",
+  "compression": 1.70824295010846,
+  "prompt": "Photorealistic nighttime driving along a busy commercial avenue. Two yellow cabs travel ahead in neighboring lanes, oncoming headlights stream across the median, low-rise shops and apartment fronts sit under scattered signs and streetlights, and red and green traffic signals alternate along the corridor. The camera vehicle advances with the traffic while taillights reflect subtly on the dark asphalt. The view is a stable continuous wide 16:9 shot from a fixed forward-facing dashboard camera at windshield height. The camera vehicle advances smoothly at a moderate, believable speed while lane geometry, vehicle spacing, wheel motion, reflections, and motion parallax remain physically consistent. Use natural documentary color, realistic road and vehicle materials, crisp but unexaggerated detail, and a generic unbranded streetscape.",
+  "legend": {
+   "type": "classes",
+   "items": [
+    {
+     "label": "Road",
+     "color_rgb": [
+      61,
+      126,
+      255
+     ],
+     "token_level": "2\u00d72; near ego 1\u00d71"
+    },
+    {
+     "label": "Lane / crosswalk",
+     "color_rgb": [
+      255,
+      214,
+      64
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Vehicles / people",
+     "color_rgb": [
+      239,
+      76,
+      98
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Traffic controls",
+     "color_rgb": [
+      168,
+      92,
+      255
+     ],
+     "token_level": "1\u00d71"
+    },
+    {
+     "label": "Sidewalk / buildings",
+     "color_rgb": [
+      66,
+      196,
+      132
+     ],
+     "token_level": "2\u00d72"
+    },
+    {
+     "label": "Background",
+     "color_rgb": [
+      248,
+      248,
+      248
+     ],
+     "token_level": "up to 2\u00d72"
+    }
+   ]
+  }
+ },
+ {
+  "key": "show20",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 1.8618396749168822,
+  "prompt": "The video opens with a young girl standing in a dimly lit underwater scene, surrounded by tall, slender purple plants. She is wearing a sleeveless top with horizontal stripes in shades of yellow and white. As the video progresses, a large, blue shark with white teeth and gills swims into the frame. The shark approaches the girl, who appears to be unaware of its presence. The shark's mouth opens wide, revealing its sharp teeth, and it moves closer to the girl. The girl's facial expressions change from surprise to fear as she realizes the shark's intentions. The shark continues to circle around her, and the girl's fear escalates. The video ends with the shark swimming away, leaving the girl alone in the underwater environment.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show21",
+  "modality": "vrs",
+  "domain": "game",
+  "compression": 1.7387704409025047,
+  "prompt": "A staff-bearing monkey warrior with an ornate antler-like headpiece crosses a quiet snowy forest clearing. Powdery snow, frost-covered stones, dark conifers, bare branches, cold mist, and softly falling flakes create a layered winter landscape. The third-person camera follows smoothly as the warrior takes slow grounded steps, leaves shallow tracks, and keeps the staff, headpiece, and layered clothing stable with restrained secondary motion. The view is one continuous wide 16:9 third-person gameplay shot with a stable camera that follows the player smoothly, coherent parallax, and no cuts. Motion is controlled and physically plausible; the main subject keeps a consistent identity, shape, scale, and contact with the ground. Render it as a polished high-end real-time game cinematic with detailed geometry, believable materials, natural depth, restrained contrast, and generic unmarked surfaces.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show22",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 2.296825155704086,
+  "prompt": "The video features a person seated on a stage, playing a classical guitar. The individual is wearing a white shirt and is focused on the guitar, which has a brown body and a darker fretboard. The person's right hand is positioned on the fretboard, while the left hand is strumming the strings. The stage is dimly lit, with a microphone stand visible to the left of the guitarist. The background is dark, emphasizing the performer and the instrument.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show23",
+  "modality": "vrs",
+  "domain": "game",
+  "compression": 1.943794513151467,
+  "prompt": "A powerful monkey warrior sprints across a bright expanse of rippled sand while carrying a long staff in one hand. Pale desert towers, wind-carved dunes, scattered rocks, and a clear luminous sky frame the route, while a controlled trail of dust and a small warm ember effect follows his feet. The third-person camera tracks smoothly from behind; the running cycle has believable weight, stable foot contact, and restrained cloth and fur motion. The view is one continuous wide 16:9 third-person gameplay shot with a stable camera that follows the player smoothly, coherent parallax, and no cuts. Motion is controlled and physically plausible; the main subject keeps a consistent identity, shape, scale, and contact with the ground. Render it as a polished high-end real-time game cinematic with detailed geometry, believable materials, natural depth, restrained contrast, and generic unmarked surfaces.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show24",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 1.7625253537873313,
+  "prompt": "The video features a woman with blonde hair and a peach-colored blouse. She is seated in a dimly lit room with rows of chairs in the background. The woman appears to be speaking, as her mouth is open in various frames, suggesting she is engaged in a conversation or presentation. The lighting is soft, and the focus is on the woman, with the background chairs blurred to draw attention to her. The color palette of the video is warm, with the peach blouse of the woman contrasting with the cooler tones of the room.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show25",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 2.0756685519740814,
+  "prompt": "The video captures a serene beach scene during sunset. The sky is painted with hues of orange, pink, and blue, indicating the time of day. The sun is partially visible, casting a warm glow over the scene. In the foreground, there is a sandy beach with a few people walking and standing, enjoying the view. The Burj Al Arab, a prominent luxury hotel, stands tall in the background, its silhouette contrasting against the sky. The water is calm, reflecting the colors of the sky. The video is taken from a distance, giving a panoramic view of the beach and the hotel.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show26",
+  "modality": "vrs",
+  "domain": "game",
+  "compression": 2.1633996279868364,
+  "prompt": "A sleek white futuristic sports coupe drives steadily along a sunlit two-lane desert highway toward a distant modern skyline. Low cactus scrub, pale sand, weathered utility structures, and ochre rock formations pass on both sides beneath a clear cyan sky. The vehicle remains centered in a slightly elevated rear chase-camera view, follows the road cleanly, and makes small suspension movements over the asphalt. The view is one continuous wide 16:9 third-person gameplay shot with a stable camera that follows the player smoothly, coherent parallax, and no cuts. Motion is controlled and physically plausible; the main subject keeps a consistent identity, shape, scale, and contact with the ground. Render it as a polished high-end real-time game cinematic with detailed geometry, believable materials, natural depth, restrained contrast, and generic unmarked surfaces.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show27",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 1.7619502645256018,
+  "prompt": "The video captures a serene scene of a person standing on the bank of a river, facing the sunset. The individual is dressed in dark clothing and is holding a fishing rod, casting a line into the water. The river is calm, reflecting the golden hues of the setting sun. The sky is a gradient of blue, with the sun appearing as a bright, glowing orb on the horizon. The surrounding trees are silhouetted against the sky, adding depth to the scene. The person's shadow is visible on the ground, indicating that the sun is low in the sky.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show28",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 1.7769838285069575,
+  "prompt": "The video captures a hiker with a red backpack and a white container in their hand, walking along a narrow dirt path. The hiker is dressed in a brown jacket, blue jeans, and hiking boots. The path is flanked by grassy slopes on either side, leading up to a rocky cliff face. The sky is overcast, suggesting a cool or cloudy day. The hiker appears to be alone on the trail, with no other people or animals in sight.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show29",
+  "modality": "vrs",
+  "domain": "VBench test",
+  "compression": 1.7687934301958308,
+  "prompt": "The video captures a surfer in a red top and blue shorts, riding a large, greenish-blue wave. The surfer is seen balancing on a yellow surfboard, skillfully maneuvering through the wave's crest and trough. The ocean's foamy white water contrasts with the clear blue sky, and the sandy beach is visible in the foreground. The surfer's movements are fluid and controlled, indicating experience and confidence.",
+  "legend": {
+   "type": "colorbar",
+   "label": "VRS error",
+   "low": "low",
+   "high": "high",
+   "cmap": "magma",
+   "stops": [
+    "#000003",
+    "#0a0722",
+    "#1c1046",
+    "#350f6a",
+    "#50127b",
+    "#691c80",
+    "#822581",
+    "#9c2e7f",
+    "#b63679",
+    "#d0416f",
+    "#e65162",
+    "#f56a5b",
+    "#fb8861",
+    "#fea671",
+    "#fec488",
+    "#fde1a3",
+    "#fbfcbf"
+   ]
+  }
+ },
+ {
+  "key": "show30",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 2.1303575957392846,
+  "prompt": "A seated man fills a centered medium close-up, shoulders relaxed and face turned slightly toward the camera as his mouth moves through a quiet sentence and his expression shifts subtly from thoughtful to attentive. He wears a mustard-gold cotton shirt with a narrow collar and fine woven texture. Behind him is a richly layered interior of dark walnut shelving, stacked books, a small ceramic vase, trailing fern leaves, and a deep olive curtain, all dimly illuminated and softly defocused rather than flat. A warm side lamp brushes one cheek while cool ambient fill preserves detail in his eyes, creating a natural cinematic portrait with steady framing and no dramatic movement across the 5.4-second shot.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show31",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 2.7199136535348085,
+  "prompt": "The video features a person in a kitchen setting, wearing a red tank top and white gloves. The individual is holding a glass filled with a yellowish liquid, which appears to be a beverage. The person is seen making various facial expressions and gestures, suggesting a playful or exaggerated reaction to the drink. The kitchen has wooden cabinets and a stainless steel appliance in the background.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show32",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 2.09656396461355,
+  "prompt": "The video features a woman with blonde hair and a peach-colored blouse. She is seated in a dimly lit room with rows of chairs in the background. The woman appears to be speaking, as her mouth is open in various frames, suggesting she is engaged in a conversation or presentation. The lighting is soft, and the focus is on the woman, with the background chairs blurred to draw attention to her. The color palette of the video is warm, with the peach blouse of the woman contrasting with the cooler tones of the room.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show33",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 1.5886024081195234,
+  "prompt": "A solitary person stands full-length on the near riverbank, slightly left of center, facing the glowing horizon and holding a slender fishing rod angled modestly toward the water. They wear a dark waxed canvas jacket, charcoal trousers, and weathered boots, their posture calm and nearly still as the rod tip makes a small controlled adjustment. Calm ripples mirror the fading gold sky, while reeds, mossy stones, overhanging willow leaves, distant tree trunks, and a few far shoreline lights create layered depth behind the figure. Low sunset light rims the clothing and casts a long soft shadow toward the camera; the person stays crisp while foliage and reflections dissolve into natural dusk bokeh during the continuous 5.4-second shot.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show34",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 1.5886024081195234,
+  "prompt": "A lone person in a charcoal waxed jacket and olive trousers stands near the center of a quiet riverbank, holding a slender fishing rod and making a small, controlled casting motion without changing position. Reeds, rounded stones, and damp grasses fill the foreground, while willow branches, pale wildflowers, and layered wooded banks recede behind them. The low evening sun glows near the horizon, reflected in narrow amber ripples beneath a blue-violet sky. Warm rim light outlines the figure and a long shadow stretches across the earth. The person remains sharply focused, with softly defocused foliage and natural golden bokeh, cinematic 50mm photography, gentle continuous motion.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show35",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 1.6095037363479594,
+  "prompt": "The video begins with a dark, blurry image of a road with a cyclist approaching. As the video progresses, the cyclist becomes more visible, revealing a person wearing a white and green top, black shorts, and a helmet. The cyclist is riding a red bicycle with black handlebars and is moving towards the camera. The road is lined with greenery, and the sky is clear, suggesting it's a sunny day. The cyclist maintains a steady pace throughout the video.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show36",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 1.2298682284040996,
+  "prompt": "The video features a close-up of a person's hands as they play a cello. The cello has a rich brown finish, and the bow is being drawn across the strings. The player's fingers are positioned on the fingerboard, and the bow is moving back and forth, creating a rhythmic sound. The person is wearing a white sleeveless top and a striped skirt. The background is blurred, but it appears to be a room with neutral-colored walls.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show37",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 2.5689819219790677,
+  "prompt": "The video features a person wearing a camouflage jacket and a red beret. The individual is standing in a grassy field with trees in the background. The person is seen adjusting their beret, touching their hair, and then turning their head to the side. The lighting suggests it might be either early morning or late afternoon, and the overall atmosphere is calm and serene.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show38",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 1.9485540491777926,
+  "prompt": "The video is a sequence of images showing a person from the side profile, with their hair flowing down their back. The lighting is dim, with a warm glow coming from the window, suggesting either sunrise or sunset. The person is wearing a light-colored shirt, and the room appears to be a simple, unadorned space with a window and a plain wall. The focus is on the person's hair and the play of light and shadow on their face.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ },
+ {
+  "key": "show39",
+  "modality": "dof",
+  "domain": "VBench test",
+  "compression": 2.4573378839590445,
+  "prompt": "The video features a middle-aged man with gray hair, wearing a light blue shirt, standing outdoors with a clear sky and a vast field in the background. He is gesturing with his hands, which are the primary focus of the video. The man's hands move in a rhythmic pattern, suggesting that he is either explaining something or expressing an emotion. The lighting is natural, indicating that the video was shot during the day.",
+  "legend": {
+   "type": "colorbar",
+   "label": "Depth",
+   "low": "far",
+   "high": "near",
+   "cmap": "turbo",
+   "stops": [
+    "#30123b",
+    "#4040a1",
+    "#466be3",
+    "#4193fe",
+    "#28bbeb",
+    "#17dcc2",
+    "#32f197",
+    "#6dfd62",
+    "#a4fc3b",
+    "#cdeb34",
+    "#edcf39",
+    "#fdab33",
+    "#fa7d20",
+    "#ea500d",
+    "#d02f04",
+    "#a91501",
+    "#7a0402"
+   ]
+  }
+ }
+]

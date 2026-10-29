@@ -1,0 +1,60 @@
+\renewcommand{\arraystretch}{1.0}
+\setlength{\aboverulesep}{0.2ex}
+\begin{table*}[!t]
+  \centering
+  \scriptsize
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l cccccccc @{}}
+    \toprule
+    \makecell{Method} &
+    \makecell{Speedup (s) $\uparrow$} &
+    \makecell{TFLOPs $\downarrow$} &
+    \makecell{Subject\\Consistency $\uparrow$} &
+    \makecell{Background\\Consistency $\uparrow$} &
+    \makecell{Motion\\Smoothness $\uparrow$} &
+    \makecell{Dynamic\\Degree $\uparrow$} &
+    \makecell{Aesthetic\\Quality $\uparrow$} &
+    \makecell{Image\\Quality $\uparrow$} \\
+    \midrule
+    WAN~2.1 (50)           & 1.00$\times$ & 119292         & 0.9492          & 0.9621          & 0.9874          & 0.4800          & 0.5993          & 0.6133          \\
+    \midrule[0.3pt]
+    WAN~2.1 (25)           & 2.00$\times$ & 59646          & 0.9434          & 0.9597          & \textbf{0.9879} & 0.4250          & 0.5893          & 0.5706          \\
+    \textbf{Ours ($S=2$)} & \textbf{2.03}$\times$ & \textbf{57417} & \textbf{0.9462} & \textbf{0.9598} & 0.9859          & \textbf{0.4950} & \textbf{0.5975} & \textbf{0.6114} \\
+    \midrule[0.3pt]
+    \textbf{Ours ($S=3$)} & 2.54$\times$ & 45953 & 0.9299          & 0.9499          & 0.9815          & 0.5700 & 0.5696          & 0.5990 \\
+    \bottomrule
+  \end{tabular*}
+  \caption{\textbf{Quantitative comparison on latent-space video generation on WAN~2.1~\citep{wan}.} Video resolution is maintained at 720P. Our training-free approach demonstrates more than $2\times$ speedup while maintaining high generation quality and outperforming the 25-step full-resolution baseline.}
+  \label{tab:wan_vbench_720p}
+\end{table*}
+
+
+
+
+% \renewcommand{\arraystretch}{1.0}
+% \setlength{\aboverulesep}{0.2ex}
+% \begin{table*}[!t]
+%   \centering
+%   \scriptsize
+%   \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l ccccccc @{}}
+%     \toprule
+%     \makecell{Method} &
+%     \makecell{Speedup $\uparrow$} &
+%     \makecell{Subject\\Consistency $\uparrow$} &
+%     \makecell{Background\\Consistency $\uparrow$} &
+%     \makecell{Motion\\Smoothness $\uparrow$} &
+%     \makecell{Dynamic\\Degree $\uparrow$} &
+%     \makecell{Aesthetic\\Quality $\uparrow$} &
+%     \makecell{Image\\Quality $\uparrow$} \\
+%     \midrule
+%     WAN2.1 (50 steps)           & 1.00$\times$ & 0.9492          & 0.9621          & 0.9874 & 0.4800          & 0.5993          & 0.6133          \\
+%     \midrule[0.3pt]
+%     WAN2.1 (25 steps)           & 2.00$\times$ & 0.9434          & 0.9597          & \textbf{0.9879} & 0.4250          & 0.5893          & 0.5706          \\
+%     \textbf{Ours ($S=2$)} & 2.03$\times$ & \textbf{0.9462} & \textbf{0.9598} & 0.9859 & \textbf{0.4950} & \textbf{0.5975} & \textbf{0.6114} \\
+%     \midrule[0.3pt]
+%     \textbf{Ours ($S=3$)} & 2.54$\times$ & 0.9299          & 0.9499          & 0.9815 & 0.5700 & 0.5696          & 0.5990 \\
+%     \bottomrule
+%   \end{tabular*}
+%   \vspace{3pt}
+%   \caption{\textbf{Quantitative comparison on latent-space video generation on WAN2.1~\citep{wan}.} Video resolution is maintained at 720P. Our training-free approach demonstrates more than $2\times$ speedup while maintaining high generation quality and outperforming the 25-step full-resolution baseline.}
+%   \label{tab:wan_vbench_720p}
+% \end{table*}

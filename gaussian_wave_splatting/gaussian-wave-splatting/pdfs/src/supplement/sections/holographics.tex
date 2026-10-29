@@ -1,0 +1,158 @@
+\label{sec:holographics}
+
+Here, we outline our pipeline of primitive transformations, dubbed the \textit{holographics} pipeline (Fig. \ref{fig:holographics}). Just like the traditional graphics pipeline, we transform geometric primitives between various spaces in holographics, and we describe in detail these conversions in this section.
+\subsection{Geometric pipeline}
+We elaborate on the coordinate systems and transformations between various spaces in holographics such that our framework is compatible with the traditional computer graphics pipeline~\cite{foley1996computer, blinn1996jim}. While we primarily define these transformations for Gaussian primitives, it can easily be extended to other primitive-based CGHs~\cite{matsushima2003fast, chen2009computer}.
+
+\paragraph{\textbf{Model transform}}
+To begin with, we assume the optimized Gaussians from an off-the-shelf neural rendering framework~\cite{tancik2023nerfstudio, ye2024gsplat} are defined by a full 3D covariance matrix $\Sigma_\worldspace \in \mat{3}$ in \textit{world space} centered at a point $\centergaussian_\worldspace \in \arr{3}$:
+\begin{align}
+    \mathcal{G} ( \coordinate_w ) = e^{-\frac{1}{2} (\coordinate_\worldspace - \centergaussian_\worldspace)^\mathsf{T}\Sigma_\worldspace^{-1}(\coordinate_\worldspace - \centergaussian_\worldspace)}.
+\end{align}
+The covariance matrix can be factorized into a scaling matrix $S_\worldspace \in \mat{3}$ and a rotation matrix $R_\worldspace \in \mat{3}$ as $\Sigma_\worldspace = R_\worldspace S_\worldspace S_\worldspace^\mathbf{T} R_\worldspace^\mathbf{T} \in \mat{3}$. These Gaussians in world space are transformed from the \textit{canonical space} where we have a standard Gaussian centered at the origin as Eqs.~\ref{eq:canonicalgaussian} and ~\ref{eq:modeltransform} (see Fig.~\ref{fig:holographics}).
+\begin{align}
+    \mathcal{G} (\coordinate_\canonicalspace) &= e^{-\frac{1}{2} \coordinate_\canonicalspace^\mathsf{T} \coordinate_\canonicalspace}, \label{eq:canonicalgaussian}\\
+     \coordinate_w &= 
+        R_\worldspace S_\worldspace\coordinate_c + \centergaussian_w , \label{eq:modeltransform} \\ & \coordinate_c, \coordinate_w \in \mathbb{R}^{3 \times 1}, \nonumber
+\end{align}
+%\begin{bmatrix} \coordinate_w  \\ 1 \end{bmatrix}&= \begin{bmatrix}         R_\worldspace S_\worldspace & \centergaussian_w \\        0 & 1    \end{bmatrix} \begin{bmatrix} \coordinate_c \\
+where $\coordinate_c$ and $\coordinate_w$ denote the coordinates in canonical space and world space, respectively. This can be thought as \textit{model transform}. 
+% \paragraph{\textbf{Object transform}}
+% Between the canonical space and world space, our Gaussians have their own \textit{object space} to account for their shape (eccentricity), position, and rotation around the $z$ axis. The transform from canonical space to object space, which we call the \textit{object transform}, is defined by the corresponding 2D affine transformation $\mathbf{r}_\canonicalspace = A \mathbf{r}_\objectspace + \mathbf{b}$. The covariance matrix $\Sigma_\objectspace$ and the center of the Gaussian $\centergaussian_\objectspace$ in object space are given by:
+% \begin{align}
+%     \Sigma_\objectspace &= A^{-1} A^\mathsf{-T}, \\
+%     \centergaussian_\objectspace &= - A^{-1} \mathbf{b}
+% \end{align}
+
+% \paragraph{\textbf{Model transform}}
+% These Gaussians in each object coordinate system can be viewed from world space after applying \textit{model transform}. In our case, this transform involves rotations around the $x-$ and $y-$ axes and the corresponding translation between the origins of spaces. The covariance matrices and centers in the object and world spaces are related with a 3D affine transform $\mathbf{r}_\objectspace = C \mathbf{r}_w + \mathbf{d}$:
+
+% \begin{align}
+%     \Sigma_\worldspace &= C^{-1} \Sigma_\objectspace C^\mathsf{-T}, \\
+%     \centergaussian_\worldspace &= C^{-1} \centergaussian_\objectspace - C^{-1}\mathbf{d}
+% \end{align}
+
+\paragraph{\textbf{View transform and projective mapping}}
+
+To render these Gaussians in world space from a specific camera viewpoint, we apply a view transformation $W \in \mat{3}$ that transforms Gaussians from world space into \textit{view space}, where the camera is assumed to be looking into the negative z direction. This is followed by a projective transform defined by camera intrinsics (focal length, principal point, and projection type such as orthographic, perspective, fisheye, etc.) that converts the view space into the \textit{ray space}, where the z-axis is parallel to the outgoing rays from all camera pixels. While this projective transform from view space to ray space is not affine, Zwicker et al. \cite{zwicker2001ewa} introduced a \textit{local} affine approximation of this mapping, allowing the covariance matrix $\Sigma_\viewspace \in \mat{2}$ and the center of the Gaussian $\centergaussian_\viewspace \in \arr{2}$ in ray space to be obtained by~\cite{kerbl3Dgaussians, zwicker2001ewa}:
+\begin{align} 
+\Sigma_\viewspace &= J W \Sigma_\worldspace W^\mathsf{T} J^\mathsf{T}, \\
+    \centergaussian_\viewspace &= \projectivemapping( W \centergaussian_\worldspace), \label{eq:projectivemapping}
+\end{align}
+where $J \in \mathbb{R}^{2\times3}$ is the Jacobian of the affine approximation of the projective transformation $\projectivemapping$~\cite{zwicker2001ewa}.
+
+Finally, we make a minor modification to the aforementioned projective transform by ``lifting'' the projected 2D covariance and center back to 3D. This is necessary because the depth values are required for CGH calculation. Specifically, we augment $\centergaussian_\viewspace$ with the the depth value of the Gaussian in view space and redefine it as:
+\begin{align}
+    \centergaussian_\viewspace = \begin{bmatrix}
+        \projectivemapping( W \centergaussian_\worldspace) \\
+        (W \centergaussian_\worldspace)_2
+    \end{bmatrix}
+\end{align}
+
+To lift 2D covariance back to 3D, we perform Eigenvalue decomposition on the projected 2D covariance matrix to get the 2D rotation and scales $R_\viewspace' \in \mat{2}$ and $S_\viewspace' \in \mat{2}$:
+\begin{align}
+    J W \Sigma_\worldspace W^\mathsf{T} J^\mathsf{T} = R_\viewspace' S_\viewspace'^2 {R_\viewspace'}^\mathsf{T}
+\end{align}
+
+Then, we augment the 2D rotation matrix $R_\viewspace'$ with zero rotation around the x and y axes and set the z-scale of the Gaussian to be zero:
+\begin{align}
+    R_\viewspace & = \begin{bmatrix}
+        R_\viewspace' & \mathbf{0} \\
+        \mathbf{0} & 1
+    \end{bmatrix} \\
+    S_\viewspace & = \begin{bmatrix}
+        S_\viewspace' \\
+        0
+    \end{bmatrix}
+\end{align}
+and finally acquire the lifted 3D covariance $\Sigma_\viewspace \in \mat{3}$:
+\begin{align}
+    \Sigma_\viewspace = R_\viewspace S_\viewspace S_\viewspace^\mathsf{T} R_\viewspace^\mathsf{T}
+\end{align}
+
+
+Note that ray space coordinates $\coordinate_\viewspace$ also can be obtained from the world coordinate using the same transformation as in Eq.~\ref{eq:projectivemapping}:
+\begin{align}
+    \coordinate_\viewspace = \projectivemapping (W\coordinate_\worldspace)
+\end{align}
+
+\paragraph{\textbf{Hologram transform}}
+To convert Gaussians in \textit{ray space} to holograms, we must transform them into the \textit{hologram space}, which is determined by the geometry of the optical parameters of the holographic display. For example, we can remap the $z$-values of Gaussians in ray space to the desired depth range determined by the focal length of the eyepiece. We set the origin of the hologram coordinate system at the center of the SLM and align the $xy-$plane with the SLM plane. In other words, the SLM is positioned at $z=0$ plane. We refer to the transform from ray space to hologram space as \textit{hologram transform}. The covariance matrix $\Sigma$ and the center $\centergaussian$, coordinate vector $\coordinate$ in hologram space are given by a corresponding 3D affine transformation matrix between these spaces $T_{\viewspace \rightarrow h}$:
+\begin{align}
+    \Sigma &= T_{\viewspace \rightarrow h} \Sigma_\viewspace T_{\viewspace \rightarrow h}^\mathsf{T}, \\
+    \centergaussian &= T_{\viewspace \rightarrow h} \centergaussian_\viewspace, \,\, \coordinate = T_{\viewspace \rightarrow h}  \coordinate_\viewspace
+\end{align}
+
+\paragraph{\textbf{Unified transformation}}
+By combining these transformations as described in Fig.~\ref{fig:holographics}, the entire process from canonical space to hologram space results in the covariance matrix $\Sigma$ and the translation vector $\centergaussian$ in hologram space as follows:
+\begin{align}
+  \Sigma &= (T_{\viewspace \rightarrow h} J W R_\worldspace S_\worldspace) S_\worldspace^\mathsf{T} R_\worldspace^\mathsf{T} W^\mathsf{T} J^\mathsf{T} T_{\viewspace \rightarrow h}^\mathsf{T} \label{eq:combine}\\
+  &= TT^\mathsf{T} \\
+  &= RSS^\mathbf{T}R^\mathsf{T}, \\
+    \centergaussian &= T_{\viewspace \rightarrow h} \projectivemapping (W\centergaussian_\worldspace), \label{eq:hologramposition}
+\end{align}
+where $S$ and $R$ are the scaling matrix and the rotation matrix that defines the covariance matrix $\Sigma$.
+
+In summary, the geometric pipeline in holographics starts with the parameters of an optimized Gaussian in world space, which are the covariance matrix $\Sigma_\worldspace$ and the mean of the Gaussian $\centergaussian_\worldspace$. These parameters are used to establish a geometric relationship between the hologram space and the canonical space. The parameters $J$ and $W$ are determined by the camera intrinsics and extrinsics, while the optical configurations of the holographic display specifies $T_{\viewspace \rightarrow h}$. Using these parameters ($R$, $S$, $\centergaussian$) in Eqs.~\ref{eq:combine}---\ref{eq:hologramposition}, we derive the angular spectrum of each Gaussian in the hologram space in the next section.
+
+
+\subsection{Hologram pipeline}
+
+To perform wave splatting in hologram space from a collection of optimized Gaussians in world space, we derive a closed-form solution for the Gaussian wavefront in hologram space, enabling efficient parallel implementation. The key insight of our approach is that a simple closed-form solution exists in canonical space, which we leverage by mapping the plane wave (angular spectrum) in hologram space from its counterpart in canonical space. To this end, we first establish the geometric relationship within this pipeline (between these spaces) and derive the closed-form solution of the angular spectrum in the Fourier domain, $\hat{u} (\mathbf{k})$, in hologram space. In other words, we map the spatial frequency component (i.e., the value of $\hat{u} (\mathbf{k})$) through a geometrical transformation (translation, rotation, and scaling) from hologram space back to canonical space, focusing on each parameter $R$, $S$, and $\centergaussian$, obtained in the previous section. In the following, we present the local 3D affine transform obtained in the previous section, and the closed-form solution of the angular spectrum in canonical space, which is a simple Gaussian:
+
+% In other words, the goal of this pipeline is to derive a closed-form solution for wavefronts at the SLM plane in hologram space from those in canonical space, using the transformed geometry described in the previous section. Here, we 
+% Using the transforms described in the previous section, we can transform the canonical Gaussian to hologram space using $R$, $S$, and $\centergaussian$, and vice versa.
+
+\begin{align}
+    \coordinate = RS \coordinate_c + \centergaussian \,\, \leftrightarrow \,\, \coordinate_c = S^{-1}R^{-1}( \coordinate - \centergaussian) 
+\end{align}
+\begin{align}
+  \mathcal{G} (\coordinate_c) &= e^{-\frac{1}{2} \coordinate_c^\mathsf{T}\coordinate_c }  \xleftrightarrow{\fourier} \hat{\mathcal{G}}_c(\mathbf{k}_c) = 2 \pi e^{-2\pi^2 \mathbf{k}_c^\mathsf{T} \mathbf{k}_c},
+\end{align}
+where $\coordinate_c$ and $\mathbf{k}_c$ are the spatial coordinate and the wave vector in canonical space and $\hat{\mathcal{G}}$ denotes the Fourier transform of $\mathcal{G}$.
+
+\paragraph{\textbf{Translation: $\coordinate_t = \coordinate - \centergaussian$}}
+
+First, we translate the coordinate system by $\centergaussian$, aligning the orientation of the coordinate system with that of the Gaussian. Translation in the spatial domain is equivalent to applying a phase ramp in the Fourier domain: 
+\begin{align} 
+\coordinate_t = \coordinate - \centergaussian \leftrightarrow \angularspectrum (\mathbf{k}) = \angularspectrum_t (\mathbf{k}_t) e^{j\mathbf{k}\cdot\coordinate}, 
+\label{eq:translation}
+\end{align} 
+where the subscript $t$ denotes the coordinate after the translation.
+
+\paragraph{\textbf{Rotation: $\coordinate_o = R^{-1} \coordinate_t$}}
+Next, we map the angular spectrum at the $x_t$--$y_t$ plane to that in the object space, where our Gaussian lies on a $x_o$--$y_o$ plane. Geometrically, this local space can be obtained by rotating shifted hologram space, $\coordinate_t$, in the Euler angle order of $x$, $y$, and $z$, such that $R^{-1} = R_z^{-1} R_y^{-1} R_x^{-1}$, and the coordinates are governed by the given rotation matrix $\coordinate_o = R^{-1} \coordinate_t$. Since the wave vectors also follow the same rotational transformation, the plane wave corresponding to the wave vector $\mathbf{k}_t$ corresponds to the plane wave corresponding to $\mathbf{k}_o = R^{-1} \mathbf{k}_t$ in the object space. Thus, we can nonlinearly map the angular spectrum from the object space to the shifted hologram space as: 
+\begin{align} 
+\coordinate_o = R^{-1} \coordinate_t \leftrightarrow \angularspectrum_t (\mathbf{k}_t) &= \textrm{det}( \mathbf{J}) \angularspectrum_o\left( R^{-1} \mathbf{k} \right), \label{eq:rotation}
+\end{align} 
+where $\textrm{det} (\mathbf{J}) = \frac{k_{o_z}}{k_{t_z}}$ is the Jacobian determinant of the transformation of Fourier coordinates. Note that this is essentially the celebrated result of tilted wave propagation~\cite{matsushima2003fast}.
+
+\paragraph{\textbf{Scaling: $\coordinate_c = S^{-1}\coordinate_o$}}
+The final step to arrive at the canonical space is to scale the Gaussian accordingly. This is a simple 2D affine transformation without bias though, and we describe the full formulation, including the bias term $\mathbf{b}$, which is zero in our case, for flexibility and completeness.
+\begin{align}
+\coordinate_c &= S^{-1}\coordinate_o + \mathbf{b}.
+\end{align}
+Using the affine theorem for two-dimensional Fourier transforms~\cite{bracewell1993affine}, we obtain
+\begin{align}    
+u_o(\coordinate_o) = \mathcal{G}(S^{-1}\coordinate_o + \mathbf{b}) & \xleftrightarrow{\fourier} \angularspectrum_o(\mathbf{k}_o) = \frac{1}{\det S^{-1}} \hat{\mathcal{G}}_c(S^{\mathsf{T}} \mathbf{k}_0) e^{j \mathbf{b}^{\mathsf{T}}S^{\mathsf{T}} \mathbf{k}_o}, \label{eq:scaling} %\label{eq:supp_affine_2d},
+\end{align}
+
+where $\mathbf{k}$ is the wave vector and $\angularspectrum_o$ and $\hat{\mathcal{G}}$ denotes the Fourier transform of $u_o$ and $\mathcal{G}$, respectively
+
+Combining Eqs.~\ref{eq:translation}, ~\ref{eq:rotation}, and ~\ref{eq:scaling}, we obtain the final closed-form solution in hologram space presented in the manuscript, from the angular spectrum derived in canonical space:
+\begin{align}
+\angularspectrum (\mathbf{k}) =     \textrm{det}( \mathbf{J}) \textrm{det}(S) \hat{\mathcal{G}} \left(SR^{-1}\mathbf{k} \right) e^{j  \mathbf{k}\cdot \centergaussian}  \label{eq:final}.
+\end{align}
+
+Note that while we set $\mathbf{b} = 0$ in this formulation, this becomes ill-posed with the translation $\mathbf{d}$ we performed ($\mathbf{d} = \centergaussian$ in Eq.~\ref{eq:translation}). We can set the amount of displacement $\mathbf{d}$ arbitrarily, not limited to $\centergaussian$. For instance, we can use $\mathbf{b} = -S^{-1} R^{-1} \centergaussian_{xy}$ and $\mathbf{d} = C\centergaussian_z$, where $\centergaussian_{xy}$ represents the transverse components of the vector $\centergaussian$, and $\centergaussian_z$ represents the $z$ component of $\centergaussian$, retaining its vector form. We show that how this formulation is compatible with the polygon-based methods in  Section~\ref{sec:misc}. 
+
+
+% To derive a closed-form solution, we decompose this transform into two steps: \textit{Rotational transform} and \textit{Object transform}, leveraging tilted wave propagation and the affine theorem of the Fourier transform. For this, we define the \textit{object space}, where the object is centered at the origin with the same covariance as the hologram space. The coordinates in the local space and hologram space are related by a 3D affine transform:
+% \begin{align}
+%     \coordinate_l &= C \coordinate + \mathbf{d}, \\
+%     C &= R^{-1} \text{  and  } \mathbf{d} = C\centergaussian.
+% \end{align}
+
+% \paragraph{\textbf{Object transform}}
+
+

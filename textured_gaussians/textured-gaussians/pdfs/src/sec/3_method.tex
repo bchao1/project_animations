@@ -1,0 +1,137 @@
+\definecolor{light_red}{RGB}{247, 111, 111}
+\definecolor{light_orange}{RGB}{247, 168, 111}
+\definecolor{light_yellow}{RGB}{247, 208, 111}
+
+\newcommand{\first}[1]{{\textbf{#1}}}
+\newcommand{\second}[1]{{\underline{#1}}}
+\newcommand{\third}[1]{#1}
+
+\section{Method}
+
+
+\subsection{3D Gaussian Splatting Model}
+In 3DGS \cite{kerbl3Dgaussians}, 3D scenes are represented with 3D Gaussians, and images are rendered using differentiable volume splatting. Specifically, 3DGS explicitly defines 3D Gaussians by their 3D covariance matrix $\mathbf{\Sigma}_i \in \mathbb{R}^{3\times3} $ and center $\bm{\mu}_i \in \mathbb{R}^3$ (the index $i$ indicating the $i^\text{th}$ Gaussian), where the 3D Gaussian function value at point $\mathbf{x}\in \mathbb{R}^{3}$ is defined by:
+\begin{equation}
+    \mathcal{G}_i(\mathbf{x}) = \text{exp}(-\frac{1}{2}(\mathbf{x} - \bm{\mu}_i)\mathbf{\Sigma}_i^{-1}(\mathbf{x} - \bm{\mu}_i))
+\end{equation}
+where the covariance matrix $\mathbf{\Sigma} = \mathbf{R}\mathbf{S}\mathbf{S}^\top\mathbf{R}^\top$ is factorized into the rotation matrix $\mathbf{R} \in \mathbb{R}^{3\times3}$ and the scale matrix $\mathbf{S} \in \mathbb{R}^{3\times3}$. To render a 2D image from a 3D Gaussians representation, 3D Gaussians are transformed from world coordinates to camera coordinates via a world-to-camera transformation matrix $\mathbf{W} \in \mathbb{R}^{3\times3} $ and projected to the 2D image plane via a local affine transformation $\mathbf{J} \in \mathbb{R}^{3\times3} $. The transformed 3D covariance $\mathbf{\Sigma}'$ can be calculated as:
+\begin{equation}
+    \mathbf{\Sigma}' = \mathbf{J}\mathbf{W}\mathbf{\Sigma}\mathbf{W}^\top\mathbf{J}^\top
+\end{equation}
+The covariance $\Sigma_\text{2D}$ of the 2D Gaussian $\mathcal{G}^\text{2D}$ splatted on the image plane can be approximated as extracting the first two rows and columns of the transformed 3D covariance, $\Sigma_\text{2D} = [\Sigma']_{\{1,2\}, \{1,2\}} \in \mathbb{R}^{2\times2} $ using the matrix minor notation.
+
+To render the color of a pixel $\mathbf{p}\in \mathbb{R}^3$, the colors associated with each Gaussian are alpha-composited from front to back following the conventional volume rendering equation:
+\begin{equation}
+    \mathbf{c}(\mathbf{p}) = \sum_{i=1}^K \mathbf{c}_i \alpha_i \prod_{j=1}^{i-1}(1 - \alpha_j) \label{eq:3dgs_color}
+\end{equation}
+where $i$ is the index of the Gaussians, $\mathbf{c}_i$ is the color of each Gaussian computed from the per-Gaussian spherical harmonic coefficients and viewing direction, and $\alpha_i$ is the alpha value computed from the opacity $o_i$ associated with each Gaussian and the 2D Gaussian value evaluated at pixel location $\mathbf{p}$:
+\begin{equation}
+    \alpha_i = \mathcal{G}^{\text{2D}}_i(\mathbf{p})\cdot o_i
+\end{equation}
+
+The attributes (center, rotation, scale, opacity, and spherical harmonic coefficients) of the Gaussians are optimized with gradient descent using photometric losses on the rendered 2D images. 
+
+
+\subsection{Textured Gaussians}
+From the 3DGS appearance model defined in Eq. \ref{eq:3dgs_color}, we observe two properties of Gaussian Splatting:
+\begin{enumerate}
+    \item Pixels covered by the same Gaussian are shaded with the same color up to a Gaussian falloff scaling factor.
+    \item The per-Gaussian opacity only allows Gaussians to represent ellipsoidal shapes.
+\end{enumerate}
+% show a figure demonstrating this
+These two properties greatly restrict the expressivity of individual 3D Gaussian primitives. To allow each Gaussian primitive to represent complex appearances and shapes, we assign a fixed-resolution 2D texture map of size $\mathcal{T} \times \mathcal{T} \times \mathcal{K}, \mathcal{T} \in \mathbb{N}, \mathcal{K} \in \{1, 3, 4\}$ to each Gaussian and transform each Gaussian into a Textured Gaussian. As shown in Figure~\ref{fig:rgba_textures}, $\mathcal{K} = 1, 3, 4$ correspond to alpha, RGB, and RGBA texture maps, respectively. 
+The shape of a Textured Gaussian is thus determined by the spatially varying opacity defined by the product of the per-Gaussian opacity and the alpha channel of the texture map. 
+The appearance of a Textured Gaussian is represented by 1) the RGB channels of the \emph{spatially varying} textured map and 2) a set of \emph{spatially constant} spherical harmonic coefficients (SH).
+%The appearance of a Textured Gaussian is represented by the RGB channels of the texture map and the spherical harmonic coefficients (SH). 
+Intuitively, the spatially constant SH coefficients represent the low-frequency textures plus view-dependent colors like specular effects,
+while the spatially varying texture map represents the higher-frequency spatial variations of the texture. The texture is then mapped to the plane $\mathcal{P}$ defined by the two major axes of the $i^\text{th}$ 3D Gaussian that is centered at $\bm{\mu}_i \in \mathbb{R}^3 $, as shown in Figure \ref{fig:model_pipeline}. The normal $\mathbf{n}_i \in \mathbb{R}^3$ of this plane thus corresponds to the axis with the smallest scale. 
+
+For each pixel $\mathbf{p} \in \mathbb{R}^3$ that is currently being rendered, we cast a ray from the camera origin $\mathbf{o} \in \mathbb{R}^3$ to the center of the pixel $\mathbf{p}$ and intersect it with the plane $\mathcal{P}$. The intersection point $\mathbf{x} \in \mathbb{R}^3$ can be calculated as:
+\begin{equation}
+    \mathbf{x} = \mathbf{o} + \frac{(\bm{\mu}_i - \mathbf{o}) \cdot \mathbf{n}_i}{(\mathbf{p} - \mathbf{o}) \cdot \mathbf{n}_i} \cdot \frac{\mathbf{p} - \mathbf{o}}{\|\mathbf{p} - \mathbf{o}\|}
+\end{equation}
+% visualization here 
+Given the intersection point $\mathbf{x}$ with $\mathcal{P}$, we perform UV mapping and bilinear interpolation on the texture map associated with the $i^\text{th}$ Gaussian to query the texture color and alpha value at the UV coordinates $u, v \in \mathbb{R}$, denoted by $\mathbf{c}_i^\text{tex}(u, v) \in \mathbb{R}^3$ and $\alpha_i^\text{tex}(u, v) \in \mathbb{R}$. Specifically, the UV coordinates $(u, v)$ of the intersection point on the texture map can be calculated as:
+
+\begin{equation}
+\begin{split}
+    u = \frac{m\cdot \sigma_i^1 + (\mathbf{x} - \bm{\mu}_i)\cdot \mathbf{r}_i^1}{2\cdot m \cdot \sigma_i^1} \cdot (\mathcal{T} - 1) \\
+    v = \frac{m\cdot \sigma_i^2 + (\mathbf{x} - \bm{\mu}_i)\cdot \mathbf{r}_i^2}{2\cdot m \cdot \sigma_i^2} \cdot (\mathcal{T} - 1)
+\end{split}
+\end{equation}
+where $\sigma_i^1, \sigma_i^2 \in \mathbb{R}$ are the scales of the two major axis of the $i^\text{th}$ Gaussian, $\mathbf{r}_i^1, \mathbf{r}_i^2 \in \mathbb{R}^3$ are the normalized directions of the two major axes of the $i^\text{th}$ Gaussian, and $m \in \mathbb{R}$ is a scalar multiplier that determines the extent of the texture map with respect to each Gaussian. 
+
+
+{\renewcommand{\arraystretch}{1.2}
+\begin{table*}[!t]
+  \centering
+  \footnotesize
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc@{}}
+    \toprule
+    \makecell{Method} & \makecell{Blender \cite{mildenhall2020nerf}} & \makecell{Mip-NeRF~360 \cite{mildenhall2020nerf}}  & \makecell{DTU \cite{jensen2014DTU}} & \makecell{Tanks and Temples \cite{Knapitsch2017tanks}} & \makecell{Deep Blending \cite{DeepBlending2018}} \\
+    \midrule
+    Mip-NeRF~360 \cite{barron2022mipnerf360} & 30.34 / 0.9510 / 0.0600 & \first{27.69} / \third{0.7920} / \third{0.2370} & \first{34.28} / 0.9641 / 0.0698 & \third{22.22} / \third{0.7590} / \third{0.2570} & \first{29.40} / \first{0.9010} / \first{0.2450}
+ \\
+    Instant-NGP \cite{mueller2022instant} & \third{32.20} / \third{0.9590} / \third{0.0550} & 25.30 / 0.6710 / 0.3710 & 23.58 / 0.7653 / 0.2603  & 21.72 / 0.7230 / 0.3300 & 23.62 / 0.7970 / 0.4230 \\
+    \citet{xu2024texturegs} & 28.97 / 0.9380 / 0.0550 & -------- / -------- / -------- & 30.03 / -------- / 0.1440 & -------- / -------- / -------- & -------- / -------- / -------- \\
+    3DGS* & \second{33.08} / \second{0.9671} / \second{0.0440} & \third{27.26} / \first{0.8318} / \second{0.1871} & \third{33.54} / \second{0.9697} / \first{0.0551} & \second{24.18} / \second{0.8541} / \second{0.1754} & \third{28.04} / \second{0.8940} / \third{0.2707}
+ \\
+    Ours & \first{33.24} / \first{0.9674} / \first{0.0428} & \second{27.35} / \second{0.8274} / \first{0.1858} & \second{33.61} / \first{0.9699} / \second{0.0556} & \first{24.26} / \first{0.8542} / \first{0.1684} & \second{28.33} / \third{0.8908} / \second{0.2699}
+ \\
+    \midrule
+    3DGS* ($10\%$) & 31.47 / 0.9590 / 0.0594 & 25.77 / 0.7796 / 0.2860 & 32.71 / 0.9627 / 0.0811 & 22.82 / 0.8020 / 0.2728 & 27.64 / 0.8853 / 0.3101
+ \\
+    Ours ($10\%$) & \textbf{32.14} / \textbf{0.9629} / \textbf{0.0489} & \textbf{26.32} / \textbf{0.7976} / \textbf{0.2323} & \textbf{32.74} / \textbf{0.9661} / \textbf{0.0582} & \textbf{23.41} / \textbf{0.8259} / \textbf{0.2122} & \textbf{27.98} / \textbf{0.8898} / \textbf{0.2804}
+
+ \\
+    \hdashline
+     3DGS* ($1\%$) & 26.89 / 0.9160 / 0.1165 & 22.37 / 0.6293 / 0.4774 & 30.88 / 0.9320 / 0.1581 & 19.90 / 0.6736 / 0.4406 & 23.97 / 0.8167 / 0.4337
+ \\
+    Ours ($1\%$) & \textbf{28.11} / \textbf{0.9343} / \textbf{0.0849} & \textbf{23.73} / \textbf{0.7064} / \textbf{0.3365} & \textbf{32.43} / \textbf{0.9627} / \textbf{0.0694} & \textbf{21.10} / \textbf{0.7399} / \textbf{0.3104} & \textbf{24.83} / \textbf{0.8454} / \textbf{0.3552}
+
+ \\
+    \bottomrule
+  \end{tabular*}
+  \caption{\textbf{Quantitative comparisons of different novel view synthesis methods.} We boldface the best-performing model and underline the second best in terms of different metrics (PSNR $\uparrow$ / SSIM $\uparrow$ / LPIPS $\downarrow$). Our Textured Gaussians model achieves better performance than 3DGS* across most metrics. With fewer Gaussians (1\% and 10\% of the default optimized number of Gaussians), our method significantly outperforms 3DGS*, achieving strictly better performance across all metrics as indicated by the bold text. }
+  \label{tab:same_num_gs}
+\end{table*}
+}
+% describe UV mapping here?
+
+Combined with the color computed from the SH coefficients, which we call $\mathbf{c}_i^\text{base}$ (the same as the color component in the original 3DGS appearance model in Eq.~\ref{eq:3dgs_color}), the final color contribution of the $i$-th Gaussian to pixel $\mathbf{p}$ is defined by:
+\begin{equation}
+    \mathbf{c}_i(\mathbf{p}) = \mathbf{c}_i^\text{base} + \mathbf{c}_i^\text{tex}(u, v)
+    \label{eq:texture_map}
+\end{equation}
+and the alpha value of the $i$-th Gaussian at pixel $\mathbf{p}$ is defined by:
+\begin{equation}
+    \alpha_i(\mathbf{p}) = \alpha_i^\text{tex}(u, v) \cdot \mathcal{G}_i(\mathbf{x})\cdot o_i
+    \label{eq:alpha_map}
+\end{equation}
+Finally, to render the color of a pixel $\mathbf{p}$, we modify the 3DGS appearance model in Eq.~\ref{eq:3dgs_color} to incorporate the spatially varying texture and opacity:
+\begin{equation}
+    \mathbf{c}^\text{final}(\mathbf{p}) = \sum_{i=1}^K \mathbf{c}_i(\mathbf{p}) \alpha_i(\mathbf{p}) \prod_{j=1}^{i-1}(1 - \alpha_j(\mathbf{p})) \label{eq:generalized_appearance_model}
+\end{equation}
+Eq.~\ref{eq:generalized_appearance_model} is a generalized formulation of 3D Gaussian appearance and encapsulates different variants of Textured Gaussians. For example, $\mathbf{c}_i^\text{tex} = 0$ and $\alpha_i^\text{tex} = 1$ correspond to the original 3DGS model. 
+
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{sec/figures/num_gaussians_ablation.pdf}
+  \caption{\textbf{NVS performance using varying numbers of Gaussians.} When using the same number of Gaussians as 3DGS$^*$, our Textured Gaussians achieve better novel view synthesis results on all five benchmark datasets in PSNR. Here, we show the quantitative performance of 3DGS* and Textured Gaussians models optimized with varying number of Gaussians on the three scene-level datasets.}
+  \label{fig:vary_num_gs_trend}
+\end{figure}
+
+\subsection{Optimization of Textured Gaussians}
+% loss function
+Following 3DGS \cite{kerbl3Dgaussians}, we optimize our model to minimize the weighted photometric loss:
+\begin{equation}
+    \mathcal{L} = \lambda \mathcal{L}_1 + (1 - \lambda) \mathcal{L}_\text{SSIM}
+\end{equation}
+where $\lambda = 0.8$. 
+
+Our optimization procedure consists of two stages. We first optimize a 3DGS model for 30000 iterations. The learning rates and adaptive density control (ADC) parameters are reported in the Appendix. In the second stage, we initialize all attributes of the Gaussians with the optimized vanilla 3DGS model, and jointly optimize them with the per-Gaussian 2D texture maps for another 30000 iterations. We disable the ADC control in the second stage to control the number of Gaussians for fair baseline comparisons. This two-stage optimization process greatly speeds up convergence and improves image quality, since jointly optimizing all parameters is a highly ill-posed problem.
+
+We implement custom CUDA kernels to perform fast ray-Gaussian intersection, UV mapping, and color composition. All experiments are conducted on clusters of Nvidia H100 GPUs. Please refer to the Appendix for more details on implementation and optimization.
+
+

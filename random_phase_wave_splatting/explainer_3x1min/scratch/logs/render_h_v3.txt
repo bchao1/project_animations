@@ -1,0 +1,4 @@
+media/final/RPWS_3min_animation_rpws_explainer_v3_1080p60.mp4  200.1 s
+media/final/RPWS_Part1_animation_rpws_explainer_v3_1080p60.mp4  64.7 s
+media/final/RPWS_Part2_animation_rpws_explainer_v3_1080p60.mp4  68.3 s
+media/final/RPWS_Part3_animation_rpws_explainer_v3_1080p60.mp4  62.2 s

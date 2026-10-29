@@ -1,0 +1,2181 @@
+=== page 1 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+11 
+  
+Abstract—Conventional stereoscopic displays suffer from 
+vergence-accommodation conflict and cause visual fatigue. 
+Integral-imaging-based displays resolve the problem by directly 
+projecting the sub-aperture views of a light field into the eyes using 
+a microlens array or a similar structure. However, such displays 
+have an inherent trade-off between angular and spatial resolutions. 
+In this paper, we propose a novel coded time-division multiplexing 
+technique that projects encoded sub-aperture views to the eyes of 
+a viewer with correct cues for vergence-accommodation reflex. 
+Given sparse light field sub-aperture views, our pipeline can 
+provide a perception of high-resolution refocused images with 
+minimal aliasing by jointly optimizing the sub-aperture views for 
+display and the coded aperture pattern. This is achieved via deep 
+learning in an end-to-end fashion by simulating light transport 
+and image formation with Fourier optics. To our knowledge, this 
+work is among the first that optimize the light field display pipeline 
+with deep learning. We verify our idea with objective image 
+quality metrics (PSNR, SSIM, and LPIPS) and perform an 
+extensive study on various customizable design variables in our 
+display pipeline. Experimental results show that light fields 
+displayed using the proposed technique indeed have higher quality 
+than that of baseline display designs. 
+ 
+Index Terms—Coded aperture, light field display, Fourier 
+optics, deep learning, vergence-accommodation conflict. 
+ 
+I. INTRODUCTION 
+RADITIONAL stereoscopic displays offer 3-D depth 
+perception by presenting two images with disparity. 
+Although the binocular disparity is a dominant cue that drives 
+the eye vergence for depth perception, stereoscopic displays 
+cannot provide correct accommodation cue that matches the eye 
+vergence because the images are projected at a fixed focal 
+distance. Any such mismatch (aka vergence-accommodation 
+conflict, VAC) can easily cause eye strain, headache, or even 
+loss of depth perception because human eyes have evolved over 
+the history of mankind to have consistent accommodation and 
+vergence.   
+To address the issue, several kinds of 3-D displays have been 
+proposed, such as varifocal displays [1]–[3], multifocal displays 
+ 
+This work was supported in part by grants from the Ministry of Science and 
+Technology of Taiwan under Contracts 110-2221-E-002-108-MY3, 110-2813-
+C-002-266-E, and 110-2218-E-002-032-MBK, in part by grants from National 
+Taiwan University under Contract 110L880602, and in part by GPU computing 
+resources from NVIDIA AI Technology Center (NVAITC). (C.-H. Chao and 
+C.-L. Liu are co-first authors.) (Corresponding author is H. H. Chen.)  
+C.-H. Chao is with the Department of Electrical Engineering, National 
+Taiwan University, Taipei 10617, Taiwan (e-mail: b06901104@ntu.edu.tw).  
+[4]–[12], holographic displays [13]–[15]. However, varifocal 
+displays and multifocal displays both require additional 
+elements such as eye trackers and screen stacks, while 
+holographic displays require high-resolution spatial light 
+modulators. Integral-imaging-based light field displays (II-
+based LFDs) [16]–[24] provide correct cues for vergence-
+accommodation reflex without such extra elements. 3-D 
+perception is provided by, for example, projecting different 
+views of a scene to the eye with a microlens array placed 
+somewhere between the micro display panel and the eyepiece. 
+However, there is a trade-off between spatial and angular 
+resolutions, and severe undersampling in either spatial or 
+angular domain may degrade image quality.   
+In this paper, we propose a novel idea called coded time-
+division multiplexing (CTDM) that leverages coded aperture 
+imaging and time-multiplexing to resolve the undersampling 
+issue for light field display (LFD). By rapidly changing the 
+learned coded aperture pattern of the display optics, decoded 
+images can be projected into the viewer’s eye. Through the 
+persistence of vision, these projected images would be 
+perceived by the human eye as if they are summed together to 
+form a refocused image.  
+The term “light field display” used here refers to a display 
+system where the interval of viewpoints is made smaller than 
+the pupil diameter of human eyes. Such a system allows users 
+to freely focus at any depth of the scene. It should not be 
+confused with displays that allow users to view a scene from 
+different 
+viewpoints 
+[25], 
+which 
+do 
+not 
+solve the 
+accommodation problem. 
+The contributions of our work are highlighted as follows: 
+• We propose a novel idea called CTDM for light field display 
+that offers correct cues for vergence-accommodation reflex.  
+• Each component, such as the coded aperture pattern, in the 
+CTDM-LFD pipeline is modeled with differentiable 
+functions and optimized by deep learning. The optimized 
+components greatly help generate high quality light field. 
+• The transformation performed by the proposed light field 
+encoding network facilitates CTDM-LFD to generate light 
+C.-L. Liu is with the Graduate Institute of Communication Engineering, 
+National 
+Taiwan 
+University, 
+Taipei 
+10617, 
+Taiwan 
+(e-mail: 
+b05901017@ntu.edu.tw). 
+H. H. Chen is with the Department of Electrical Engineering, Graduate 
+Institute of Communication Engineering, and Graduate Institute of Networking 
+and Multimedia, National Taiwan University, Taipei 10617, Taiwan (e-mail: 
+homer@ntu.edu.tw). 
+Time-Division Multiplexing Light Field Display 
+with Learned Coded Aperture 
+Chun-Hao Chao*, Chang-Le Liu*, and Homer H. Chen, Fellow, IEEE 
+T
+
+=== page 2 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+12 
+fields with better perceptual quality than that of the baseline 
+TDM-LFD. 
+II. RELATED WORK 
+Our work described in this paper is related to digital 
+refocusing, coded aperture imaging, and 3-D display. This 
+section reviews related work. 
+A. Digital Refocusing 
+Digital refocusing, which allows a photograph to be focused 
+at a different depth after taking the shot, has been widely 
+investigated in image processing and computer graphics. As 
+described in the seminal paper on light fields by Levoy et al.  
+[26], digital refocusing can simply be implemented through the 
+shift and add operations on light field sub-aperture views. Ng et 
+al. [27] exploited the fact that a photograph is a 2D projection 
+of a 4D light field and used the Fourier Slice Theorem to 
+achieve digital refocusing. However, 
+such refocusing 
+algorithms assume a dense light field is readily available. 
+For digital refocusing from a sparse set of sub-aperture views, 
+Bando et al. [28] used blur estimation and deconvolution to 
+generate multiple deconvolved images of an input photograph 
+and stitched the re-convolved images back together to 
+synthesize a refocused image. Chang et al. [29]  leveraged depth 
+maps to compute different circles of confusion convolution 
+kernels to create natural synthetic bokeh. Xiao et al. [30] 
+leveraged view synthesis and aliasing detection to replace 
+aliasing defocus regions with non-aliasing image patches. On 
+the other hand, the advent of deep learning gave rise to learning-
+based refocusing. Dayan et al. [31] used a CNN to regress 
+ground truth refocused images, and Sakurikar et al. [32] 
+leveraged conditional generative adversarial networks to 
+synthesize refocused images. 
+Existing digital refocusing methods involve either carefully 
+crafted image operations such as blur estimation and 
+deconvolution or large neural networks. These highly complex 
+operations are hard to be integrated into near-eye light field 
+displays, since these techniques cannot be realized using optics 
+and that light field displays present a full light field rather than 
+refocused images to the viewer. We are interested in a problem 
+fundamentally different from these previous works on light 
+field imaging. Our focus is in digital refocusing for near-eye 
+light field displays, for which the refocusing operation is 
+performed instantly by human eye.  
+B. Coded Aperture Imaging 
+In the past, coded aperture was widely used for X-ray and 
+gamma-ray imaging [33]–[37]. Because X-ray and gamma-ray 
+are difficult to be refracted or reflected by common optical 
+elements like lenses or mirrors, pinhole cameras are used for X-
+ray and gamma-ray detection. However, the tiny pinhole results 
+in low light transmittance and low signal-to-noise ratio. To 
+address the problem, scatter-hole [34] and coded-aperture 
+cameras [33], [35]–[37] were developed, and specifically 
+designed apertures were used to enhance photon collection and 
+image quality.  
+Coded aperture has also been employed in computational 
+imaging with visible light, like motion deblurring [38], depth 
+estimation [39], high-dynamic-range imaging [40], and light 
+field capturing [41]–[43]. However, the exploitation of coded 
+aperture for light field displays is fairly new [44], [45].   
+Just like coded apertures can be used for imaging, they can 
+also be used in displays. The seminal work by Wetzstein et al. 
+[45] leveraged coded apertures to increase the depth of field of 
+projector systems. Inspired by this work and the coded aperture 
+light field acquisition works [43], [46], [47], we design a light 
+field display that simultaneously improves spatial and angular 
+resolution of displayed light fields using time multiplexed 
+coded aperture patterns. 
+C. 3-D Display 
+Most traditional 3-D displays or stereoscopic displays present 
+a pair of stereo images to a user. The user can sense 3-D objects 
+with eye convergence; however, rendering the virtual images at 
+a fixed depth, which most such displays do, may cause fatigue 
+to the user because of VAC.  
+To address the VAC issue, various techniques such as  
+varifocal displays [1]–[3], multifocal displays [4]–[12], 
+holographic displays [13]–[15], volumetric displays [48], and 
+light field displays (LFDs) [18]–[20], [22], [23], [49] have been 
+proposed. A more detailed review of these techniques can be 
+found in the survey by Zabels et al. [50]. Among the light field 
+displays, II-based LFD provides 3-D information by rendering 
+a number of views of the scene from different directions 
+without complicated switchable elements or eye tracker 
+required by varifocal and multifocal displays and without the 
+spatial light modulator required by holographic displays. 
+Although II-based LFD has been adopted in optical see-through 
+head-mounted displays [22], [49], it has low spatial resolution 
+(equal to the original display resolution divided by the number 
+of lenses in the microlens array). This motivates us to explore 
+the integration of coded aperture imaging with time-
+multiplexing by deep learning. 
+III. SDM-LFD AND TDM-LFD  
+In this section, we explain how the time-division multiplexing 
+light field display (TDM-LFD) overcomes the drawback of the 
+space-division multiplexing light field display (SDM-LFD). 
+The discussion here paves the way for the development of the 
+proposed coded time-division multiplexing light field display 
+(CTDM-LFD) in Section IV. 
+We consider the 4D light field representation proposed by 
+Levoy and Hanrahan [26] and define the symbols used in this 
+study in Table I. Note that, in practice, s and t are finite in most 
+cases; therefore, without loss of generality, we assume each of 
+TABLE I 
+NOMENCLATURE 
+Symbol 
+Description 
+L(x, y, s, t) 
+4-D light field. The pairs (x, y) and (s, t) represent the 
+spatial and angular coordinates, respectively. 
+Ls(x) 
+Sub-aperture image at s = (s, t) or the view captured at the 
+angular coordinates (s, t). x = (x, y). 
+Ic 
+Encoded light field Ic = {Ic,1(x), Ic,2(x), …, Ic,N (x)}. 
+P 
+Pupil function. 
+F 
+Non-unitary Fourier transform. We drop the constant 
+coefficient for simplicity. 
+F-1 
+Inverse Fourier transform. We drop the constant 
+coefficient for simplicity. 
+
+=== page 3 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+13 
+them is bounded by N. 
+Most AR displays consist of a display panel, a lens system, 
+and an eyepiece as the basic components. The light is emitted 
+from the display panel to form an intermediate image at the 
+intermediate image plane and the user perceives a virtual image 
+through the eyepiece, as shown in Fig. 1(a). More specifically, 
+the intermediate image is the collection of focus points formed 
+by the main lens, and we call the plane where an intermediate 
+image lies an intermediate image plane. The virtual image, on 
+the other hand, is the collection of focus points formed by 
+extensions of the diverging rays, and we call the plane where 
+the virtual image lies a virtual image plane. We denote the 
+object and image distances by zO and zI, respectively. The 
+eyepiece is an optical system that relays the intermediate 
+images to the human eye.  
+ 
+A. Space-Division Multiplexing Light Field Display  
+Similar to the traditional integral imaging-based light field 
+camera [51], SDM-LFD uses a microlens array to divide the 
+display panel into several sub-areas. Each sub-area of the panel 
+corresponds to a sub-aperture view, and all sub-aperture views 
+are displayed on the same intermediate image plane, as shown 
+in Fig. 1(b). The perception of a light field is affected by 
+projecting overlapping sub-aperture views to the human eye 
+through an eyepiece. Although the design is straightforward, it 
+requires high-precision manufacturing of the microlens arrays 
+and has an inherent trade-off between the spatial and angular 
+resolutions. For example, for a 3×3 light field display, the actual 
+area that is perceived by the viewer is only one-ninth of the total 
+area of the display panel. We resolve the drawback by using the 
+time-division multiplexing technique and coded aperture 
+pattern.  
+B. Time-Division Multiplexing Light Field Display  
+For TDM-LFD, a switchable shutter is used to control the 
+transport of light rays. The shutter is in synchronization with 
+the display panel so that different sub-aperture views of a light 
+field can be displayed in a time-multiplexing fashion, as shown 
+in Fig. 1(c) (The only difference between Fig. 1(c) and 1(a) is 
+that there is an additional switchable shutter in Fig. 1(c).). For 
+example, when the sub-aperture view in the top left corner is 
+displayed, the corresponding aperture (a small rectangular 
+window) is turned on in the top left corner accordingly. 
+When a user focuses on a different virtual image plane, the 
+user perceives a refocused image at the corresponding virtual 
+image distance. By laws of image formation, this is equal to the 
+shifting of the intermediate image plane. Because what the user 
+perceives (virtual image) is conjugate with the intermediate 
+image, we describe the refocusing process of the intermediate 
+image by Fourier optics [52] in the following sections.  
+Consider first the formation of a refocused image from one 
+input image. This corresponds to the case of a traditional AR 
+display. 
+Denote 
+the complex field emitted from a 
+monochromatic coherent point source with a wavelength 𝜆 on 
+the display panel and the complex field received on the 
+intermediate image plane by U𝐼(x, y) and  U𝑂(x, y), respectively. 
+Using Fourier optics, we have 
+ 
+(
+)
+2
+2
+2
+(
+,
+1
+,
+(
+,
+)
+1
+1
+1
+exp
+)
+2
+exp
+(
+,
+)
+p
+p
+I
+I
+I
+I
+O
+I
+O
+O
+O
+I
+I
+O
+I
+O
+I
+O
+O
+O
+O
+p
+p
+p
+O
+p
+p
+p
+U
+x
+y
+P x
+y
+z z
+k
+j
+x
+y
+z
+z
+F
+x
+y
+x
+y
+jk
+x
+y
+z
+z
+z
+z
+dx dy U
+x
+y
+dx dy
+
+
+
+−
+−
+
+
+
+
+
++
+−
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+−
++
++
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=
+
+
+∬∬
+ (1) 
+where h is the impulse response of the lens system, k=
+2π
+λ , and 
+𝑧𝑂 and 𝑧𝐼 are the object and image distances, respectively. Note 
+that constant phase and quadratic phase factors have been 
+dropped because they do not affect the image intensity, which 
+is our primary interest [52].  
+(a) 
+(b) 
+ 
+(c) 
+(d) 
+Fig. 1. The optical configuration of (a) Generic AR display, (b) SDM-LFD, 
+(c) TDM-LFD, and (d) CTDM-LFD. 
+
+=== page 4 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+14 
+Letting 𝑀= −𝑧𝐼/𝑧𝑂 and  𝑥̃𝑝= 𝑥𝑝/𝜆𝑧𝑝, we have 
+ 
+(
+)
+2
+2
+.
+,
+(
+,
+)
+1
+1
+1
+  
+exp
+((
+)
+(
+) )
+2
+  
+exp
+2 ((
+)
+(
+)
+)
+  
+(
+,
+)
+I
+I
+i
+p
+i
+p
+p
+p
+I
+I
+I
+O
+I
+I
+O
+I
+O
+O
+O
+O
+O
+p
+p
+O
+p
+p
+U
+x
+y
+P
+z x
+z y
+k
+j
+z x
+z y
+z
+z
+F
+j
+x
+Mx
+x
+y
+My
+y
+dx dy U
+x
+y
+dx dy
+
+
+
+
+
+
+
+−
+−
+=
+
+
+
+
+
++
+−
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+−
+−
++
+−
+
+
+
+∬∬
+ 
+(2) 
+That is, U𝐼(x, y) and U𝑂(x, y) have the following relationship: 
+ 
+ 
+( ,
+)
+(
+)
+(
+,
+),
+1
+,
+O
+I
+i
+i
+O
+O
+O
+O
+y
+U
+x y
+h x
+U
+x
+y
+M
+=
+
+ 
+(3) 
+where 
+ 
+ 
+(
+)
+(
+)
+2
+2
+(
+,
+)
+1
+1
+1
+  
+exp
+((
+)
+(
+) )
+2
+  
+exp
+2
+  
+(
+,
+)
+( ,
+,
+,
+)
+{
+}
+O
+O
+p
+p
+p
+p
+O
+p
+O
+p
+p
+p
+p
+I
+p
+I
+I
+I
+O
+I
+i
+I
+I
+p
+p
+I
+I
+h x
+P
+z x
+z y
+k
+j
+z x
+z y
+z
+z
+F
+j
+x x
+y
+dx d
+W
+y
+y
+y
+P
+z x
+z y
+z
+z x
+z y
+
+
+
+
+
+
+
+
+
+
+−
+=
+
+
+
+
+
++
+−
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+−
++
+
+
+=
+∬
+F
+ 
+(4) 
+ 
+and 
+ 
+ 
+2
+2
+(
+,
+,
+)
+1
+1
+1
+exp
+((
+)
+(
+) ) .
+2
+I
+I
+I
+I
+I
+O
+I
+p
+p
+p
+p
+W z
+z x
+z y
+k
+j
+z x
+z y
+z
+z
+F
+
+
+
+
+
+
+
+
+=
++
+−
++
+
+
+
+
+
+
+
+
+
+
+ 
+(5) 
+ 
+Here, h is the impulse response of the lens system, which is 
+equal to the Fourier transform of the product of the pupil 
+function P and the aberration function W for a given zO. 
+Because the light emitted from the display is actually 
+incoherent, we replace the complex fields U𝐼(x, y) and U𝑂(x, y) 
+in Eq. (5) with intensities I𝐼(x, y) and  I𝑂(x, y), respectively, and 
+obtain 
+ 
+ 
+2
+(
+,
+)
+(
+,
+)
+(
+,
+),
+O
+O
+I
+I
+O
+O
+O
+I
+x
+y
+I
+x
+y
+h x
+y
+M
+I
+M
+
+=
+ 
+(6) 
+ 
+where constant factors are dropped for simplicity. Therefore, by 
+assigning different values to 𝑧𝐼, we can compute the refocused 
+images of IO. We have thus derived the image formation 
+formula for our optics system with one input image.  
+Next, we describe the formation of a refocused image from a 
+light field consisting of a set of sub-aperture views. Without 
+loss of generality, we consider a light field 𝐿 taken from a 2-D 
+regular grid (2-D regular lattice) 𝐺 of viewpoints on the (s, t)-
+plane with sampling period ∆s = (∆s,∆t). For each sub-aperture 
+view 𝐿𝒔, 𝒔∈𝐺, we represent the corresponding aperture by a 
+shifted rectangular function 
+ 
+ 
+( )
+rect(
+),
+aperture width
+P
+−
+
+=
+s
+x
+s
+s
+x
+ 
+(7) 
+ 
+where⊙ denotes element-wise multiplication. Let 
+, iz
+hs
+ denote 
+the impulse response with pupil function Ps and image distance 
+𝑧𝐼. Then the light field perceived at 𝑧𝐼, which is a refocused 
+image on the retina, can be described by 
+ 
+ 
+(
+)
+2
+,
+|
+|
+I
+Iz
+z
+G
+R
+h
+L
+
+=
+
+
+s
+s
+s
+. 
+(8) 
+ 
+The above derivation yields a simple way to build a light field 
+display. However, the aperture allows only a small amount of 
+light to go through because it is usually smaller than the light 
+field angular sampling interval. Besides, aliasing occurs in the 
+defocus regions due to low angular resolution, as shown in Fig. 
+2. These disadvantages of TDM-LFD motivated us to design 
+coded time-division multiplexing for light field display. 
+IV. OPTIMIZING CTDM-LFD WITH DEEP LEARNING 
+Instead of using traditional gird-like apertures Ps with light 
+field 𝐿 as the display panel input, we use specifically designed 
+apertures ˆP with the light field encoded by a function f as the 
+display panel input, see the definition in Table II. We optimize
+ˆP and f simultaneously with deep learning to improve the 
+quality of the perceived light field. The CTDM-LFD pipeline is 
+shown in Fig. 3 and the hyper-parameters of CTDM-LFD are 
+shown in Table III. The configuration is shown in Fig. 1(d). 
+(a) 
+(b) 
+Fig. 2. Example refocused images computed from the light fields generated by 
+(a) TDM-LFD and (b) CTDM-LFD. 
+TABLE II 
+OPTIMIZABLE COMPONENTS OF CTDM-LFD 
+Symbol 
+Description 
+f 
+A non-linear mapping from the original light field L to the 
+encoded light field that is input to the display panel. 
+ˆP  
+A set of coded apertures
+1
+2
+ˆ
+ˆ
+ˆ
+{ ,
+,...,
+}.
+k
+P
+P
+P
+Input images are 
+displayed and passed through the lens and coded apertures 
+to form a light field. 
+TABLE III 
+OPTIMIZABLE HYPER-PARAMETERS OF CTDM-LFD 
+Symbol 
+Description 
+n 
+The number of sub-aperture views sampled from the 
+original light field. 
+k 
+The number of images in the encoded light field, which is 
+equal to the number of coded apertures in ˆ .
+P  But k is not 
+necessarily equal to n. 
+l 
+The spatial resolution of coded apertures. 
+
+=== page 5 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+15 
+In this section, we describe the details of the proposed 
+CTDM-LFD and the modeling of its components by fully 
+differentiable operations to facilitate the optimization of 
+CTDM-LFD with deep learning. 
+A. Light Field Encoding Network 
+We model f with a convolutional neural network (CNN) and 
+call it the light field encoding network. 
+Given n sub-aperture views V1, V2, …, Vn  of a light field L, 
+we concatenate them into a feature map Min∈ ℝH×W×3n, where 
+H×W is the spatial resolution of the light field L. Min is then 
+input to our light field encoding network to generate Mout∈ 
+ℝH×W×3k. We split 𝑀𝑜𝑢𝑡 by its last dimension into k images Ic,1, 
+Ic,2, …, Ic,k ∈ ℝH×W×3. It should be noted that these images are not 
+light field views, but rather encoded versions of them. We 
+cannot supervise our model directly on the encoded views since 
+we do not have their ground truth. As shown in Section IV, we 
+optimize our model to fit ground truth focal stacks, and the 
+model itself learns to generate optimal encoded light field views. 
+B. Point Spread Function at Each Display Plane 
+In our CTDM-LFD, the point spread function of the display 
+at a specific image distance 𝑧𝐼  is jointly determined by the 
+coded aperture pattern and 𝑧𝐼. We denote this point spread 
+function by  
+ 
+ˆ ,
+ˆ (
+,
+)
+( ,
+,
+)
+{
+}
+I
+i
+i
+p
+p
+i
+I
+I
+I
+I
+p
+p
+P z
+h
+P
+z x
+z y W z
+z x
+z y
+
+
+
+
+F
+=
+, 
+(9) 
+ 
+where ˆ
+iP  ∈ ℝl×l is the ith coded aperture of the CTDM-LFD and 
+𝑙 denotes the resolution of the coded aperture. Note that each ˆ
+iP
+is optimizable.  
+According to Eq. (6), as an encoded light field image Ic,i 
+passes through the coded aperture ˆ
+iP and lens, the display 
+generates an output |ℎ𝑃̂𝑖,𝑑|
+2 ∗𝐼𝑐,𝑖 at distance d from the lens, 
+where ∗ is the 2-D convolution operator. 
+C. Merging Display Output with Refocused Images  
+For each light field L, the display panel sequentially displays 
+the encoded light field images Ic,1, Ic,2,…, Ic,k. As the display 
+panel switches to another image, the shutter also switches to the 
+corresponding coded aperture in 
+2
+1
+{
+}.
+ˆ
+ˆ
+ˆ
+,
+,..., k
+P P
+P
+ Note that the 
+set of apertures ˆP is fixed for a CTDM-LFD. If the refresh rates 
+of the display panel and shutter are high enough, the perception 
+of k consecutive images as a refocused image due to the 
+persistence of vision can be described by 
+ 
+ 
+2
+3
+ˆ
+, 
+,
+1
+*
+.
+t
+I
+I
+k
+H W
+z
+c t
+P z
+t
+R
+I
+h
+
+
+=
+=
+
+
+ 
+(10) 
+ 
+D. Obtaining the Focal Stack 
+Based on the above discussion, the perception of a light field 
+𝐿 at image distance 𝑧𝐼 is a refocused image 𝑅𝑧𝐼 on the retina. 
+Since a viewer can focus at any image distance, the perceived 
+light field is ultimately equivalent to a continuous focal stack. 
+Our goal is to minimize the reconstruction error between this 
+perceived focal stack and the ground truth focal stack.  
+However, rather than directly computing the continuous 
+focal stack, we construct a discrete focal stack 𝐹𝑐=
+ 
+Fig. 3. Overview of the CTDM-LFD pipeline. Sampled light field views are first transformed by a light field encoding network into images that are more suitable 
+for display. Then the encoded images pass through the optimized coded apertures and the lens system. Finally, the light field is projected to the human eye, where 
+a refocused image is formed. The perception of the light field is effected through the persistence of vision. For the CTDM-LFD in this figure, n = 4 and k = 4. 
+ 
+ 
+Fig. 4. Normalized focus measure 
+j
+U for two example refocused images.
+Notice that the regions with high focus measure shift from front to back, 
+indicating the change of in-focus region.  
+
+=== page 6 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+16 
+{𝑅𝑧𝐼,1,  𝑅𝑧𝐼,2, … ,  𝑅𝑧𝐼,𝑚} that consists of m images refocused at 
+different depths to facilitate the optimization. Furthermore, the 
+discrete focal stack computed from a full angular resolution 
+light field using Eq. (8) is used as the ground truth 𝐹𝑔. 
+E. Optimizing CTDM-LFD  
+Merely optimizing the L1 distance  
+ 
+1
+c
+g
+L
+F
+F
+=
+−
+‖
+‖ 
+(11) 
+between 𝐹𝑔 and 𝐹𝑐 means that the reconstruction loss has equal 
+weight for all pixels. In our case, however, we want to 
+emphasize the reconstruction of certain regions (e.g. in-focus or 
+defocused regions) in a focal stack. Hence, we propose a 
+weighted reconstruction loss: 
+ 
+ 
+1,
+ 
+ 
+c
+g
+L
+F
+F
+=
+−
+‖
+‖
+W
+ 
+(12) 
+ 
+where the jth weight map Wj  ∈ℝ𝐻×𝑊, 1 ≤ j ≤ m,  in W 
+∈ℝ𝑚×𝐻×𝑊 is the weight map that specifies the reconstruction 
+weight for each pixel in the jth refocused image. To obtain Wj, 
+we first compute the focus measure 𝑈𝑗∈ℝ𝐻×𝑊 from the jth 
+refocused image 𝑅𝑧𝐼,𝑗 by 
+ 
+ 
+,
+1
+,
+1,
+I
+I
+j
+x
+z
+j
+y
+z
+j
+U
+R
+R
+=
+
++ 
+‖
+‖ ‖
+‖  
+(13) 
+ 
+which measures the level of focus of each pixel in 𝑅𝑧𝐼,𝑗, as 
+shown in Fig. 4.  
+Then, we compute Wj  by taking the exponential of the 
+normalized and scaled 𝑈𝑗, 
+ 
+, 
+j
+U
+j
+e
+
+=
+W
+ 
+(14) 
+where 
+ 
+min
+.
+max
+ 
+min
+j
+j
+j
+j
+j
+U
+U
+U
+U
+U
+−
+=
+−
+                        (15) 
+A large value of β indicates that the model emphasizes the 
+reconstruction of in-focus pixels. For example, Wj  is simply a 
+matrix of ones when β = 0, meaning that every pixel has the 
+same reconstruction weight. 
+ 
+Fig. 5. A residual block in the light field encoding network. The input to the 
+residual block is added to the final convolution block output. 
+ 
+Fig. 6. The light field encoding network f consists of an input 2-D 
+convolutional layer, 10 residual blocks, and a final output 2-D convolutional 
+layer. A 2-D convolution kernel is defined as (kernel_size, kernel_size, output 
+channel, input channel). 
+ 
+7×7 
+8×8 
+9×9 
+4 view 
+ 
+ 
+ 
+9 view 
+ 
+ 
+ 
+ 
+Fig. 7. Sub-sub-aperture views (red blocks) sampled from 7×7, 8×8, and 9×9 
+light fields. For the 8×8 case, we sample the light field such that the sampled
+views approximately form a 3×3 grid. 
+ 
+Fig. 8. Example optics design. The structure is symmetric, and the aperture is 
+at the orange plane in the center. 
+Fig. 9. The binary coded apertures used for Zemax optics simulation. The 
+resolution of the coded apertures is 9×9 (that is, l=9). 
+TABLE IV 
+PARAMETERS OF THE FIRST THREE LENSES 
+No 
+Type 
+R 
+T 
+Nd 
+Vd 
+1 
+SPH 
+41.066 
+6.007 
+1.67790 
+50.72 
+2 
+SPH 
+-41.115 
+1.000 
+3 
+SPH 
+-27.799 
+2.912 
+1.61340 
+44.27 
+4 
+SPH 
+19.276 
+1.000 
+5 
+SPH 
+18.834 
+2.000 
+1.69350 
+50.81 
+6 
+SPH 
+54.311 
+1.000 
+
+=== page 7 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+17 
+V. EXPERIMENTAL SETUP AND RESULTS 
+In this section, we perform qualitative and quantitative 
+comparisons between our CTDM-LFD and the baseline TDM-
+LFD on two light field datasets. Furthermore, we verify our 
+technique using the optical design software Zemax by 
+implementing an example design of our proposed CTDM-LFD. 
+Finally, 
+ablation 
+studies 
+are 
+conducted 
+on 
+various 
+configurations of the display optimization pipeline. 
+A. Datasets 
+We verify the effectiveness of our method on three publicly 
+available light field datasets: the INRIA synthetic light field 
+dataset (denoted by INRIA-syn)  [53], the INRIA Lytro dataset 
+[54]  (denoted by INRIA-real), and the dataset used in the paper 
+[55] (denoted by SIGGRAPH16). 
+INRIA-syn dataset consists of 39 light field scenes with 9×9 
+angular resolution; INRIA-real dataset consists of 63 light field 
+scenes with 7 × 7 angular resolution; SIGGRAPH16 consists of 
+130 light field scenes with 8 × 8 angular resolution. We split 
+INRIA-syn, INRIA-real, and SIGGRAPH16 datasets into 
+training/testing data and obtain 31/8, 51/12, and 100/30 light 
+fields, respectively. 
+B. Evaluation Metrics  
+We use three image quality assessment metrics, peak signal-
+to-noise ratio (PSNR), structural similarity index measure 
+(SSIM), and learned perceptual image patch similarity (LPIPS) 
+to evaluate the quality of the light fields displayed using our 
+pipeline. 
+C. Training Details 
+The light field encoding network f consists of ten stacked 
+residual blocks, as detailed in Fig. 5 and Fig. 6. We clamp the 
+network output to the range [0, 1] with the sigmoid function. 
+For the results shown in Sections V.D and V.E, we choose β = 
+2 for the weighted reconstruction loss. 
+All networks are trained end-to-end from scratch for 10000 
+epochs. We use the Adam optimization algorithm with default 
+parameters β1 = 0.9, β2 = 0.999, ϵ = 1e−8, and learning rate 
+0.001. 
+D. Quantitative Results 
+To evaluate the performance of our light field display, we 
+compute a focal stack from the generated light field. The quality 
+of the focal stack of CTDM-LFD is compared to that of the 
+baseline TDM-LFD. Four and nine sub-aperture views are used 
+in this experiment for light field. Note again that the quality of 
+a light field is evaluated on the focal stack computed from the 
+light field, not on a single refocused image. 
+TABLE V 
+PERFORMANCE OF CTDM-LFD ON DIFFERENT DATASETS 
+Method 
+PSNR / SSIM / LPIPS 
+INRIA-syn 
+INRIA-real 
+SIGGRAPH16 
+Baseline (n = 4) 
+CTDM-LFD (n = 4, k = 4) 
+28.56/0.8485/0.2626 
+32.29/0.9374/0.1284 
+26.39/0.8932/0.1434 
+30.21/0.9602/0.0736 
+32.92/0.9285/0.1199 
+37.57/0.9705/0.03119 
+Baseline (n = 9) 
+CTDM-LFD (n = 9, k = 8) 
+34.73/0.9688/0.1385 
+36.41/0.9858/0.0632 
+36.32/0.9872/0.0363 
+39.97/0.9891/0.0186 
+40.61/0.9858/0.0397 
+41.21/0.9739/0.0107 
+ 
+ 
+ 
+ 
+ 
+ 
+Baseline 
+Ours 
+Ground Truth 
+Fig. 10. Visual quality comparison (n = 4) on the INRIA Synthetic Dataset. The figure shows refocused images computed from the light fields generated by CTDM-
+LFD and TDM-LFD, and the ground truth image. The refocused image computed from the light field generated by TDM-LFD has severe aliasing in defocus 
+regions due to undersampling. As shown in the zoomed-in image patches, our method preserves the sharpness of in-focus regions and has natural blur in defocus 
+regions.  
+
+=== page 8 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+18 
+For the four-view setting, the sampled light field views are the 
+four corner views. For the nine-view setting, the sampled light 
+field views form a 3×3 grid in the original light field, as shown 
+in Fig. 7. 
+For the four-view and nine-view settings in our method, we 
+consider CTDM-LFD with k = 4 and k = 8, respectively. 
+PSNR, SSIM, and LPIPS scores under these two settings are 
+summarized in Table V. We can see that focal stacks computed 
+from the light field generated by the CTDM-LFD have better 
+PSNR, SSIM, and LPIPS scores than the baseline TDM-LFD 
+for n = 4 and n = 9 on all datasets in all cases except for n = 9 
+on the SIGGRAPH16 dataset in terms of the SSIM metric. Note 
+that we use 4/9 sub-aperture views only to ensure fair 
+comparison between our CTDM and baseline SDM designs, 
+since SDM designs divide the display panel into 𝑛2 patches 
+(𝑛= 2,3 in this case). If we use all light field sub-aperture 
+views to generate the encoded light field images, the 
+performance of CTDM-LFD could be better.  
+Baseline 
+Ours 
+Ground Truth 
+ 
+ 
+ 
+Near focus 
+ 
+ 
+ 
+Far focus 
+ 
+Baseline 
+Ours 
+Ground Truth 
+ 
+ 
+ 
+Near focus 
+ 
+ 
+ 
+Far focus 
+ 
+Fig. 11. Visual quality comparison (n = 4, k=4) on the INRIA Lytro Dataset. The figure shows the refocused images computed from the light fields generated by 
+CTDM-LFD and TDM-LFD. The focal stack computed from the light field generated by the TDM-LFD has severe aliasing in defocus regions due to undersampling. 
+Our method preserves the sharpness of in-focus regions and has natural blur in defocus regions.  
+
+=== page 9 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+19 
+E. Qualitative Results 
+We also perform visual quality comparisons of refocused 
+images sampled from the focal stacks computed from the light 
+fields generated by our CTDM-LFD and the baseline TDM-
+LFD. From Fig. 10, Fig. 11, and Fig. 12, severe aliasing in the 
+defocused regions of the refocused images of TDM-LFD can 
+be observed. On the contrary, our CTDM-LFD method 
+preserves the sharpness of in-focus regions and has natural blur 
+in defocused regions. 
+Fig. 17 shows the full focal stacks (nine focal planes sampled 
+for each focal stack) computed from the light fields generated 
+by our CTDM-LFD. We can see that the in-focus regions 
+gradually shift from the front to the back of the light field scene. 
+The infocus regions remain sharp while defocus regions have a 
+natural defocus blur. 
+Baseline 
+Ours 
+Ground Truth 
+ 
+ 
+ 
+Near focus 
+ 
+ 
+ 
+Far focus 
+ 
+Baseline 
+Ours 
+Ground Truth 
+ 
+ 
+ 
+Near focus 
+ 
+ 
+ 
+Far focus 
+Fig. 12. Visual quality comparison (n = 4, k=4) on the SIGGRAPH16 Dataset. The figure shows the refocused images computed from the light fields generated by 
+CTDM-LFD and TDM-LFD. The focal stack computed from the light field generated by the TDM-LFD has severe aliasing in defocus regions due to undersampling. 
+Our method preserves the sharpness of in-focus regions and has natural blur in defocus regions.  
+
+=== page 10 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+20 
+F. Optics Simulation 
+To verify the practicability of our CTDM-LFD technique, we 
+use the optics design software Zemax to design an example of 
+CTDM-LFD and perform optical simulation. As shown in Fig. 
+8, we use a unit magnification relay lens in the experiment. The 
+whole system is easy to manufacture because it consists of only 
+spherical surfaces and common glass materials (Ohara S-
+NBM51, S-LAL56, and LAL58), and the detailed parameters 
+are shown in Table IV. The lens system is symmetric and a 
+binary-valued aperture is placed at the center. (Because it is 
+difficult to simulate continuous-valued apertures in Zemax, we 
+only test binary-valued apertures in the experiment. The 
+performance of a CTDM-LFD with binary-valued apertures is 
+slightly lower than a CTDM-LFD with continuous-valued ones, 
+which will be discussed in Section V.G.) The optimized 9×9 
+binary aperture pattern is shown in Fig. 9. 
+ 
+Note that the proposed CTDM-LFD is not limited to the relay 
+lens. For most imaging or projector systems, we can similarly 
+put the aperture at their Fourier plane. 
+The optics simulation result is shown in Fig. 13. We can see 
+that our CTDM-LFD displays a light field that can be focused 
+at different depths. Furthermore, the bokeh in the refocused 
+images are much more natural compared to that of  TDM-LFD. 
+G. Ablation Studies 
+We perform ablation studies on various design variables 
+(hyper-parameters) in our CTDM-LFD and show performance 
+comparisons between different design choices. All experiments 
+are conducted on the INRIA Synthetic Light Field Dataset.  
+1) Learned f and ˆP  
+In the baseline TDM-LFD shown in Fig. 1(c), f is simply the 
+identity function. We compare the performance of three cases: 
+baseline, only ˆP learned, and both f and ˆP learned. We choose 
+n = 4, k = 4, l = 9 in this experiment. From Fig. 14 and Table 
+VI, we can see that merely optimizing ˆP leads to performance 
+improvement by over 1 dB. Also optimizing the light field 
+encoding mapping f  (which is our final CTDM-LFD setting) 
+further improves the performance by nearly 3 dB. 
+ 
+2) Value of coded apertures 
+The quantization of the values of coded apertures can be 
+specified by the user depending on the application. For example, 
+if the coded aperture is implemented by a gray-scale liquid 
+Near Focus 
+Far Focus 
+Ours 
+Ground Truth 
+Ours 
+Ground Truth 
+Fig. 13. Refocused images computed from the light field generated by CTDM-LFD using optics design software. 
+Baseline 
+Learned ˆP  
+Learned f and ˆP  
+Fig. 14. Visual quality comparisons of refocused images computed from the 
+light field generated by the baseline TDM-LFD (left), the CTDM-LFD with 
+learned coded apertures (middle), and the CTDM-LFD with learned coded 
+apertures and encoded light field (right). Notice that the severe aliasing found 
+in the left and middle images is mitigated in the right image.  
+Binary-valued coded aperture 
+Continuous-valued coded aperture 
+Fig. 15. Visual quality comparison of refocused images computed from the 
+light field generated by the CTDM-LFD using binary- and continuous-valued
+apertures.  
+ 
+Baseline 
+β = 0 
+β = 2 
+β = 5 
+Fig. 16. Visual comparisons of refocused images computed from the light field 
+generated by the CTDM-LFD with different β values.  
+
+=== page 11 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+21 
+crystal on silicon (LCoS), we can optimize the model with 
+continuous-valued apertures. On the other hand, if the coded 
+aperture is implemented by a binary liquid crystal array, the 
+model can be optimized with binary-valued apertures. 
+We test two quantization configurations of our coded 
+apertures: continuous-valued and binary-valued. For the 
+binary-valued apertures, we use the following modified training 
+and inference procedure. During training, ˆP  is passed through 
+the following sigmoid function with large temperature value t 
+before computing the point spread functions: 
+ 
+ 
+1
+( )
+1
+tx
+S x
+e−
+=
++
+ 
+(15) 
+ 
+During inference, C is binarized to {0, 1} where values larger 
+than 0.5 is replaced with 1 and values less than 0.5 are replaced 
+with 0.  
+From Table VII and Fig. 15, we can see that CTDM-LFD with 
+continuous apertures has better performance. This is expected 
+since the possible patterns that continuous coded apertures can 
+have are almost infinite, which are more flexible for 
+optimization. 
+ 
+3) Symmetry of coded apertures 
+Symmetry is sometimes a desirable property in traditional 
+optics design. In our pipeline, we experiment on this concept in 
+the k = 4 setting by restricting the three other coded apertures to 
+be mirrored versions of the first one.  
+Table VIII shows that symmetry of coded apertures would 
+degrade the quality of refocused images. One possible reason is 
+that the capacity of the model is reduced due to the reduced 
+number of optimizable parameters.  
+4) Different values of n and k  
+We test different values of n (the number of sampled light 
+field sub-aperture views) and k (the number of encoded light 
+field images) and evaluate the quality of light fields displayed 
+by CTDM-LFD. We choose l = 9 in this experiment. 
+From Table IX, we can see that larger n has better 
+performance due to the increase of light field information. 
+However, larger k does not necessarily lead to better 
+performance. In fact, k should not be too large in practice, since 
+the required frame rate of CTDM-LFD increases linearly with 
+k. Generally speaking, large k results in a lower refresh rate for 
+the display. Hence, if image quality is preferred over refresh 
+rate, a large k is better. Small k, on the other hand, results in a 
+high refresh rate but low image quality 
+ 
+5) Weighted reconstruction loss parameter β:  
+The β parameter in the weighted reconstruction loss controls 
+the relative weighting of reconstruction loss between in-focus 
+and defocus regions in the focal stack. We compare the 
+performance of the CTDM-LFD with different β values. 
+We find that global image quality metrics cannot fully reflect 
+the quality of the focal stack. From Table X and Fig. 16, the 
+PSNR is highest for β = 2, yet details in in-focus regions are 
+more preserved for β = 5. This means that β is a hyper-
+parameter that users can tune to fit a particular application, 
+depending on how much the in-focus regions should be 
+emphasized. 
+VI. CONCLUSION 
+In this paper, we propose a novel display technique called 
+coded time-division light field display (CTDM-LFD), which 
+projects encoded light field sub-aperture views to a viewer’s 
+eyes and offers correct cues for vergence-accommodation 
+reflex. By jointly optimizing the light field encoding network 
+and coded aperture pattern, our pipeline can display high-
+quality light fields from a sparse light field with minimal 
+aliasing. By simulating light transport and image formation 
+with Fourier optics, we can learn the encoding network and 
+coded aperture pattern via deep learning in an end-to-end 
+fashion. Theoretical and optical simulation results show that our 
+method can display light fields with higher quantitative and 
+qualitative quality than baseline display designs. 
+ 
+ACKNOWLEDGEMENT 
+The authors thank Dr. C.K. Lee of NVIDIA AI Technology 
+Center (NVAITC) for valuable discussions and NVAITC for 
+providing GPU computing resources.  
+ 
+REFERENCES 
+TABLE VI 
+PERFORMANCE OF CTDM-LFD WITH DIFFERENT LEARNED COMPONENTS 
+Method 
+PSNR 
+SSIM 
+LPIPS 
+Baseline  
+CTDM-LFD with Learned 𝑃̂ 
+CTDM-LFD with Learned f and  𝑃̂ 
+28.56 
+29.85 
+32.29 
+0.8485 
+0.8762 
+0.9374 
+0.2626 
+0.2277 
+0.1284 
+* Setting: n = 4, k = 4, l = 9, continuous coded aperture. 
+TABLE VII 
+PERFORMANCE OF CTDM-LFD WITH BINARY- AND CONTINUOUS-
+VALUED CODED APERTURES 
+Method 
+PSNR 
+SSIM 
+LPIPS 
+Binary-valued  
+Continuous-valued 
+31.24 
+32.29 
+0.9249 
+0.9374 
+0.1415 
+0.1284 
+* Setting: n = 4, k = 4, l = 9 
+TABLE VIII 
+PERFORMANCE OF CTDM-LFD WITH SYMMETRIC AND FREE-VALUED 
+CODED APERTURES  
+Method 
+PSNR 
+SSIM 
+LPIPS 
+Symmetric 
+Free-valued 
+31.06 
+32.29 
+0.9283 
+0.9374 
+0.1413 
+0.1284 
+* Setting: n = 4, k = 4, l = 9 
+TABLE IX 
+PERFORMANCE OF CTDM-LFD WITH DIFFERENT n AND k VALUES 
+n 
+PSNR/SSIM/LPIPS 
+k = 4 
+k = 8 
+k = 16 
+4 
+9 
+32.29/0.9374/0.1284 
+33.27/0.9723/0.0759 
+33.12/0.9304/0.1428 
+36.41/0.9858/0.0632 
+32.43/0.9341/0.1284 
+34.15/0.9795/0.0693 
+* Setting: l = 9 
+TABLE X 
+PERFORMANCE OF CTDM-LFD WITH DIFFERENT β VALUES 
+β 
+PSNR 
+SSIM 
+LPIPS 
+0 (equal weighting) 
+2 
+5 
+31.25 
+32.29 
+32.07 
+0.9245 
+0.9374 
+0.9376 
+0.1561 
+0.1284 
+0.1248 
+* Setting: n = 4, k = 4, l = 9 
+
+=== page 12 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+22 
+ 
+[1] 
+P.-Y. Laffont et al., “Piezo-actuated varifocal head-
+mounted displays for virtual and augmented reality,” in 
+Advances in Display Technologies IX, San Francisco, 
+United States, Mar. 2019, p. 6. doi: 10.1117/12.2509143. 
+[2] 
+K. Akşit, W. Lopes, J. Kim, P. Shirley, and D. Luebke, 
+“Near-eye varifocal augmented reality display using see-
+through screens,” ACM Trans. Graph., vol. 36, no. 6, pp. 
+1–13, Nov. 2017, doi: 10.1145/3130800.3130892. 
+[3] 
+A. Wilson and H. Hua, “Design and demonstration of a 
+vari-focal optical see-through head-mounted display 
+using freeform Alvarez lenses,” Opt. Express, vol. 27, no. 
+11, p. 15627, May 2019, doi: 10.1364/OE.27.015627. 
+[4] 
+K. Akeley, S. J. Watt, A. R. Girshick, and M. S. Banks, 
+“A stereo display prototype with multiple focal distances,” 
+ACM Trans. Graph., vol. 23, no. 3, pp. 804–813, Aug. 
+2004, doi: 10.1145/1015706.1015804. 
+[5] 
+X. Hu and H. Hua, “Design and Assessment of a Depth-
+Fused Multi-Focal-Plane Display Prototype,” J. Disp. 
+Technol., vol. 10, no. 4, pp. 308–316, Apr. 2014, doi: 
+10.1109/JDT.2014.2300752. 
+[6] 
+S. Liu and H. Hua, “A systematic method for designing 
+depth-fused 
+multi-focal 
+plane 
+three-dimensional 
+displays,” Opt. Express, vol. 18, no. 11, p. 11562, May 
+2010, doi: 10.1364/OE.18.011562. 
+[7] 
+J. P. Rolland, M. W. Krueger, and A. Goon, “Multifocal 
+planes head-mounted displays,” Appl. Opt., vol. 39, no. 
+19, p. 3209, Jul. 2000, doi: 10.1364/AO.39.003209. 
+[8] 
+K. J. MacKenzie, “Vergence and accommodation to 
+multiple-image-plane stereoscopic displays: ‘real world’ 
+responses with practical image-plane separations?,” J. 
+Electron. Imaging, vol. 21, no. 1, p. 011002, Feb. 2012, 
+doi: 10.1117/1.JEI.21.1.011002. 
+[9] 
+R. Narain, R. A. Albert, A. Bulbul, G. J. Ward, M. S. 
+Banks, and J. F. O’Brien, “Optimal presentation of 
+imagery with focus cues on multi-plane displays,” ACM 
+Trans. Graph., vol. 34, no. 4, pp. 1–12, Jul. 2015, doi: 
+10.1145/2766909. 
+[10] J.-H. R. Chang, B. V. K. V. Kumar, and A. C. 
+Sankaranarayanan, “Towards multifocal displays with 
+dense focal stacks,” ACM Trans. Graph., vol. 37, no. 6, 
+pp. 1–13, Jan. 2019, doi: 10.1145/3272127.3275015. 
+ 
+(a) 
+INRIA Synthetic Dataset Continuous Focal Stack Result 
+(b) INRIA Lytro Continuous Focal Stack Result 
+(c) 
+Stanford Dataset Continuous Focal Stack Result 
+Fig. 17. Continuous focal stacks computed from the light fields generated by CTDM-LFD (n=4, k=4). Viewing from left to right, we can see that the in-focus
+regions gradually and smoothly moves from the front to the back of the scene.  
+
+=== page 13 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+23 
+[11] S. Ravikumar, K. Akeley, and M. S. Banks, “Creating 
+effective focus cues in multi-plane 3D displays,” Opt. 
+Express, vol. 19, no. 21, p. 20940, Oct. 2011, doi: 
+10.1364/OE.19.020940. 
+[12] K. J. MacKenzie, D. M. Hoffman, and S. J. Watt, 
+“Accommodation to multiple-focal-plane displays: 
+Implications for improving stereoscopic displays and for 
+accommodation control,” J. Vis., vol. 10, no. 8, pp. 22–
+22, Jul. 2010, doi: 10.1167/10.8.22. 
+[13] J. F. Heanue, M. C. Bashaw, and L. Hesselink, “Volume 
+Holographic Storage and Retrieval of Digital Data,” 
+Science, vol. 265, no. 5173, pp. 749–752, Aug. 1994, doi: 
+10.1126/science.265.5173.749. 
+[14] D. Abookasis and J. Rosen, “Three types of computer-
+generated hologram synthesized from multiple angular 
+viewpoints of a three-dimensional scene,” Appl. Opt., vol. 
+45, 
+no. 
+25, 
+p. 
+6533, 
+Sep. 
+2006, 
+doi: 
+10.1364/AO.45.006533. 
+[15] C. Chang, W. Cui, J. Park, and L. Gao, “Computational 
+holographic Maxwellian near-eye display with an 
+expanded eyebox,” Sci. Rep., vol. 9, no. 1, p. 18749, Dec. 
+2019, doi: 10.1038/s41598-019-55346-w. 
+[16] X. Wang and H. Hua, “Time-multiplexed integral 
+imaging based light field displays,” in Optical 
+Architectures for Displays and Sensing in Augmented, 
+Virtual, and Mixed Reality (AR, VR, MR) II, Mar. 2021, 
+vol. 11765, p. 117650P. doi: 10.1117/12.2576809. 
+[17] B. Lee, “3D display with floated integral imaging,” SPIE 
+Newsroom, 2007, doi: 10.1117/2.1200702.0547. 
+[18] H. Arimoto and B. Javidi, “Integral three-dimensional 
+imaging with digital reconstruction,” Opt. Lett., vol. 26, 
+no. 3, p. 157, Feb. 2001, doi: 10.1364/OL.26.000157. 
+[19] Y. Taguchi, T. Koike, K. Takahashi, and T. Naemura, 
+“TransCAIP: A Live 3D TV System Using a Camera 
+Array and an Integral Photography Display with 
+Interactive Control of Viewing Parameters,” IEEE Trans. 
+Vis. Comput. Graph., vol. 15, no. 5, pp. 841–852, Sep. 
+2009, doi: 10.1109/TVCG.2009.30. 
+[20] H. Hua and B. Javidi, “A 3D integral imaging optical see-
+through head-mounted display,” Opt. Express, vol. 22, no. 
+11, p. 13484, Jun. 2014, doi: 10.1364/OE.22.013484. 
+[21] W. S. Weitao Song, Y. W. Yongtian Wang, D. C. Dewen 
+Cheng, and Y. L. Yue Liu, “Light field head-mounted 
+display with correct focus cue using micro structure 
+array,” Chin. Opt. Lett., vol. 12, no. 6, pp. 060010–
+060013, 2014, doi: 10.3788/COL201412.060010. 
+[22] D. Lanman and D. Luebke, “Near-eye light field 
+displays,” ACM Trans. Graph., vol. 32, no. 6, pp. 1–10, 
+Nov. 2013, doi: 10.1145/2508363.2508366. 
+[23] J. Hong, S.-W. Min, and B. Lee, “Integral floating 
+display systems for augmented reality,” Appl. Opt., vol. 
+51, 
+no. 
+18, 
+p. 
+4201, 
+Jun. 
+2012, 
+doi: 
+10.1364/AO.51.004201. 
+[24] C. Yao, D. Cheng, T. Yang, and Y. Wang, “Design of an 
+optical see-through light-field near-eye display using a 
+discrete lenslet array,” Opt. Express, vol. 26, no. 14, p. 
+18292, Jul. 2018, doi: 10.1364/OE.26.018292. 
+[25] M. Hirsch, G. Wetzstein, and R. Raskar, “A compressive 
+light field projection system,” ACM Trans. Graph., vol. 
+33, 
+no. 
+4, 
+p. 
+58:1-58:12, 
+Jul. 
+2014, 
+doi: 
+10.1145/2601097.2601144. 
+[26] M. Levoy and P. Hanrahan, “Light field rendering,” in 
+Proceedings of the 23rd annual conference on Computer 
+graphics and interactive techniques  - SIGGRAPH ’96, 
+Not 
+Known, 
+1996, 
+pp. 
+31–42. 
+doi: 
+10.1145/237170.237199. 
+[27] R. Ng, “Fourier slice photography,” in ACM SIGGRAPH 
+2005 Papers on   - SIGGRAPH ’05, Los Angeles, 
+California, 2005, p. 735. doi: 10.1145/1186822.1073256. 
+[28] Y. Bando and T. Nishita, “Towards Digital Refocusing 
+from a Single Photograph,” in 15th Pacific Conference 
+on Computer Graphics and Applications (PG’07), Maui, 
+HI, 
+USA, 
+Oct. 
+2007, 
+pp. 
+363–372. 
+doi: 
+10.1109/PG.2007.22. 
+[29] A.-C. Chang, T.-P. Sung, K.-T. Shih, and H. H. Chen, 
+“Anti-aliasing for light field rendering,” in 2014 IEEE 
+International Conference on Multimedia and Expo 
+(ICME), 
+Jul. 
+2014, 
+pp. 
+1–6. 
+doi: 
+10.1109/ICME.2014.6890175. 
+[30] Z. Xiao, Q. Wang, G. Zhou, and J. Yu, “Aliasing 
+Detection and Reduction Scheme on Angularly 
+Undersampled Light Fields,” IEEE Trans. Image 
+Process., vol. 26, no. 5, pp. 2103–2115, May 2017, doi: 
+10.1109/TIP.2017.2668613. 
+[31] S. B. Dayan, D. Mendlovic, and R. Giryes, “Deep Sparse 
+Light Field Refocusing,” ArXiv200902582 Cs Eess, Sep. 
+2020, Accessed: Jul. 03, 2021. [Online]. Available: 
+http://arxiv.org/abs/2009.02582 
+[32] P. Sakurikar, I. Mehta, V. N. Balasubramanian, and P. J. 
+Narayanan, “RefocusGAN: Scene Refocusing Using a 
+Single Image,” in Computer Vision – ECCV 2018, Cham, 
+2018, pp. 519–535. doi: 10.1007/978-3-030-01225-0_31. 
+[33] E. Del Monte et al., “An X-ray imager based on silicon 
+microstrip detector and coded mask,” Nucl. Instrum. 
+Methods Phys. Res. Sect. Accel. Spectrometers Detect. 
+Assoc. Equip., vol. 576, no. 1, pp. 191–193, Jun. 2007, 
+doi: 10.1016/j.nima.2007.01.150. 
+[34] R. H. Dicke, “Scatter-Hole Cameras for X-Rays and 
+Gamma Rays,” Astrophys. J., vol. 153, p. L101, Aug. 
+1968, doi: 10.1086/180230. 
+[35] J. S. Hong et al., “Laboratory coded-aperture imaging 
+experiments: radial hole coded masks and depth-sensitive 
+CZT detectors,” Denver, CO, Oct. 2004, p. 63. doi: 
+10.1117/12.559650. 
+[36] J. E. Grindlay and J. Hong, “Optimizing wide-field coded 
+aperture imaging: radial mask holes and scanning,” San 
+Diego, California, USA, Jan. 2004, p. 402. doi: 
+10.1117/12.506260. 
+[37] O. P. Ivanov, A. N. Sudarkin, V. E. Stepanov, and L. I. 
+Urutskoev, “Portable X-ray and gamma-ray imager with 
+coded mask: performance characteristics and methods of 
+image reconstruction,” Nucl. Instrum. Methods Phys. Res. 
+Sect. Accel. Spectrometers Detect. Assoc. Equip., vol. 
+422, no. 1–3, 
+pp. 
+729–734, 
+Feb. 
+1999, doi: 
+10.1016/S0168-9002(98)01026-2. 
+[38] R. Raskar, A. Agrawal, and J. Tumblin, “Coded exposure 
+photography: motion deblurring using fluttered shutter,” 
+ACM Trans. Graph., vol. 25, no. 3, pp. 795–804, Jul. 
+2006, doi: 10.1145/1141911.1141957. 
+
+=== page 14 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+24 
+[39] A. Levin, R. Fergus, F. Durand, and W. T. Freeman, 
+“Image and depth from a conventional camera with a 
+coded aperture,” ACM Trans. Graph., vol. 26, no. 3, p. 
+1276464, Jul. 2007, doi: 10.1145/1276377.1276464. 
+[40] Nayar and Branzoi, “Adaptive dynamic range imaging: 
+optical control of pixel exposures over space and time,” 
+in Proceedings Ninth IEEE International Conference on 
+Computer Vision, Oct. 2003, pp. 1168–1175 vol.2. doi: 
+10.1109/ICCV.2003.1238624. 
+[41] P. Sen and S. Darabi, “Compressive Dual Photography,” 
+Comput Graph Forum, vol. 28, pp. 609–618, Apr. 2009, 
+doi: 10.1111/j.1467-8659.2009.01401.x. 
+[42] K. Marwah, G. Wetzstein, A. Veeraraghavan, and R. 
+Raskar, “Compressive Light Field Photography,” Aug. 
+2012, doi: 10.1145/2342896.2342959. 
+[43] C.-K. Liang, T.-H. Lin, B.-Y. Wong, C. Liu, and H. H. 
+Chen, 
+“Programmable 
+aperture 
+photography: 
+multiplexed light field acquisition,” ACM Trans. Graph., 
+vol. 
+27, 
+no. 
+3, 
+pp. 
+1–10, 
+Aug. 
+2008, 
+doi: 
+10.1145/1360612.1360654. 
+[44] K. Maruyama, Y. Inagaki, K. Takahashi, T. Fujii, and H. 
+Nagahara, “A 3-D Display Pipeline from Coded-
+Aperture Camera to Tensor Light-Field Display Through 
+CNN,” in 2019 IEEE International Conference on Image 
+Processing (ICIP), Sep. 2019, pp. 1064–1068. doi: 
+10.1109/ICIP.2019.8803741. 
+[45] M. Grosse, G. Wetzstein, A. Grundhöfer, and O. Bimber, 
+“Coded aperture projection,” ACM Trans. Graph., vol. 
+29, 
+no. 
+3, 
+p. 
+22:1-22:12, 
+Jul. 
+2010, 
+doi: 
+10.1145/1805964.1805966. 
+[46] Y. Inagaki, Y. Kobayashi, K. Takahashi, T. Fujii, and H. 
+Nagahara, “Learning to Capture Light Fields Through a 
+Coded Aperture Camera,” in Computer Vision – ECCV 
+2018, vol. 11211, V. Ferrari, M. Hebert, C. Sminchisescu, 
+and Y. Weiss, Eds. Cham: Springer International 
+Publishing, 2018, pp. 431–448. doi: 10.1007/978-3-030-
+01234-2_26. 
+[47] M. Guo, J. Hou, J. Jin, J. Chen, and L.-P. Chau, “Deep 
+Spatial-Angular Regularization for Compressive Light 
+Field Reconstruction over Coded Apertures,” in 
+Computer Vision – ECCV 2020: 16th European 
+Conference, Glasgow, UK, August 23–28, 2020, 
+Proceedings, Part II, Berlin, Heidelberg, 23 2020, pp. 
+278–294. doi: 10.1007/978-3-030-58536-5_17. 
+[48] G. E. Favalora et al., “100-million-voxel volumetric 
+display,” Orlando, FL, Aug. 2002, pp. 300–312. doi: 
+10.1117/12.480930. 
+[49] H. Huang and H. Hua, “High-performance integral-
+imaging-based light field augmented reality display using 
+freeform optics,” Opt. Express, vol. 26, no. 13, p. 17578, 
+Jun. 2018, doi: 10.1364/OE.26.017578. 
+[50] R. Zabels et al., “AR Displays: Next-Generation 
+Technologies to Solve the Vergence–Accommodation 
+Conflict,” Appl. Sci., vol. 9, no. 15, p. 3147, Aug. 2019, 
+doi: 10.3390/app9153147. 
+[51] T. Georgiev and C. Intwala, “Light Field Camera Design 
+for Integral View Photography,” Jul. 2008. 
+[52] J. W. Goodman, Introduction to Fourier Optics. Roberts 
+and Company Publishers, 2005. 
+[53] “Inria 
+synthetic 
+light 
+field 
+datasets.” 
+http://clim.inria.fr/Datasets/InriaSynLF/index.html 
+(accessed Jul. 03, 2021). 
+[54] “INRIA 
+Light 
+field 
+dataset.” 
+http://clim.inria.fr/research/LowRank2/datasets/datasets.
+html (accessed Jul. 03, 2021). 
+[55] N. K. Kalantari, T.-C. Wang, and R. Ramamoorthi, 
+“Learning-Based View Synthesis for Light Field 
+Cameras,” ACM Trans. Graph. Proc. SIGGRAPH Asia 
+2016, vol. 35, no. 6, 2016. 
+ 
+ 
+Chung-Hao Chao is currently working 
+toward 
+a 
+B.S 
+degree 
+in 
+electrical 
+engineering at National Taiwan University, 
+from 2017. He was an undergraduate 
+research assistant at Visual and Learning 
+Lab (VLL), National Taiwan University. He 
+is 
+currently 
+a 
+research 
+assistant 
+at 
+Multimedia 
+Processing 
+and 
+Communications Lab (MPAC) at National 
+Taiwan University and intern at NVIDIA AI Technology 
+Center (NVAITC). His research interests include image 
+processing, 
+light 
+field 
+processing, 
+and 
+computational 
+photography and displays. 
+ 
+Chang-Le Liu is currently a working 
+toward a M.S degree in communication 
+engineering at National Taiwan University, 
+from 2020. He was a summer intern as a 
+research assistant with the Research Center 
+for Information Technology Innovation, 
+Academia Sinica, Taipei, Taiwan, and was 
+involved in research in speech enhancement. 
+His current research topic includes image 
+and audio signal processing and light field photography and 
+rendering. 
+ 
+Homer H. Chen (S’83–M’86–SM’01–
+F’03) received the Ph.D. degree in 
+electrical and computer engineering from 
+the University of Illinois at Urbana–
+Champaign. His professional career has 
+spanned industry and academia. Since 
+August 2003, he has been with the 
+College of Electrical Engineering and 
+Computer Science, National Taiwan 
+University, where he is a Distinguished Professor. Prior to that, 
+he held various research and development management and 
+engineering positions at U.S. companies over a period of 17 
+years, including AT&T Bell Labs, Rockwell Science Center, 
+iVast, and Digital Island. He was a U.S. delegate for ISO and 
+ITU standards committees and contributed to the development 
+of many new interactive multimedia technologies that are now 
+a part of the MPEG-4 and JPEG-2000 standards. His 
+professional interests lie in the broad area of multimedia signal 
+processing and communications.  
+    Dr. Chen serves on the IEEE Signal Processing Society 
+Awards Board and the Senior Editorial Board of the IEEE 
+Journal on Selected Topics in Signal Processing. He was a 
+
+=== page 15 ===
+> REPLACE THIS LINE WITH YOUR PAPER IDENTIFICATION NUMBER (DOUBLE-CLICK HERE TO EDIT) < 
+ 
+ 
+25 
+Distinguished Lecturer of the IEEE Circuits and Systems 
+Society from 2012 to 2013. He served on the IEEE Signal 
+Processing Society Fourier Award Committee and the Fellow 
+Reference Committee from 2015 to 2017. He was a General 
+Chair of the 2019 IEEE International Conference on Image 
+Processing. He was an Associate Editor of the IEEE 
+Transactions on Circuits and Systems for Video Technology 
+from 2004 to 2010, the IEEE Transactions on Image Processing 
+from 1992 to 1994, and Pattern Recognition from 1989 to 1999. 
+He served as a Guest Editor for the IEEE Transactions on 
+Circuits and Systems for Video Technology in 1999, the IEEE 
+Transactions on Multimedia in 2011, the IEEE Journal of 
+Selected Topics in Signal Processing in 2014, and Multimedia 
+Tools and Applications (Springer) in 2015. 
+ 

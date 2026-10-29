@@ -1,0 +1,41 @@
+{
+   "stamp" : true,
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "main_paper/main.tex"
+      },
+      {
+         "usage" : "toplevel",
+         "filename" : "supplement/supplement.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "bibs.bib"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "main.bbl"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "main_paper/ACM-Reference-Format.bst"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "main_paper/sample-base.bib"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "supplement.bbl"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "supplement/ACM-Reference-Format.bst"
+      }
+   ],
+   "process" : {
+      "fontmaps" : [],
+      "compiler" : "pdflatex"
+   }
+}

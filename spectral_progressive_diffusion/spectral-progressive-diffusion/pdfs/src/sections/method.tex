@@ -1,0 +1,330 @@
+% !TEX root = ../main.tex
+%\section{Method}
+%\label{sec:method}
+
+
+% % ----- Brian's standing comments on this section (collected at section top) -----
+% \bc{I suggest that we simply have two sections: Preliminaries and <Method Name>. At the very beginning of the methods section, we give a high-level overview and summarize what we will derive and explain in each of the sections.}
+
+% \bc{As shown in Fig.~X, higher frequencies of latents emerge naturally throughout the denoising process. To fully leverage this spectral autoregression property of diffusion models for massive computational savings, we propose \methodname, a novel dito seeffusion pipeline in which progressive resolution growth occurs within a single denoising trajectory via spectral transformations and noise padding. During denoising, partially denoised low-resolution latents are transformed to the spectral domain at closed-form transition times, augmented with high-frequency noise, and mapped back to the spatial domain via an inverse transform. This progressively increases resolution while avoiding computation on noise-dominated high-frequency tokens.}
+
+% \bc{(on the power-spectrum paragraph, now in Preliminaries.) I would actually move this section to preliminaries. At the very beginning of Sec.~\ref{sec:method:noise-injection}, we can then clearly motivate our method with this subsection. See my rewrite of Sec.~\ref{sec:method:noise-injection}. The ``noise-floor'' plot where specific frequencies emerge should also happen before this section.}
+
+% \bc{(on the training-free subsection.) I changed injection to expansion because this signals resolution growth.}
+% % --------------------------------------------------------------------------------
+
+\section{Preliminaries}
+\label{sec:method:prelim}
+
+\subsection{Diffusion Models and Flow Matching}
+\label{sec:method:prelim:basics}
+
+Diffusion models~\citep{ho2020denoising,song2021score} define a generative process that gradually transforms samples from a simple prior (e.g. Gaussian) to data samples via a learned reverse-time process. Flow Matching \cite{liu2022rectified,lipman2023flow} reformulates the diffusion process as a continuous-time optimal transport problem and learns a velocity field that deterministically transforms noisy samples to data samples along straight paths.
+
+Specifically, given a clean data point $\mathbf{x}_0$ sampled from a data distribution $p_{\text{data}}$, and a noise sample $\mathbf{x}_1 = \boldsymbol{\epsilon} \sim \mathcal{N}(0, I)$, the noise-to-data path is a straight line defined by
+\begin{equation}
+  \mathbf{x}_t \;=\; (1-t)\, \mathbf{x}_0 \,+\, t\,\boldsymbol{\epsilon},
+  \qquad t \in [0, 1].
+  \label{eq:flow-forward}
+\end{equation}
+A neural network
+$\mathbf{v}_\theta(\mathbf{x}_t, t)$ is trained to predict the target velocity $\dot{\mathbf{x}}_t = \boldsymbol{\epsilon} - \mathbf{x}_0$ with the following objective:
+\begin{equation}
+  \mathcal{L}_\text{flow}(\theta) \;=\; \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}}\!\left[\,\|\mathbf{v}_\theta(\mathbf{x}_t, t) - (\boldsymbol{\epsilon} - \mathbf{x}_0)\|^2\,\right].
+  \label{eq:flow-loss}
+\end{equation}
+
+A network with sufficient capacity that is trained on enough data converges to the \textit{Bayes-optimal velocity predictor} $\mathbf{v}_\theta(\mathbf{x}_t, t) = \mathbf{v}^*(\mathbf{x}_t, t)$~\citep{liu2022rectified, lipman2023flow}.
+
+\iffalse
+
+Under the flow-matching objective in Eq.~\eqref{eq:flow-loss}, the Bayes-optimal velocity predictor is the conditional expectation
+\begin{equation}
+  \mathbf{v}^*(\mathbf{x}_t, t) \;=\; \mathbb{E}\!\left[\,\boldsymbol{\epsilon} - \mathbf{x}_0 \,\big|\, \mathbf{x}_t\,\right],
+  \label{eq:optimal-v}
+\end{equation}
+which is the unique minimizer of Eq.~\eqref{eq:flow-loss}~\citep{liu2022rectified,lipman2023flow}. A network with sufficient capacity trained on enough data converges to $\mathbf{v}^*$ in expectation.
+\fi
+
+
+During inference, data samples are generated through sampling from the prior $\mathbf{x}_1 \sim \mathcal{N}(0, I)$ and solving the probability-flow Ordinary Differential Equation (ODE) $\dot{\mathbf{x}}_t = \mathbf{v}_\theta(\mathbf{x}_t, t)$. Due to its faster training and stable convergence, recent image and video generative models \cite{flux-2,zimage,sd3,wan} have increasingly adopted the flow matching paradigm.
+
+
+Most state-of-the-art diffusion and flow matching models adopt the Diffusion Transformer (DiT) architecture \citep{dit}, which processes tokens through a sequence of self-attention and Multilayer Perceptron (MLP)-based operations. This motivates our approach to reduce the number of tokens processed along the denoising trajectory using the spectral autoregression property of diffusion models \citep{dieleman2024spectral}.
+
+%costing one forward pass of $v_\theta$ per step. 
+
+%Our framework applies to both diffusion \eqref{eq:diff-forward} and flow-matching \eqref{eq:flow-forward} backbones.
+
+
+% Modern image and video diffusion models often operate in a compressed latent space~\citep{rombach2022ldm} rather than on raw pixels.
+
+\iffalse
+Diffusion models~\citep{ho2020denoising,song2021score} define a forward process that progressively corrupts a clean sample $x_0 \sim p_\text{data}$ by adding i.i.d.\ Gaussian noise,
+\begin{equation}
+  x_t \;=\; \alpha_t\, x_0 \,+\, \sigma_t\,\epsilon,
+  \qquad t \in [0, 1], \qquad \epsilon \sim \mathcal{N}(0, I),
+  \label{eq:diff-forward}
+\end{equation}
+with schedule $(\alpha_t, \sigma_t)$ moving from $(1, 0)$ at $t = 0$ (clean data) to $(0, 1)$ at $t = 1$ (pure noise). A network $\epsilon_\theta(x_t, t)$ is trained to predict the noise by minimizing
+\begin{equation}
+  \mathcal{L}_\text{diff}(\theta) \;=\; \mathbb{E}_{t, x_0, \epsilon}\!\left[\,\|\epsilon_\theta(x_t, t) - \epsilon\|^2\,\right].
+  \label{eq:diff-loss}
+\end{equation}
+Generation starts from a random sample $x_1 = \epsilon \sim \mathcal{N}(0, I)$ and numerically integrates the corresponding reverse-time process (the probability-flow ODE) backward from $t = 1$ to $t = 0$, with the score $\nabla_{x_t}\!\log p_t(x_t) = -\epsilon_\theta(x_t, t)/\sigma_t$ obtained via Tweedie's identity~\citep{efron2011tweedie}. 
+\fi
+
+\iffalse
+\paragraph{Diffusion Transformers.}
+\bc{can probably remove this section, since we will explain this in intro already}
+Modern image and video generation models are predominantly built on Diffusion Transformer (DiT) backbones~\citep{dit}, where image and video pixels or latents are encoded into a sequence of $N$ tokens, then processed by a stack of self-attention and feed-forward MLP blocks. In particular, the computational cost of self-attention is quadratic in $N$, making efficient, high-resolution generation especially challenging. This motivates our approach: by restricting early denoising steps where high-frequency components remain noise-dominated to a reduced spatial resolution, we avoid unnecessary computation on uninformative high-frequency tokens, thereby significantly improving generation efficiency.
+\fi
+
+% Let $\mathbf{x}_0 \in \mathbb{R}^{C \times T \times H \times W}$ denote a clean data sample drawn from $p_\text{data}$ ($C$ channels and $T$ frames, where $T = 1$ for images and $T > 1$ for videos).
+
+
+\input{figures/wavelet-spectral}
+
+\subsection{Spectral Autoregression in Diffusion Models}
+\label{sec:method:prelim:spectral}
+
+Natural images exhibit a characteristic power-law decay \citep{ruderman1997origins}, which is the foundation of the spectral autoregression property of diffusion models \citep{dieleman2024spectral}. Specifically, let $\Phi = \{\phi_\omega\}_{\omega \in \Omega}$ be a spectral basis indexed by frequency $\omega \in \Omega$ (e.g., Fourier~\citep{fourier1822theorie}, discrete cosine~\citep{ahmed1974dct}, or Haar wavelet~\citep{haar1909theorie}), and denote the associated spectral transformation by $T_\Phi$. We define the per-frequency signal power, or \emph{power spectrum}, of a data distribution $p_{\text{data}}$ as
+\begin{equation}
+  P_\omega \;:=\; \mathbb{E}_{\mathbf{x}_0}\!\left[\,\bigl|x_0^{(\omega)}\bigr|^2\,\right],
+  \quad \text{where  } x_0^{(\omega)} := \langle \mathbf{x}_0, \phi_\omega \rangle \text{ under $T_\Phi$}.
+  \label{eq:Pb-def}
+\end{equation}
+
+When $p_\text{data}$ represents natural images, $P_\omega$ is known to exhibit a power-law decay, that is
+\begin{equation}
+  P_\omega \;\propto\; |\omega|^{-\beta},
+  \label{eq:power-law}
+\end{equation}
+with the exponent term typically in the range $\beta \in [2, 3]$~\citep{dieleman2024spectral,fourierspace}. We validated similar trends in both image and video latent representations of modern latent-space diffusion models (see Fig. \ref{fig:wavelet-spectral}).
+
+% Although modern diffusion models operate in VAE latent space rather than pixel space \citep{rombach2022ldm}, their frequency statistics remain largely preserved. We compute radially averaged power spectra of latent representations of image and video generation models and observe a consistent power-law decay (Fig. \ref{fig:wavelet-spectral}). 
+
+%We estimate exponents of $\beta \approx 1.92$ for FLUX.1-dev image latents \citep{black2024flux} and $\beta \approx 2.42$ for WAN 2.1 video latents \citep{wan} (Fig.~\ref{fig:wavelet-spectral}).
+
+The power-law decay of $P_\omega$ in Eq.~\eqref{eq:power-law} implies that high frequencies carry substantially weaker signal than low frequencies. Since the Gaussian noise $\boldsymbol{\epsilon}$ added during the forward process has a flat, i.e. frequency-independent, power spectrum, higher frequencies are dominated by noise early in the denoising trajectory. In this work, we leverage this spectral autoregression property to progressively grow resolution within a single denoising trajectory via spectral domain transformations for efficient image and video generation.
+
+% As observed by \citet{dieleman2024spectral} and \citet{fourierspace}, diffusion models exhibit the spectral autoregression property, recovering low-frequency signals early in the denoising process and generating higher-frequency details only in the later denoising steps.
+
+
+\section{Spectral Progressive Diffusion}
+In this section, we present a spectral-transformation-based progressive generation framework that enables arbitrary resolution transitions within a single denoising trajectory for pretrained image and video generation models (Sec.~\ref{sec:method:noise-injection}). We then derive an optimal resolution transition schedule based on power spectrum analysis and resolution-dependent frequency limits (Sec.~\ref{sec:method:schedule:signal}). Finally, we introduce a principled fine-tuning strategy to further improve both generation quality and efficiency (Sec.~\ref{sec:method:lora}).
+
+\label{sec:method:schedule}
+
+% ----- Commented-out intro (previous 3.2 opening paragraph), kept for reference: -----
+% This section develops the theoretical foundation of our resolution schedule. We project the latent onto an orthonormal basis of the frequency domain, decomposing flow matching into a collection of independent per-frequency subproblems, and show that the expected velocity prediction error on each frequency is determined entirely by the signal's power spectrum. This yields a principled per-frequency activation criterion based on when the velocity is reliably predictable from the noisy input. In this section we include our derivations for the flow-matching parameterization of Eq.~\eqref{eq:flow-forward}; the analogous derivation for diffusion models is provided in the supplementary material.
+% ------------------------------------------------------------------------------------
+
+
+\subsection{Training-Free Inference with Spectral Noise Expansion}
+\label{sec:method:noise-injection}
+
+% In practice, Eq.~\eqref{eq:stage-transition} is discretized into $S$ resolution stages $(0 < s_1 < s_2 < \cdots < s_S = 1)$, with stage $i$ held for $t \in (t_{s_i}^{\text{transition}},\, t_{s_{i-1}}^{\text{transition}}]$ and matched to the denoising timesteps of the pretrained models.
+
+Motivated by the spectral autoregression property of diffusion (Sec.~\ref{sec:method:prelim:spectral}), we progressively increase image resolution by injecting higher-frequency components along the denoising trajectory using a spectral transformation. Our framework applies natively to existing pretrained image and video generation models, without additional custom modules or architectural modifications.
+
+Given an orthonormal spectral basis $\Phi$, let $T_\Phi$ and $T_\Phi^{-1}$ denote the forward and inverse spectral transformations. We define $S$ progressive resolution scales $s_{1:S}$, where $0 < s_1 < s_2 < \cdots < s_S = 1$, and their corresponding resolution transition times $t_{1:S-1}$, with $1 > t_1 > \cdots > t_{S-1} > 0$, that are matched to the noise schedules of pretrained models. We denote the final full-resolution state as $\mathbf{x}_0^{s_S} \in \mathbb{R}^{C \times T \times H \times W}$, and assume stage $i$ runs at spatial resolution $(s_iH, s_iW)$ for $t \in (t_i,\, t_{i-1}]$. 
+% In practice, we select $s_i$ such that resolutions $(s_i H, s_i W)$ align with the multi-resolution training distribution of pretrained generative models. For example, we set $s_i$ to be powers of $1/2$ for FLUX.1-dev, as it is primarily trained on image latents with power-of-two resolutions.
+
+At each transition time $t_i$, we expand the current low-resolution state $\mathbf{x}^{s_i}_{t_i} \in \mathbb{R}^{C \times T \times (s_iH) \times (s_iW)}$ to the next resolution state $\mathbf{x}^{s_{i+1}}_{t_i} \in \mathbb{R}^{C \times T \times (s_{i+1}H) \times (s_{i+1} W)}$ using \emph{spectral noise expansion} and timestep alignment (see Fig.~\ref{fig:method}).
+
+\paragraph{Spectral noise expansion.}
+Given a low-resolution $\mathbf{x}^{s_i}_{t_i}$ at transition time $t_i$, we expand its resolution to the next scale $s_{i + 1}$ through the following steps:
+\begin{enumerate}
+  \item[(i)] Compute the spectrum $\boldsymbol{\xi}^{s_i}_{t_i} = T_\Phi(\mathbf{x}^{s_i}_{t_i})$ supported on the frequency set $\Omega_{s_i}$ representable at scale $s_i$.
+  \item[(ii)] Embed $\boldsymbol{\xi}^{s_i}_{t_i}$ in the lower-frequency part of the spectrum for $\Omega_{s_{i + 1}}$ and fill the slots $\Omega_{s_{i+1}} \setminus \Omega_{s_i}$ with $t_i \epsilon$, $\epsilon \sim \mathcal{N}(0, 1)$ to get $\boldsymbol{\xi}^{s_{i + 1}}_{t_i}$. 
+  \item[(iii)] Convert the spectrum back to spatial domain $\mathbf{x}^{s_{i+1}}_{t_i}$ at resolution $(s_{i+1}H, s_{i+1}W)$ via $\mathbf{x}^{s_{i+1}}_{t_i} = T_\Phi^{-1}(\boldsymbol{\xi}^{s_{i + 1}}_{t_i})$.
+\end{enumerate}
+Steps~(i)--(iii) expand the resolution scale from $s_i$ to $s_{i + 1}$ for $\mathbf{x}_{t_i}^{s_{i + 1}}$ by injecting high frequencies at the correct noise level while preserving the partially-denoised low-frequency content of $\mathbf{x}^{s_i}_{t_i}$.
+
+\paragraph{Timestep alignment.}
+As $\Phi$ is orthonormal, the high-frequency noise padding in $\Omega_{s_{i + 1}} \setminus \Omega_{s_i}$ raises the overall noise level of the enlarged $\mathbf{x}_{t_i}^{{s_{i+1}}}$, which makes it no longer correspond to the original timestep $t_i$. We therefore rescale the inverse-transformed output and re-index the timestep by:
+\begin{equation}
+  \tilde{\mathbf{x}}^{s_{i+1}}_{\tilde{t}_i} := \frac{s_{i+1}/s_i}{1 + ((s_{i+1}/s_i) - 1)t_i} \cdot \mathbf{x}^{s_{i+1}}_{t_i},
+  % \tilde{\mathbf{x}}^{s_{i+1}}_{\tilde{t}_i} = \frac{s_{i+1}/s_i}{1 + ((s_{i+1}/s_i) - 1)t_i} \cdot \mathbf{x}^{s_{i+1}}_{t_i},
+  \label{eq:scale-align}
+\end{equation}
+where
+\begin{equation}
+  \tilde{t}_i := \frac{(s_{i+1}/s_i)\,t_i}{1 + ((s_{i+1}/s_i) - 1)t_i}.
+  \label{eq:time-align}
+\end{equation}
+Eq.~\ref{eq:scale-align} and Eq.~\ref{eq:time-align} give us the aligned state $\tilde{\mathbf{x}}^{s_{i+1}}_{\tilde{t}_i}$ at the aligned timestep $\tilde{t}_i$. The integration of the probability-flow ODE then resumes at resolution $(s_{i+1}H, s_{i+1}W)$ until the next transition time $t_{i+1}$. 
+The full derivation of Eqs.~\eqref{eq:scale-align}--\eqref{eq:time-align} is provided in Appendix~\ref{app:time-align}. In practice, $S$ and $s_{1:S}$ are chosen to align with the multi-resolution training distribution of pretrained generative models. By default, we choose $T_\Phi$ as the Discrete Cosine Transform (DCT)~\citep{ahmed1974dct} with discrete cosine basis $\Phi$. Alternative spectral transforms (such as Discrete Wavelet Transform (DWT) and Fourier Transform (FFT)) are compared and evaluated in Sec.~\ref{sec:exp:ablations}.
+
+
+\input{tables/flux_short}
+
+
+\subsection{Optimal Resolution Schedule}
+
+\label{sec:method:schedule:signal}
+
+Section~\ref{sec:method:noise-injection} described our progressive resolution transition mechanism during the denoising process given a predetermined resolution transition schedule $t_{1:S-1}$. In practice, while increasing the number of resolution scales $S$ improves token efficiency, it introduces additional transition times as hyperparameters to tune. As a result, existing progressive resolution approaches typically limit $S = 2$ or leave $t_{1:S-1}$ as a brittle, model-specific design choice~\citep{bottleneck, ralu}. 
+In contrast, our method supports an arbitrary number of resolutions $S$ and arbitrary resolution scales $s_{1:S}$. In the following section, we derive a $\delta$-\textit{optimal resolution schedule} for pretrained flow matching models that determines the optimal transition times $t^*_{1:S-1}$ from a single error threshold parameter $\delta$ independent of $S$.
+
+%We include similar derivations for standard diffusion models in the supplemental materials.
+
+\paragraph{Spectral-domain flow matching.}
+The spatial-domain flow matching forward process defined in Eq.~\eqref{eq:flow-forward} can be written in the spectral domain under transformation $T_\Phi$ with orthonormal basis $\Phi = \{\phi_\omega\}_{\omega \in \Omega}$:
+\begin{equation}
+  x_t^{(\omega)} \;=\; (1-t)\,x_0^{(\omega)} \,+\, t\,\epsilon^{(\omega)},
+  \qquad \omega \in \Omega,
+  \label{eq:forward-mode}
+\end{equation}
+where $\epsilon^{(\omega)} := \langle \boldsymbol{\epsilon}, \phi_\omega \rangle$. By orthonormality of $\Phi$, $\epsilon^{(\omega)} \sim \mathcal{N}(0, 1)$ is i.i.d.\ Gaussian noise for each $\omega \in \Omega$. We denote the per-frequency component of the Bayes-optimal velocity predictor described in Sec. \ref{sec:method:prelim:basics} by $v^{*(\omega)}(\mathbf{x}_t, t)$. We then determine when a spectral component $\omega$ is noise-dominated in Proposition 1 and link this to spatial resolution to derive the $\delta$-optimal resolution schedule in Proposition 2. 
+
+% We can then decompose the flow matching training objective defined in Eq.~\eqref{eq:flow-loss} into the sum of individual objectives for each $\omega \in \Omega$ using Parseval's identity~\citep{mallat1989wavelet}:
+% \begin{equation}
+%   \mathcal{L}_\text{flow}(\theta) \;=\; \sum_{\omega \in \Omega}\, \mathbb{E}_{t,\mathbf{x}_0,\mathbf{\epsilon}}\!\left[\,\bigl|v_\theta^{(\omega)}(\mathbf{x}_t, t) - (\epsilon^{(\omega)} - x_0^{(\omega)})\bigr|^2\,\right].
+% \end{equation}
+
+\textbf{Proposition 1 (Per-frequency $\delta$-optimal activation time):} Under the simplified modelling assumption $x_0^{(\omega)} \sim \mathcal{N}(0, P_\omega)$ with $P_\omega > 0$, for all $t \ge t_\omega$ and $\delta\in(0, 1)$, we have:
+\begin{equation}
+  \mathbb{E}\!\left[\bigl|v^{*(\omega)}(\mathbf{x}_t, t) - \epsilon^{(\omega)}\bigr|^2\right] \;\le\; \delta,
+  \label{eq:noise-dominated}
+\end{equation}
+where $t_\omega$ is the $\delta$-optimal activation time for $\omega$:
+\begin{equation}
+  t_\omega \;:=\; \frac{1}{1 + \sqrt{\dfrac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}}.
+  \label{eq:activation}
+\end{equation}
+Intuitively, for $t \geq t_\omega$, spectral component $\omega$ is noise-dominated as its optimal velocity predictions are approximately noise $\epsilon^{(\omega)}$. After $t_\omega$, the signal power overcomes the error tolerance $\delta$ and structural information is recovered. The proof of Proposition 1 is given in Appendix Sec.~\ref{app:proof-prop1}. We further include empirical evidence supporting Proposition 1 in Appendix Sec.~\ref{sec:motivation}.
+
+
+\textbf{Proposition 2 (Per-resolution $\delta$-optimal transition time):} Under the setting of Proposition~1, and assuming $P_\omega$ is monotonically decreasing in $|\omega|$ (consistent with the power-law decay Eq.~\eqref{eq:power-law}), for any resolution scale $s_i, s_{i + 1}$, the optimal transition time from scale $s_i$ up to $s_{i+1}$ is
+\begin{equation}
+  t_i^* \;:=\; \min_{\omega \in \Omega_{s_i}}\, t_\omega \;=\; t_{\omega=s_i \cdot \omega_{\max}(H,W)},
+  \label{eq:stage-transition}
+\end{equation}
+where $\Omega_{s_i}$ is the set of frequencies representable on the $(s_iH, s_iW)$ grid. The maximum representable frequency of the full-resolution spatial grid $\Omega_{s_S} = \omega_{\max}(H, W) = \min(H, W)/2$ is given by the Nyquist--Shannon sampling theorem~\citep{nyquist1928certain,shannon1949communication}. 
+
+Proposition 2 connects frequency activation times with spatial resolution transitions through the Nyquist limit. It implies that high-resolution computation in early denoising steps is redundant as most representable frequencies $\omega$ are still noise-dominated, motivating our approach of Spectral Progressive Diffusion. We apply spectral noise expansion at $t_i^*$ to progressively increase resolution precisely when finer details emerge from noise, thereby maximizing token efficiency. The hyperparameter $\delta$ is independent of $S$, making our method particularly robust to tuning compared to prior methods. The proof of Proposition 2 is deferred to Appendix~\ref{app:proof-prop2} and we analyze the effect of the number of resolution stages $S$ and the tolerance $\delta$ in Sec.~\ref{sec:exp:ablations}.
+
+% In practice, Eq.~\eqref{eq:stage-transition} is discretized into $S$ resolution stages $(0 < s_1 < s_2 < \cdots < s_S = 1)$, with stage $i$ held for $t \in (t_{s_i}^{\text{transition}},\, t_{s_{i-1}}^{\text{transition}}]$ and matched to the denoising timesteps of the pretrained models.
+
+% \paragraph{Per-frequency SNR.}
+% Under the basis $\Phi$, the rectified-flow forward process in Eq.~\eqref{eq:flow-forward} factors into independent per-frequency equations in which the noise component $\epsilon^{(\omega)} \sim \mathcal{N}(0, 1)$ is i.i.d.\ Gaussian (full derivation in Sec.~\ref{sec:method:schedule:signal}). Following~\citet{kingma2021vdm}, we define the \emph{per-frequency signal-to-noise ratio} as the ratio of the clean- and noise-component second moments in this process:
+% \begin{equation}
+%   \mathrm{SNR}_\omega(t)
+%   \;:=\;
+%   \frac{\mathbb{E}[\,|(1-t)\,x_0^{(\omega)}|^2\,]}{\mathbb{E}[\,|t\,\epsilon^{(\omega)}|^2\,]}
+%   \;=\;
+%   \underbrace{\frac{(1-t)^2}{t^2}}_{\mathrm{SNR}(t)}\;\cdot\;P_\omega,
+%   \label{eq:snr}
+% \end{equation}
+% which factorises into the frequency-independent timestep-SNR term $\mathrm{SNR}(t) = (1-t)^2/t^2$ and the frequency-specific signal power $P_\omega$.
+
+% \paragraph{Frequency limit from resolution.}
+% By the Nyquist--Shannon sampling theorem~\citep{nyquist1928certain,shannon1949communication}, when generating on a spatial grid of size $H \times W$ the representable 2D frequencies form the rectangle $|\omega_x| \le W/2$, $|\omega_y| \le H/2$. For the radial analysis used to derive our resolution schedule, we define the maximum representable radial frequency as
+% \begin{equation}
+%   \omega_{\max}(H, W) \;=\; \frac{\min(H, W)}{2}.
+%   \label{eq:nyquist-cap}
+% \end{equation}
+% A stage running at reduced resolution $(sH, sW) \le (H, W)$ for $s \leq 1$ can represent only the frequency subset
+% \begin{equation}
+%   \Omega_s \;:=\; \{\,\omega \in \Omega : |\omega| \le s \cdot \omega_{\max}(H, W)\,\} \;\subseteq\; \Omega.
+%   \label{eq:nyquist-set}
+% \end{equation}
+
+
+
+% To characterize how much useful signal each frequency carries at time $t$, we measure how far $v^*$ deviates from the null prediction $\hat v = \epsilon$. Under the simplified modelling assumption that $x_0^{(\omega)} \sim \mathcal{N}(0, P_\omega)$, we get:
+% \begin{equation}
+%   \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right]
+%   \;=\; \frac{\mathrm{SNR}_\omega(t)\,(1 + P_\omega)}{1 + \mathrm{SNR}_\omega(t)},
+%   \label{eq:velocity-error-optimal}
+% \end{equation}
+% We defer the derivations of above to Appendix~\ref{app:bayes-velocity}. 
+
+% \paragraph{Noise-dominated frequencies.}
+% Given a tolerance $\delta > 0$, we say frequency $\omega$ is \emph{noise-dominated at time $t$} if the Bayes-optimal velocity deviates from the null prediction by at most $\delta$ in expectation:
+% \begin{equation}
+%   \mathbb{E}\!\left[\bigl|v^{*(\omega)} - \epsilon^{(\omega)}\bigr|^2\right] \;\le\; \delta.
+%   \label{eq:noise-dominated}
+% \end{equation}
+% Substituting the Bayes-optimal error of Eq.~\eqref{eq:velocity-error-optimal} and the SNR factorisation from Eq.~\eqref{eq:snr} into this definition, and solving for $t$, turns the noise-dominated condition into an inequality on the timestep:
+% \begin{equation}
+%   t \;\ge\; \frac{1}{1 + \sqrt{\dfrac{\delta}{P_\omega\,(1 + P_\omega - \delta)}}}
+%   \;=:\; t_\omega,
+%   \label{eq:activation}
+% \end{equation}
+% defining the frequency-specific \emph{activation time} $t_\omega$ as the right-hand side. We assume $\delta < 1$, and the right hand side of Eq.~\eqref{eq:activation} is well defined with $0 < t_\omega < 1$. Frequency $\omega$ is thus noise-dominated for $t \ge t_\omega$ and transitions to signal-carrying for $t < t_\omega$ under tolerance $\delta$.
+
+% \paragraph{$\delta$-optimum resolution schedule.}
+% A \emph{resolution schedule} assigns each timestep $t$ a resolution scale $s_t \in (0, 1]$ such that the generator runs on the grid $(s_t H,\, s_t W)$ and represents the frequencies in $\Omega_{s_t}$ of Eq.~\eqref{eq:nyquist-set}. We call a schedule \emph{$\delta$-optimum} if at every $t$ it uses the smallest scale that still represents every frequency already signal-carrying under tolerance $\delta$. Formally,
+% \begin{equation}
+%   s^*_t \;=\; \min\,\bigl\{\,s \in (0, 1] : \{\omega \in \Omega : t_\omega > t\} \subseteq \Omega_s\,\bigr\}
+%   \;=\; \frac{\omega^*(t)}{\omega_{\max}(H, W)},
+%   \label{eq:delta-opt-schedule}
+% \end{equation}
+% where $\omega^*(t) := \max\{|\omega| : t_\omega > t\}$ is the highest frequency that has crossed its activation time $t_\omega$ (i.e., frequencies with $t < t_\omega$ are already signal-carrying at time $t$).
+
+% Equivalently, the transition time from resolution scale $s$ up to a finer resolution scale $s' > s$ is exactly when every $\omega \in \Omega_s$ has become signal-carrying, i.e., when $t$ falls to the smallest activation time within $\Omega_s$:
+% \begin{equation}
+%   t_s^{\text{transition}} \;:=\; \min_{\omega \in \Omega_s}\, t_\omega \;=\; t_{\,s \cdot \omega_{\max}(H,W)},
+%   \label{eq:stage-transition}
+% \end{equation}
+% where the second equality follows from the fact that $t_\omega$ is decreasing in $|\omega|$ as $P_\omega$ decays with $|\omega|$ (Eq.~\eqref{eq:power-law}), and Eq.~\eqref{eq:activation} is monotonically increasing in $P_\omega$.
+
+\input{tables/finetuning}
+\input{tables/wan_vbench_quan}
+
+\subsection{Spectral-transformation-based Fine-tuning}
+\label{sec:method:lora}
+While Spectral Progressive Diffusion is compatible with pretrained image and video generation models in a training-free manner (Sec.~\ref{sec:method:noise-injection}), it implicitly assumes multi-resolution generation capability of pretrained models across scales $s_{1:S}$. Moreover, our optimal resolution schedule (Sec.~\ref{sec:method:schedule:signal}) may not accurately reflect pretrained models' training dynamics, potentially introducing training-inference gaps. 
+In this subsection, we outline a spectral-transformation-based fine-tuning approach that directly follows our Spectral Progressive Diffusion framework and our optimal resolution schedule. We include additional implementation details of our fine-tuning framework in Sec.~\ref{sec:exp:image} and Appendix Sec.~\ref{subsec:image_pixel}.
+
+\paragraph{Resolution-specific velocity targets.} 
+We assume $S$ progressive resolution scales $s_{1:S}$ and their corresponding $\delta$-optimal resolution transition times $t_{1:S-1}$ from Sec.~\ref{sec:method:schedule:signal} (denoted here as $t_i$ instead of $t^*_i$ for simplicity). For resolution stage $i$, the model operates at scale $s_i$ for $t \in (t_i, \tilde{t}_{i-1}]$, where $\tilde{t}_{i-1}$ is the aligned timestep obtained from Eq.~\eqref{eq:time-align} after expanding from $s_{i-1}$ to $s_i$ at transition time $t_{i-1}$. The state at the beginning of the stage $i$ is hence the enlarged and timestep-aligned $\tilde{\mathbf{x}}_{\tilde{t}_{i - 1}}^{s_{i}}$. The model is fine-tuned to follow a straight-line path from $\tilde{\mathbf{x}}_{\tilde{t}_{i - 1}}^{s_{i}}$ to the standard flow-matching state at the next transition time:
+\begin{equation}
+  \mathbf{x}_{t_i}^{s_i}
+  =
+  (1-t_i)\mathbf{x}_0^{s_i}
+  +
+  t_i\boldsymbol{\epsilon}^{s_i}.
+  \label{eq:lora-stagewise}
+\end{equation}
+where $\mathbf{x}_0^{s_i}$ denotes the clean data sample at scale $s_i$.
+The corresponding stage-specific velocity target is therefore:
+\begin{equation}
+  \mathbf{v}^{s_i}
+  =
+  \frac{
+  \tilde{\mathbf{x}}_{\tilde{t}_{i - 1}}^{s_{i}}
+  -
+  \mathbf{x}_{t_i}^{s_i}
+  }{
+  \tilde{t}_{i - 1} - t_i
+  }.
+  \label{eq:lora-stagewise-velocity}
+\end{equation}
+
+\paragraph{Training and inference.}
+At each training step we sample $\mathbf{x}_0 \sim p_\text{data}$ and $t \sim \mathcal{U}(0,1)$. We assign $t$ to the resolution stage $i$ satisfying $t \in (t_i,t_{i-1}]$, and then sample $\boldsymbol{\epsilon}^{s_i} \sim \mathcal{N}(0, I)$ at scale $s_i$. We construct the stage input $\tilde{\mathbf{x}}_{\tilde{t}_{i - 1}}^{s_{i}}$ by
+applying the same spectral noise expansion and timestep alignment used at
+inference, where newly introduced spectral coefficients are filled using
+$t_{i-1} \cdot T_\Phi(\boldsymbol{\epsilon}^{s_i})$. We use the same
+$\boldsymbol{\epsilon}^{s_i}$ to construct the endpoint
+$\mathbf{x}^{s_i}_{t_i}$ from Eq.~\eqref{eq:lora-stagewise}, so that $\tilde{\mathbf{x}}_{\tilde{t}_{i - 1}}^{s_{i}}$ and $\mathbf{x}^{s_i}_{t_i}$ are correlated through a shared noise realization. The training sample is the point on the straight path between them:
+\begin{equation}
+  \mathbf{x}_t^{s_i}
+  =
+  \mathbf{x}_{t_i}^{s_i}
+  +
+  (t-t_i)\,\mathbf{v}^{s_i},
+\end{equation}
+with target velocity $\mathbf{v}^{s_i}$ from
+Eq.~\eqref{eq:lora-stagewise-velocity}.
+
+We fine-tune a pretrained model $\mathbf{v}_\theta$ by minimizing
+\begin{equation}
+  \mathcal{L}(\theta) \;=\; \mathbb{E}_{t,\, \mathbf{x}_0,\, \boldsymbol{\epsilon}}\!\left[\,\|\,\mathbf{v}_\theta(\mathbf{x}_t^{s_i}, t) - \mathbf{v}^{s_i}\,\|^2\,\right].
+  \label{eq:lora-loss}
+\end{equation}
+At inference, we use the same procedure as in Sec.~\ref{sec:method:noise-injection} with the fine-tuned model, using the same resolution schedule $t_{1:S-1}$ and transform $T_\Phi$.

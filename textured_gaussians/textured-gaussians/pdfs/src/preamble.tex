@@ -1,0 +1,27 @@
+%
+% --- inline annotations
+%
+\usepackage[dvipsnames]{xcolor}
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\todo}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+\newcommand{\hy}[1]{{\color{blue}HY: #1}}
+\newcommand{\jiabin}[1]{{\color{cyan}Jia-Bin: #1}}
+
+\usepackage{multirow}  % Add this in your preamble if not already present
+\usepackage{graphicx}
+\usepackage{makecell}
+\usepackage{bm} 
+\usepackage{float} % Add this in the preamble
+\usepackage{arydshln}  % Required package for dashed lines
+\usepackage{hhline}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{placeins}  % Add in the preamble
+
+\newcommand{\comment}[1]{\textcolor{red}{\textbf{#1}}}
+
+% --- disable by uncommenting  
+% \renewcommand{\TODO}[1]{}
+% \renewcommand{\todo}[1]{#1}
+

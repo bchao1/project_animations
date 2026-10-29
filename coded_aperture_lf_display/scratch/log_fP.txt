@@ -1,0 +1,10 @@
+render 13.19800853729248
+/home/brianchc/project_animations/coded_aperture_lf_display/scratch/toy_train.py:100: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  print(mode, it, round(float(loss), 4), "show psnr", round(psnr(Fs, show[1]), 2), round(time.time() - t0), flush=True)
+baseline psnr 22.00228500366211
+fP 0 0.2708 show psnr 13.01 17
+fP 250 0.23 show psnr 16.45 46
+fP 500 0.058 show psnr 19.59 74
+fP 750 0.0525 show psnr 20.37 102
+fP 1000 0.0876 show psnr 20.79 128

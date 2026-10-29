@@ -1,0 +1,92 @@
+% CVPR 2025 Paper Template; see https://github.com/cvpr-org/author-kit
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+\usepackage{cvpr}              % To produce the CAMERA-READY version
+%\usepackage[review]{cvpr}      % To produce the REVIEW version
+% \usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Import additional packages in the preamble file, before hyperref
+\input{preamble}
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, 
+% e.g. with the file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete *.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you should be clear).
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,citecolor=cvprblue]{hyperref}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\paperID{5997} % *** Enter the Paper ID here
+\def\confName{CVPR}
+\def\confYear{2025}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Textured Gaussians for Enhanced 3D Scene Appearance Modeling}
+
+%%%%%%%%% AUTHORS - PLEASE UPDATE
+\author{
+Brian Chao \textsuperscript{1,2} \quad 
+Hung-Yu Tseng \textsuperscript{2} \quad 
+Lorenzo Porzi \textsuperscript{2} \quad 
+Chen Gao \textsuperscript{2} \quad 
+Tuotuo Li \textsuperscript{2} \quad 
+Qinbo Li \textsuperscript{2} 
+\\
+Ayush Saraf \textsuperscript{2} \quad 
+Jia-Bin Huang \textsuperscript{2,3} \quad 
+Johannes Kopf \textsuperscript{2} \quad 
+Gordon Wetzstein \textsuperscript{1} \quad 
+Changil Kim \textsuperscript{2}
+\\[2ex] % Adds more space before affiliations
+{\textsuperscript{1} Stanford University} \quad
+{\textsuperscript{2} Meta} \quad
+{\textsuperscript{3} University of Maryland College Park}
+\\[1ex]
+{\small\bf \href{https://textured-gaussians.github.io}{\texttt{https://textured-gaussians.github.io}}}
+}
+
+\begin{document}
+\twocolumn[{%
+\renewcommand\twocolumn[1][]{#1}%
+\maketitle
+\begin{center}
+    \centering
+    \captionsetup{type=figure}
+    \includegraphics[width=\textwidth]{sec/figures/teaser.pdf}
+    \captionof{figure}{\textbf{Textured Gaussians compared to 3D Gaussian Splatting (3DGS).}
+    Our RGBA Textured Gaussians enhance 3D scene appearance modeling, leading to improved rendering quality while using the same number of Gaussians compared to 3DGS \cite{kerbl3Dgaussians}.
+    %Textured Gaussians significantly improve neural rendering quality when using the same number of Gaussians as 3DGS due to per-Gaussian texture maps. 
+    Above, we show that Textured Gaussians faithfully reconstruct the fine details of scenes. % in the artworks while 3DGS fails.
+    }
+    \label{fig:teaser}
+\end{center}%
+}]
+
+
+\input{sec/0_abstract}  
+\vspace{-5mm}
+\input{sec/1_intro}
+\input{sec/2_related_work}
+\input{sec/3_method}
+\input{sec/4_experiments}
+\input{sec/5_discussion}
+
+
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{main}
+}
+
+\input{sec/X_suppl}
+
+% WARNING: do not forget to delete the supplementary pages from your submission 
+% \input{sec/X_suppl}
+
+\end{document}

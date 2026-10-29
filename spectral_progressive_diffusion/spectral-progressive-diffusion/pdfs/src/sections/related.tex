@@ -1,0 +1,136 @@
+\section{Related Work}
+
+\label{sec:related}
+
+%\hx{I suggest that we change 2.3 to something like "Other Efficient Generation Methods". We should talk about feature caching (TeaCache, ToCa, etc..), Token merging/pruning/Sparse Attention, and Distillation. I included the table to distinguish us from others in 2.1. But this may not be needed in the paper, for our benefits for now.}
+
+%\subsection{Progressive and multi-scale generation}
+%\label{subsec:related_prog_gen}
+%\hx{Maybe we can consider saying the customized upsampler modules break i.i.d Gaussian distribution the model was pretrained with.}
+
+\vspace{-4pt}
+\paragraph{Spectral-domain designs in diffusion models.} The seminal discussion by \citet{dieleman2024spectral} on the spectral autoregression property of diffusion has inspired many spectral-domain designs in diffusion models. Most of these models \cite{wavediff, wavescore, dimsum, wfvae, wavedm, du2025flowk, dctdiff} require training from scratch, making them incompatible with existing pretrained image and video generation models \cite{flux-2,zimage,wan,cogvideox}. Other methods use frequency-aware losses~\cite{lwd, spectral-reg}, autoencoder regularization~\cite{diffusability}, or noise schedules~\cite{beta-sampling, spectralschedule, spectrallyguided, fourierspace} to improve the generation quality of existing models but do not improve efficiency. Recent training-free methods use spectral-domain designs for efficient high-resolution generation \cite{frecas, diffusehigh, hiwave}. However, as they require fully denoised lower-resolution images, their overall efficiency gains are limited. Our method leverages similar insights of spectral autoregression but progressively grows resolution within a single denoising trajectory, achieving greater efficiency gains while maintaining compatibility with pretrained models. 
+
+% support fine-tuning existing models by reweighting the loss \cite{lwd, spectral-reg} to refine high-frequency details, but do not improve token efficiency. Spectral-analysis-based noise schedules \cite{beta-sampling, spectralschedule, fourierspace} improve image quality on small, low-resolution datasets (e.g. CIFAR-10, ImageNet $64\times64$), but they also don't improve token efficiency and have not been validated on modern pretrained models. 
+
+
+% HiWave \cite{hiwave} and DiffuseHigh \cite{diffusehigh} enhance high-frequency details after upsampling a generated low-resolution image, while FreCaS \cite{frecas} uses a multi-stage cascade with repeated VAE decode–encode and renoising steps. 
+
+% Spatial upsampling approaches reduce the effective number of processed tokens throughout the generation process by denoising low-resolution tokens and upsampling them \cite{bottleneck, ralu, demofusion, fresco, lssgen, freescale}. 
+
+\vspace{-3pt}
+\paragraph{Progressive resolution for efficient generation.} 
+% Progressively changing resolution during the diffusion process has been proposed as a method to reduce the effective number of processed tokens and improve the efficiency of image and video generation. 
+% Prior works have explored progressive resolution as a way to process fewer tokens for more efficient image and video generation. 
+Progressive resolution approaches have been proposed to improve generation efficiency by reducing token counts early in the denoising process.
+However, most existing methods~\cite{cdm, jing2022subspace, edifyimage, relaydiff, pyrflow, matryoshka, pyrdiff, cogview3, scalespace} require training from scratch due to model-specific architectures, limiting their compatibility with pretrained models. Current training-free~\cite{bottleneck, ralu, demofusion, fresco, freescale} and fine-tuning progressive resolution approaches~\cite{selfcascade, lssgen} either require significant heuristics-based hyperparameter tuning or specialized modules that limit their effectiveness and their compatibility with adaptation methods such as LoRA~\cite{hu2021lora}. Progressive resolution generation has also been explored in visual autoregressive models \cite{var, infinity, flowar, huang2025spectralar}, where next-token prediction is reformulated as next-scale prediction. Our method uniquely leverages the spectral autoregression property of diffusion models to design a principled progressive resolution growing mechanism for efficient image and video generation using minimal hyperparameters. Furthermore, our method is fully compatible with current pretrained models for both training-free inference and fine-tuning. 
+
+% Other approaches \cite{selfcascade, lssgen} suggest fine-tuning approach but rely on specialized upsampler modules tightly coupled to specific models and architectures, making them less flexible and incompatible with adaptation methods such as LoRA~\cite{hu2022lora}. Training-free progressive resolution approaches \cite{bottleneck, ralu, demofusion, fresco, freescale} reduce the effective number of processed tokens throughout the denoising process, but require significant heuristics-based hyperparameter tuning. 
+
+
+% Scale Space Diffusion \cite{scalespace} is most closely related to our approach, but requires a new UNet-based architecture trained from scratch, making it incompatible with modern DiT backbones.
+
+% While the aforementioned works all realize progressive generation through cascaded, multi-stage conditional diffusion processes, where the diffusion process in each stage is conditioned on the lower-resolution output from the previous stage, they do not implement progressive generation \textit{within} a single diffusion process. This multi-stage framework greatly complicates the overall model design and results in sub-optimal speedups for high-resolution generation. The recently proposed Scale Space Diffusion \cite{scalespace} is the most similar in concept to ours where progressive resolution growing is directly baked in a single diffusion process, yet they also require a completely new UNet-based architecture design for pretraining, rendering it incompatible with modern DiT architectures. Unlike these prior approaches, our method is completely agnostic of the model architecture and compatible with existing, powerful pretrained models.
+
+%\bc{add more differences in spectral motivation here}
+
+%\subsection{Frequency-domain designs in visual generation}
+%\bc{need to better motivate token efficiency here. token efficiency is not directly connected to freq.domain analysis here}
+
+
+% motivate with diffusion is spectral autoregression blogposts, fourier space paper
+
+% scheduling designs, but no speedups
+% what papers actually leverage different velocity for low and high res 
+
+%- diffusion is spectral AR
+%- latent wavelet diffusion, diffuse high, hiwave, freeU, dimsum, frecas, %multiscale wave, sagd, spectral schedule, wavediff, wdno, wfvae
+%- focus on speedup design
+%- other spectral AR works, wala, 
+
+%\subsection{Other methods for efficient generation}
+
+\paragraph{Other methods for efficient generation.} Aside from progressive resolution pipelines, a wide variety of acceleration methods have been proposed for efficient generation. Model distillation approaches reduce the number of denoising steps by training a student model to approximate the outputs of a pretrained teacher \cite{dmd, dmd2, causvid, lcm, pcm, prog-dist}. Feature caching approaches reuse features across denoising timesteps to reduce redundant computation \cite{teacache, toca, freqca, ma2023deepcache}. Token merging techniques identify redundant tokens and merge similar tokens based on predefined heuristics \cite{lu2025toma, haurum2024agglomerative, bolya2023token, kim2024tokenfusion, wu2025importance, lee2025local, fang2025attend}. Sparse attention mechanisms identify sparse patterns in the attention maps and use block-wise calculations to improve efficiency \cite{li2025radial, xia2025trainingfree, zhan2025bidirectional, katharopoulos202linear, wang2020linformer, choromanski2021performer, beltagy2020longformer}. In this paper, we present an orthogonal and complementary progressive resolution generation approach that accelerates both image and video generation through spectral-domain transformations.
+
+
+
+%To work with a vast 
+%- spatial upsampling: bottleneck sampling, ralu, demofusion, fresco, lssgen, "a fourier space perspective of diffusion models", freescale
+%- feature caching; teacache, taylorseer, toca, freqca, t-stitch 
+%- others: token merging, sparse attention, feature caching, token and layer routing, etc
+
+\iffalse
+others: cascaded diffusion needs to go somewhere
+
+
+\subsection{Scale space generation}
+- overview a bunch of methods
+- then say explicitly what the goal of our method is (might be different from some of the prior works' goals) and that we're using wavelets
+
+\subsection{Wavelets and their applications in Generative Modelling}
+- now talk about all the other ways wavelets have been used in generative models, including GANs
+- our goals might be different from these other methods
+
+Prior work has injected wavelet structure into generative pipelines at three distinct points, none of which coincides with ours. \emph{Pixel-space wavelet diffusion}~\citet{phung2023wavediff, kiruluta2025hybridwf} runs the denoiser on DWT coefficients of RGB images for a $\sim$$2$--$3\times$ speedup, but cannot leverage pretrained latent backbones and is restricted to small image benchmarks. \emph{Wavelet-structured VAEs}~\citet{li2025wfvae} push the transform inside the autoencoder for cheaper video encoding, leaving the downstream diffusion model unaware of the frequency structure --- an approach that is orthogonal and complementary to ours. \emph{Wavelet-guided training of latent diffusion}~\citet{sigillo2025lwd}, the closest prior work, computes a wavelet saliency map of latents to re-weight the flow-matching loss for ultra-high-resolution images, but the denoiser, the latent representation, and the sampling procedure are unchanged; the wavelet appears nowhere at inference and yields no compute savings. A parallel autoregressive line~\citet{huang2025spectralar, mattar2024wavelets} corroborates the coarse-to-fine view of generation~\citet{dieleman2024spectral, rissanen2023generative} but in image-only AR settings disjoint from latent video diffusion. In contrast, we decompose video \emph{latents} into wavelet sub-bands as the actual diffusion target, derive a per-sub-band flow trajectory in which each band activates only when its SNR crosses a threshold, and translate this into a $5.3\times$ attention speedup at sampling time --- all realized through LoRA fine-tuning on a frozen video DiT.
+\fi
+
+% \newcolumntype{Y}{>{\centering\arraybackslash}X}
+% \setlength{\tabcolsep}{4pt}
+% \setlength{\textfloatsep}{10pt}
+% \renewcommand{\cellalign}{tc}
+% \renewcommand{\theadalign}{cc}
+% \renewcommand{\theadfont}{\bfseries\footnotesize}
+% \begin{table}[!t]
+%     \centering
+%     \captionsetup{aboveskip=0pt, belowskip=3pt}
+%     {\footnotesize
+%     \caption{\textbf{Comparison with progressive-resolution acceleration methods for native-resolution generation.} Our framework is the only one that combines spectral-domain transitions with LoRA fine-tuning on arbitrary pretrained backbones, with a spectrum-derived resolution schedule, for both image and video.}
+%     \label{tab:method_comparison}
+%     \renewcommand{\arraystretch}{1.4}
+%     \begin{tabularx}{\linewidth}{>{\centering\arraybackslash}m{3.0cm}|YYYYYY}
+%         \thead{Method} & \thead{Spectral\\transition} & \thead{Training-\\free} & \thead{LoRA\\fine-tuning} & \thead{Resolution\\schedule} & \thead{Image} & \thead{Video} \\
+%         \hline
+%         Jenga \cite{jenga}                    & \redxcell   & \greenvcell & \redxcell   & \redxcell   & \redxcell   & \greenvcell \\
+%         \hline
+%         RALU \cite{ralu}                      & \redxcell   & \greenvcell & \redxcell   & \redxcell   & \greenvcell & \redxcell \\
+%         \hline
+%         Bottleneck Sampling \cite{bottleneck} & \redxcell   & \greenvcell & \redxcell   & \redxcell   & \greenvcell & \greenvcell \\
+%         \hline
+%         Pyramid Flow \cite{pyrflow}           & \redxcell   & \redxcell   & \redxcell   & \redxcell   & \redxcell   & \greenvcell \\
+%         \hline
+%         Matryoshka \cite{matryoshka}          & \redxcell   & \redxcell   & \redxcell   & \redxcell   & \greenvcell & \redxcell \\
+%         \hline
+%         LSSGen \cite{lssgen}                  & \redxcell   & \redxcell   & \redxcell   & \redxcell   & \greenvcell & \redxcell \\
+%         \hlineB{3}
+%         \textbf{Ours}                         & \greenvcell & \greenvcell & \greenvcell & \greenvcell & \greenvcell & \greenvcell \\
+%         \hline
+%     \end{tabularx}
+%     }
+% \end{table}
+
+% Previous algorithm-class overview table (kept for reference):
+% \newcolumntype{Y}{>{\centering\arraybackslash}X}
+% \setlength{\tabcolsep}{4pt}
+% \setlength{\textfloatsep}{10pt}
+% \begin{table}[t!]
+%     \centering
+%     \captionsetup{aboveskip=0pt, belowskip=3pt}
+%     {\footnotesize
+%     \caption{\textbf{Overview of efficient visual generation with spatial upsampling.} \bc{i need to think of this table more}}
+%     \label{tab:method_comparison_old}
+%     \begin{tabularx}{\linewidth}{m{4cm}|YYYY}
+%         \textbf{Algorithm class} & \textbf{Post-trainable / distill-able} & \textbf{Training-free Possible} & \textbf{Efficient Training} & \textbf{Efficient Inference} \\
+%         \hline
+%         Architectural changes & \redxcell & \redxcell & \yellowtrcell & \yellowtrcell \\
+%         \hline
+%         Training-free acceleration & \redxcell & \greenvcell & N/A & \greenvcell \\
+%         \hline
+%         %Inference acceleration (temporal) & \redxcell & \greenvcell & N/A & \greenvcell \\ \hline
+%         %Adaptive token \& layer routing & \greenvcell & \redxcell & \yellowtrcell & \greenvcell \\ \hline
+%         Frequency domain modelling & \yellowtrcell & \redxcell & \yellowtrcell & \greenvcell \\
+%         \hlineB{3}
+%         Ours & \greenvcell & \greenvcell & \greenvcell & \greenvcell \\
+%         \hline
+%     \end{tabularx}
+%     }
+% \end{table}

@@ -1,0 +1,66 @@
+# data file	size	true source
+aurora_ours16.png	512x512	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/pixelgen_baseline/dct_rewind_1levels_0.01delta_25steps_seed10/000003.png
+aurora_pixelgen1x.png	512x512	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/pixelgen_baseline/fullres_1levels_0.01delta_25steps_seed10/000003.png
+buddha_flux1x.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/fullres_50_steps/00091.png
+buddha_flux484.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/fullres_10_steps/00091.png
+buddha_ours166.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/dct_rewind_1levels_0.01delta_40steps_seed10/00091.png
+buddha_ours577.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/dct_rewind_1levels_0.01delta_12steps_seed10/00091.png
+buddha_ralu158.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/ralu_50_steps/00091.png
+buddha_ralu498.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/ralu_15_steps/00091.png
+canyon_flux1x.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/fullres_50_steps/00089.png
+canyon_flux484.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/fullres_10_steps/00089.png
+canyon_ours166.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/dct_rewind_1levels_0.01delta_40steps_seed10/00089.png
+canyon_ours577.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/dct_rewind_1levels_0.01delta_12steps_seed10/00089.png
+canyon_ralu158.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/ralu_50_steps/00089.png
+canyon_ralu498.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/baseline/ralu_15_steps/00089.png
+city_ours16.png	512x512	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/pixelgen_baseline/dct_rewind_1levels_0.01delta_25steps_seed10/000025.png
+city_pixelgen1x.png	512x512	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/pixelgen_baseline/fullres_1levels_0.01delta_25steps_seed10/000025.png
+coral_ours203_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p036_seed36.mp4 frame 0
+coral_ours203_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p036_seed36.mp4 frame 10
+coral_ours203_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p036_seed36.mp4 frame 30
+coral_ours203_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p036_seed36.mp4 frame 60
+coral_wan1x_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p036_seed36.mp4 frame 0
+coral_wan1x_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p036_seed36.mp4 frame 10
+coral_wan1x_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p036_seed36.mp4 frame 30
+coral_wan1x_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p036_seed36.mp4 frame 60
+coral_wan2x_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p036_seed36.mp4 frame 0
+coral_wan2x_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p036_seed36.mp4 frame 10
+coral_wan2x_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p036_seed36.mp4 frame 30
+coral_wan2x_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p036_seed36.mp4 frame 60
+fall_ours203_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p031_seed31.mp4 frame 0
+fall_ours203_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p031_seed31.mp4 frame 10
+fall_ours203_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p031_seed31.mp4 frame 30
+fall_ours203_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_dct_rewind/p031_seed31.mp4 frame 60
+fall_wan1x_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p031_seed31.mp4 frame 0
+fall_wan1x_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p031_seed31.mp4 frame 10
+fall_wan1x_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p031_seed31.mp4 frame 30
+fall_wan1x_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n50/p031_seed31.mp4 frame 60
+fall_wan2x_0.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p031_seed31.mp4 frame 0
+fall_wan2x_1.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p031_seed31.mp4 frame 10
+fall_wan2x_2.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p031_seed31.mp4 frame 30
+fall_wan2x_3.png	1248x720	/miele/liory/wan_paper_eval/r720_s5_fullres_n25/p031_seed31.mp4 frame 60
+pt_bus_d0001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.0001delta_50steps_seed10/00038.png
+pt_bus_d001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.001delta_50steps_seed10/00038.png
+pt_bus_d01.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.01delta_50steps_seed10/00038.png
+pt_bus_d05.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.05delta_50steps_seed10/00038.png
+pt_bus_d1.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.1delta_50steps_seed10/00038.png
+pt_bus_full.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/fullres_1levels_0.01delta_50steps_seed10/00038.png
+pt_camera_d0001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.0001delta_50steps_seed10/00033.png
+pt_camera_d001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.001delta_50steps_seed10/00033.png
+pt_camera_d01.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.01delta_50steps_seed10/00033.png
+pt_camera_d05.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.05delta_50steps_seed10/00033.png
+pt_camera_d1.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.1delta_50steps_seed10/00033.png
+pt_camera_full.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/fullres_1levels_0.01delta_50steps_seed10/00033.png
+pt_crow_d0001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.0001delta_50steps_seed10/00008.png
+pt_crow_d001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.001delta_50steps_seed10/00008.png
+pt_crow_d01.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.01delta_50steps_seed10/00008.png
+pt_crow_d05.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.05delta_50steps_seed10/00008.png
+pt_crow_d1.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.1delta_50steps_seed10/00008.png
+pt_crow_full.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/fullres_1levels_0.01delta_50steps_seed10/00008.png
+pt_phone_d0001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.0001delta_50steps_seed10/00017.png
+pt_phone_d001.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.001delta_50steps_seed10/00017.png
+pt_phone_d01.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.01delta_50steps_seed10/00017.png
+pt_phone_d05.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.05delta_50steps_seed10/00017.png
+pt_phone_d1.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/dct_mask_1levels_0.1delta_50steps_seed10/00017.png
+pt_phone_full.png	1024x1024	/local/howard/efficient_diffusion/wavelet_diffusion/qualitative_results/supp_motivation/fullres_1levels_0.01delta_50steps_seed10/00017.png
+fig4b_editing.png	3444x1664	/home/brianchc/project_animations/spectral_progressive_diffusion/spectral-progressive-diffusion/pdfs/src/figures/ablation_freq_edit.pdf (vector render 400 dpi, clip (267.72, 0.0, 887.42, 299.4))

@@ -1,0 +1,702 @@
+{
+ "rec0": {
+  "fps": 30.0,
+  "n": 1352,
+  "src": "web/assets/94cd057e780723d206a9eea4b086e97ba6a1ccaf35ac1bca0ad93f0cfc994503.mp4"
+ },
+ "rec1": {
+  "fps": 30.0,
+  "n": 1135,
+  "src": "web/assets/51be48469f6e1b65cadb75b4242d3cd73dca744507799c4f5fedb86c56712d03.mp4"
+ },
+ "rec2": {
+  "fps": 30.0,
+  "n": 1296,
+  "src": "web/assets/44a402b72ccbbed9aa28939065062a1f226f147e57a06e3865ec0f7a4e57c092.mp4"
+ },
+ "rec3": {
+  "fps": 30.0,
+  "n": 1722,
+  "src": "web/assets/3e18bcb37eba3e10853645ec66e8155486c60a4ebf822931681b33357c008098.mp4"
+ },
+ "show00_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b2ca3352523000c876344c422201c8bedee28ce73a3de6ec28a3a98adb8fdc51.mp4"
+ },
+ "show00_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/02c2d593689e7b7c2126cd9d68e004359624fd6aa2e16f17713c4bbd4006c9d2.mp4"
+ },
+ "show01_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/72d53a9a75e626c41817b188da0e91cd22dd78409d0772d9a9ca23071df00ed8.mp4"
+ },
+ "show01_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/d5555422b5944f38151bb5f5315b97a1342ae4648fabafd75d5f72ef4a5588ab.mp4"
+ },
+ "show02_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/07f69ef514413cf0d694964d2cc44461bc57e21b8cee9d6dff70144ad4fc69de.mp4"
+ },
+ "show02_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9686b0af128921d09975c8bbd11be1aa95ede459831085e515787fd138c3dc99.mp4"
+ },
+ "show03_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/6addd3ae9be38d80e1468ec0a4563ae5b2b3f13f72cfa6f8590c99aa6ead1411.mp4"
+ },
+ "show03_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/963f42bc39e861292034854f47415fd7a2b0d3ba2478add637c213c4cc05f962.mp4"
+ },
+ "show04_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/dc999a812f31aee404d84d368358699d6e864bd551923ccd6089647a1f682853.mp4"
+ },
+ "show04_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/cdc218267c7136e28c69775ab827e8de10b3a96c1ade0d2bc551f9cab56e7eff.mp4"
+ },
+ "show05_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/d127d406173999a355cd6daae2fa867a4fe63f7b4c4ba0c6496a97239659c3e3.mp4"
+ },
+ "show05_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/3ade8cf2e9ace7e0f4ef74ee34e96ee79e2a47574a99a126b50d3e21cbe42180.mp4"
+ },
+ "show06_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/486bc386d2e87738ea2c6e03497d4131794e13d79f81278f4f0ff29b46cde910.mp4"
+ },
+ "show06_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/10882df24b371e50701fdbd8569c496f59acd31d69becbcfbcfc0a979eeecf98.mp4"
+ },
+ "show07_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/a108c83ca2a76bd8597f98516fc8572341a8eaffb77b795e411d4df6d0613087.mp4"
+ },
+ "show07_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/8c29d2454ac4f1bfc7f17afd04d83fb81bbd67b0c11d5e3d9778bb8d08f142f3.mp4"
+ },
+ "show08_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/2720fe2d37950d9c22b9a7f840e5dc9b12d91080867962f1f6d968501ef25479.mp4"
+ },
+ "show08_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/e06af3d4481b1f36811b78a6decd0fbf64fbdffff0105323f19c55b68ab1c96d.mp4"
+ },
+ "show09_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/2850a3a7485cce8f2b27ee580d0f647e64dcd95f0230cf5ce4e23bc042a917ca.mp4"
+ },
+ "show09_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/720a4f8a157872d2078c88d54101152e26b159bf0a3d62d6d59a38428860c418.mp4"
+ },
+ "show10_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/85a3a21d2c00ad080ca0d54d259c36a17f87c3c4f03d9c26c99be6d56d4be4d3.mp4"
+ },
+ "show10_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/7d436b096c97b974ecb75446e82b423873afd26502d787bb60e687afa6212504.mp4"
+ },
+ "show11_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/c34ffe8e324d7d0668a44bd33c4e4d7832bbb79a9eac496495e1f6f9126196bf.mp4"
+ },
+ "show11_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/48352f160c1a4fe8e9cb354c3c1bdb3693665b668ab7d8dfbc86eaa2c469491c.mp4"
+ },
+ "show12_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/aa319584fcdef2cea80692364ebd886d23bdb926021bea0d52857df041751721.mp4"
+ },
+ "show12_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/75c154471b8abfe44fdafc0404ec21145ddb262b55eb4baa4d902177df632178.mp4"
+ },
+ "show13_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/d9135854ce16f1ba3e4b8e0e48d3edf31db3f38b12d84124125d8611580d8bea.mp4"
+ },
+ "show13_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9279e2794cd96b5322c4457a273c028b45b86bdfe3d2d4f6f7b71571b0153b96.mp4"
+ },
+ "show14_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/33591c464a9af7bc0d70c955efd9aa055cc6dc43b244ad002d21d6c5d73a4e0c.mp4"
+ },
+ "show14_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/f91caff9bff34caa855d863269155a26deb967baa8c70e5b17d9e908671912da.mp4"
+ },
+ "show15_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/0fe04d784d4779fa73c0dc00fcdf59ddfe06687839c990457555e6e269f4a783.mp4"
+ },
+ "show15_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/567e32121cd5afc179cf5b2db10ecc1022225db775acf935d7187fb31936553b.mp4"
+ },
+ "show16_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b098bf94d1d69f652aaed3456471b690e558b2eeb5461dd9706cc00675dec466.mp4"
+ },
+ "show16_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/0a80189cc215643cb3299e2ea5fe86a6d5d9e1232df8ec7310211599ebd014f4.mp4"
+ },
+ "show17_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/3ceceeff53ec1945248c3c212b94deb170a75b0d4c08627bdab5b634bacf794d.mp4"
+ },
+ "show17_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/8ad204fc54eea7d2b8b806ff42dc57a615780e4a2e2cf4c9d47837f8e6380938.mp4"
+ },
+ "show18_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/795ed7107595153b04f3e6697a53a64d8c706e4d64850fa085518c8e2b2e1b68.mp4"
+ },
+ "show18_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9279e2794cd96b5322c4457a273c028b45b86bdfe3d2d4f6f7b71571b0153b96.mp4"
+ },
+ "show19_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/26d8e760764f2cdfef544dff2e7e2d929a809c7bc7fc2c08f26a95e73b45f2b0.mp4"
+ },
+ "show19_lay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b35d436e7da7fc854eb9ca10ab9e4aa812d2c03bd3e49015ed9af08205a2e3f6.mp4"
+ },
+ "show20_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/91ff550327451385a9007e9f5131ba4b326bdf84da7395510ab837abd2d06101.mp4"
+ },
+ "show21_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/6e6ff204e8a3d9a4c90333395e8ee1219555bf76bb529870de6be6ec3ad4f32b.mp4"
+ },
+ "show22_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/1c04c7bf0c09347e06386cb3ae5177fd75571141c661b19c663ba255623bd70b.mp4"
+ },
+ "show23_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/354e2cfdbfc4df03292cbc2e247f8ff7c73c3ccb5cb962abd03879aaa87d8040.mp4"
+ },
+ "show24_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/cccba510fcf6445f1b6cbb39348c7f150e6bc21b2efe1911db681578d4303046.mp4"
+ },
+ "show26_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/5f2c3f5c5f37ac7fd10847fd682034dc3d09e09d85602b38d5e662146f2c0b97.mp4"
+ },
+ "show27_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/370e7e6263f6dca335849fffb1bc7d33a73194f0015a9ff7dfafe4940878727b.mp4"
+ },
+ "show28_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9e62f28b5b6d210969ac4d123b6cdf186c3a22f762fc33db0ed3649c61b1333e.mp4"
+ },
+ "show29_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/c38ac3a597a3eda162f358a7d8152ea1733262bbd575bfa257d1e7666554a21c.mp4"
+ },
+ "show30_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/130b9db25c854da0ec84a8edc0b018c4943fc358030990a5bc317d39927446b2.mp4"
+ },
+ "show31_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/57e3443eabf2de16e30a986e90551f340f579416c1b36f9c33f88d83e070d791.mp4"
+ },
+ "show32_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/4f3182a9df925fbc12cff407719fc57eccb49632229dc803b00f32ea9c661780.mp4"
+ },
+ "show33_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/7ec658d4b744c7a5ca1567cd59fd7a0281eba7f22289e900a3a1133074df9203.mp4"
+ },
+ "show34_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/ca0b44b3f9e0125c7e23f131bff628e1f4159f604d895052dd4c010008fcd2aa.mp4"
+ },
+ "show35_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/2ea4c93a5412abc499302482c09f751516b2ddf6beeea5b3394805d06fb71c15.mp4"
+ },
+ "show36_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/5574b6441193751274b6faea973f0d458f44b178c269de2f578f29b2ecbebed6.mp4"
+ },
+ "show37_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/f9b375213c8ab32d8a145dff7ddbc6cd694a2e10bc9ae40e6a90cf7f97c00708.mp4"
+ },
+ "show38_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/424b3414e5f3fa94e4b3640f829e93f0503a7712781dfc60860784ab1715c721.mp4"
+ },
+ "show39_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/22648887c8a9a7ed832d7eb11101d8aab44df6cbdef643f495f0e9db6a00b418.mp4"
+ },
+ "vd_train_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/train/detail-map.mp4"
+ },
+ "vd_train_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/train/generated-grid.mp4"
+ },
+ "vd_train_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/train/generated-video.mp4"
+ },
+ "vd_train_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/train/generated-video-grid-overlay.mp4"
+ },
+ "vd_restaurant_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/restaurant/detail-map.mp4"
+ },
+ "vd_restaurant_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/restaurant/generated-grid.mp4"
+ },
+ "vd_restaurant_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/restaurant/generated-video.mp4"
+ },
+ "vd_restaurant_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/restaurant/generated-video-grid-overlay.mp4"
+ },
+ "vd_platformer_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/platformer/detail-map.mp4"
+ },
+ "vd_platformer_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/platformer/generated-grid.mp4"
+ },
+ "vd_platformer_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/platformer/generated-video.mp4"
+ },
+ "vd_platformer_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/video_demo_media/platformer/generated-video-grid-overlay.mp4"
+ },
+ "vd_corgi_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/65ce94cb11fecf38e427f5e2259300d9291958adb5ebaa622f676f7c497e5f44.mp4"
+ },
+ "vd_corgi_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/e5d455d334c83702069020b23f60a74dddbd4030583c5a9e5940b10ed4c88c1e.mp4"
+ },
+ "vd_corgi_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/d850b15471f55d150138a573be5b0ce5c82568611df84584f3d435d962accea0.mp4"
+ },
+ "vd_corgi_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/8aaa58c1e1fbcd5fc42f198a41dddfa46ea7caad39a5dc2f861e5549f840b890.mp4"
+ },
+ "vd_corgi_rec": {
+  "fps": 30.0,
+  "n": 2118,
+  "src": "web/assets/d4a37432266313eddab23b36b483f7fcd35b2371b1d760bcd22bc433a5e21af0.mp4"
+ },
+ "vd_dress_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/7fc9b18caabd22174f7eb9cc192e1af316debee12afa0324582139027e63e38b.mp4"
+ },
+ "vd_dress_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/2ca52bcbb7c1f30ff6d8f686e7707725fe51f2a81642ee4aab98417efe065b04.mp4"
+ },
+ "vd_dress_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/59247551c459b00ea707d1835a5206290825c281a65c8440b1ae997103d9b796.mp4"
+ },
+ "vd_dress_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/1f2272243ac55cec778b8ddb0f72d7eb67f251fc938c338da9d030198e1a95ca.mp4"
+ },
+ "vd_dress_rec": {
+  "fps": 30.0,
+  "n": 2471,
+  "src": "web/assets/61afd72d9c77d4738e73fc3615a32b4bb89aba99982599029c18080523742435.mp4"
+ },
+ "vd_basketball_map": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b1a817008442f59ca31bb0d50932df2b3278ab762f500ed977b5f5e4bb21f407.mp4"
+ },
+ "vd_basketball_grid": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/7ef40bbc7fcde266da0122351bb1e8577e4970d1835be5e56228eb674a6db62b.mp4"
+ },
+ "vd_basketball_gen": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/cf19d80f9b495f0ed72f2b617d695a6ecc02b52b3e7f78c8879712ddc68b1ef9.mp4"
+ },
+ "vd_basketball_overlay": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/f858e7f8f4db110b9465f9912b95ec942c74b45e26d599ea6b71f46a83ffc90c.mp4"
+ },
+ "vd_basketball_rec": {
+  "fps": 30.0,
+  "n": 2622,
+  "src": "web/assets/e93cc952ace0d3c403bfa4d07e049d5dfd17954af8fef18c4916416e1d6d48f1.mp4"
+ },
+ "cmp0_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/7dd61ca47ab8f8db671b4a2c6fd6e15c53e19fda1a9a0244a0790fd5f3b24571.mp4"
+ },
+ "cmp0_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/8ca600696271d6b54765e3fec51fadeb41271878fb82583771a8c99d7ada18ee.mp4"
+ },
+ "cmp0_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/1da743d653405cd762655d2f36fdf55d7aea3db4da4b477f23e0651b951376cb.mp4"
+ },
+ "cmp0_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/e870f4460b5f32f868132e4e57f32ae193dc627ee5b7e3651caf2b48a2d91aa5.mp4"
+ },
+ "cmp0_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/809904ff0c6162b0517dc4ec818705efed67c9b7c563805eada6fe7535dece24.mp4"
+ },
+ "cmp1_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/05df422c970d60f2f660ee62d1fb02dd1702dd45b2c0bb79094764c4da3a333c.mp4"
+ },
+ "cmp1_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/e322308e11b684c07ce1ba9f0a51a7db398e533c94fc4681d3cfdea8c5d9e0ce.mp4"
+ },
+ "cmp1_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/5d4c82d1d27de53e17619326c981608eecb34ef06900d58ec334110ca3502f12.mp4"
+ },
+ "cmp1_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/221fe30dc3d7f5004e7741018a05ca5f72d3f08b1481175ce014b58fd1ab26e3.mp4"
+ },
+ "cmp1_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/f47b4485c73b88dc6cda32443a82c0ad1a429dba96b699b8f527af80332c0a81.mp4"
+ },
+ "cmp2_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/36f5a98ef7fe38ca44e5905c243e1720a4c6a1332e0b1357de521dfcba02b130.mp4"
+ },
+ "cmp2_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/5bdd383524b43302099bc88ceb2206394d46c29c40e6032e749e989a6e45b4d1.mp4"
+ },
+ "cmp2_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/dc917bed61ed6b27e50936d48e0c242131e0eb3e8aee1a8d5520f6a0e0f25f50.mp4"
+ },
+ "cmp2_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/525162eb02fb03fb463f0f2347890967ce941f972c6c38f4614d2893a7eb91e8.mp4"
+ },
+ "cmp2_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/0b95e27bd94a017c8c27d5b5b297bf3d2055b40657862d51c72dbce7dd387c84.mp4"
+ },
+ "cmp3_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/df10e3c88cafb5081fa23bb468a686e84bf6f5f47c8893aae08c39905fc995fa.mp4"
+ },
+ "cmp3_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b6edf149193eaee0ec7c5b407305ce54a82eec9a6e321ce7fc8a5bee087db54e.mp4"
+ },
+ "cmp3_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9a1bb21b0589b02f36b847071b923b4261cd05669b056cb80b2206fb0b8e435c.mp4"
+ },
+ "cmp3_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/6a9b96686a029e54739f0d3420ba9c48b88a8845e50a83dae6ad52f3b4e77bd3.mp4"
+ },
+ "cmp3_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/4e4dcb4ff246afa44e317c815319d9fc268f2c21372622a7fb21c64f0a1604da.mp4"
+ },
+ "cmp4_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/105516ae77ad4e7ead6c2c27f7ea1f947692cde98aee1d19962971b3d390a4a6.mp4"
+ },
+ "cmp4_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/317d7459446299f7b9331d6dcedb284fa2cdb1620470d2395aeeaae139752e30.mp4"
+ },
+ "cmp4_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/ad266bad3212b20078aa86bc22cd73c3c58da66636bcae24aa33cc71cc068e72.mp4"
+ },
+ "cmp4_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/cd7624438d9a4db7d6da7860513a12f74768ad74a55f5901755d3f2f82022cf0.mp4"
+ },
+ "cmp4_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/abed3e2783445cab18ee7b0095f2bf04e985d2f366d91f17897b803c2d2191f2.mp4"
+ },
+ "cmp5_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/1ba078d9f9a17bd728580754df9e2b56529b7e2069815e8cf4e56cb6df1558f5.mp4"
+ },
+ "cmp5_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/94d89f6b5b7b66beeb878a36c516ba70f55180d70de7f1e81527c96dbd846162.mp4"
+ },
+ "cmp5_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/233f44006b6b7fc7a923c501f907ebb60af0235ca97996c990fe0e112b7977c3.mp4"
+ },
+ "cmp5_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/89f7107f7fc7fd694c3d5b8c6d2dfe38d594d98de77d19689a938876187ae3b1.mp4"
+ },
+ "cmp5_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/bd7c1f5a9ae0f207eea20cbeb0f9bec2ee08fb7e19946c67f5b65279c5308ac7.mp4"
+ },
+ "cmp6_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b4a69940a21a4c57520752060a815b9d5c3abfc0aee817dd7a90179c7a3245e1.mp4"
+ },
+ "cmp6_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/31f31f395e86049e815f0c922fc3400a31992a3d53f91fbcff4245844b46c086.mp4"
+ },
+ "cmp6_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/fc705d5ec4aab46c674b9875a5e9076b0b1f98d761feb609840084cdb3f06bb3.mp4"
+ },
+ "cmp6_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/30bf56fbbb1909abebf0aa5f45c64829820d2b6ee6d662762cab4a1e30fdaf8c.mp4"
+ },
+ "cmp6_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/ecba3609cafd8663981a324f699f3ea8a7b69e4bfee20d23dcc4a5081795d360.mp4"
+ },
+ "cmp7_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/746d6b6c5941ee6b5bdc5c9c742dd7098bd9fa8551b31078c1a14df9d08c644d.mp4"
+ },
+ "cmp7_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9e8939178d487aea982c8d85bbcc79a30297cbc4381bad5831713e0e3049c7a8.mp4"
+ },
+ "cmp7_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/de9a261b0b50b5d363d90b85c763d77fff704f8c898a99fc942ae65e788f780f.mp4"
+ },
+ "cmp7_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/de58f29ab42e97652f130c5be731ffae64b384b9cb6f11e691f998276f553a12.mp4"
+ },
+ "cmp7_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/27886d6b1577a3ca753cfeff477bb6b724716a557700d1a708b3b7479eeb44a5.mp4"
+ },
+ "cmp8_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/60b8a0e4ce3b82f89d67b54445020029ab9826de61823d67e3bf0cc80ab9a8a2.mp4"
+ },
+ "cmp8_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/1208d49ede3ebce07bc21fcae115d5d48e4978018bd5907ae40b00f82ece3edc.mp4"
+ },
+ "cmp8_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/4efad422b7a83c4216e80fedde39dac7224b55b963ba9f0d249ac8c445258391.mp4"
+ },
+ "cmp8_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/9500552751adbb1ce47afaa6de979728e9d0d28e8690bbd0ebc4a93f8b0ff9d6.mp4"
+ },
+ "cmp8_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/765585328d23a8f0bcb7bacc1398caa6aabd4c9ee321417de139b669360e6bda.mp4"
+ },
+ "cmp9_cue": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b0b406ec1989ce87efce36f065b783cbb2f56c216e527dd99783d92108260f05.mp4"
+ },
+ "cmp9_dense": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/66885332476ca2bc8891d3221d5c4225b5d7104e0ab5df0e4df5c6817a40b1b2.mp4"
+ },
+ "cmp9_tome": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/0461042a753c852f0912e895508af5aad127faae8284ba537f74fb74a60c6149.mp4"
+ },
+ "cmp9_fov": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/b3a78eac91c1f3284aff842945bb296ea08eaf4101b53ab09e51a2669fdef127.mp4"
+ },
+ "cmp9_ours": {
+  "fps": 15.0,
+  "n": 81,
+  "src": "web/assets/3947558d2fa0f5e8ed6c95c201ef0a9a4ef7ced8715a05ce57b1a6402199ad3e.mp4"
+ }
+}

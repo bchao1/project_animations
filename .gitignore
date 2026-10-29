@@ -1,2 +1,48 @@
 # Manim rendered media
-*/media/
+media/
+*.mp4
+
+# images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.tif
+*.tiff
+*.exr
+*.svg
+# figure PDFs inside downloaded arXiv sources
+**/pdfs/src/**/*.pdf
+
+# regenerable caches / build junk
+__pycache__/
+*.pyc
+data/generated/
+*.npy
+*.npz
+*.tar.gz
+*.log
+
+# media data: talk decks, paper PDFs, checkpoints, audio and video
+*.pptx
+*.key
+**/pptx_extract/
+*.pdf
+*.pt
+*.pth
+*.ckpt
+*.wav
+*.mp3
+*.m4a
+*.mov
+*.webm
+*.mkv
+*.avi
+# regenerable caches in every project folder (the rule above only matched the root)
+**/data/generated/
+**/media/
+# third-party clones used as references
+fisheye_rectification/scratch/FEGAN/
+stereo_lf_synthesis/scratch/lf-flow/

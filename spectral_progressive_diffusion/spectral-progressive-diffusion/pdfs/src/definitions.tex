@@ -1,0 +1,63 @@
+
+
+\definecolor{mg}{rgb}{0.639,0.984,0.722}
+\definecolor{my}{rgb}{0.996,0.875,0.643}
+\definecolor{mr}{rgb}{0.941,0.561,0.620}
+\newcommand{\ccg}{\cellcolor{mg}}  % cell color green
+\newcommand{\ccy}{\cellcolor{my}}  % cell color yellow
+\newcommand{\ccr}{\cellcolor{mr}}  % cell color red
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\newcommand{\bluecheck}{{\color{blue}\checkmark}}
+\newcommand{\blackcheck}{{\color{black}\cmark}}
+\newcommand{\redx}{{\Large\color{\red}\xmark} }
+
+% table font size
+\newcommand{\headfontsize}{\scriptsize}
+\newcommand{\tablerefsize}{\tiny}
+\newcommand{\vertice}{\mathbf{v}}
+\newcommand{\normal}{\mathbf{n}}
+
+
+
+% cell colors + check / triangle / x mark
+\newcommand*\colourcheck[1]{%
+  \expandafter\newcommand\csname #1check\endcsname{\textcolor{#1}{\ding{51}}}%
+}
+\colourcheck{red}
+\colourcheck{green}
+
+\newcommand*\colourxx[1]{%
+  \expandafter\newcommand\csname #1xx\endcsname{\textcolor{#1}{\ding{55}}}%
+}
+\colourxx{red}
+\colourxx{green}
+
+\newcommand*\colourtriangle[1]{%
+  \expandafter\newcommand\csname #1triangle\endcsname{\textcolor{#1}{$\varDelta$}}%
+}
+\colourtriangle{yellow}
+
+
+%%%%%%% Color cells, black font
+\newcommand{\greenvcell}{\ccg \cmark}
+\newcommand{\redxcell}{\ccr \xmark}
+\newcommand{\yellowtrcell}{\ccy $\varDelta$} %\triangle
+\newcommand{\greenxcell}{\ccg \xmark}
+\newcommand{\redvcell}{\ccr \cmark}
+
+%%%%%%% No background, color font
+% \newcommand{\greenvcell}{\greencheck}
+% \newcommand{\redxcell}{\redxx}
+% \newcommand{\yellowtrcell}{\yellowtriangle} %\triangle
+% \newcommand{\redvcell}{\redcheck}
+% \newcommand{\greenxcell}{\greenxx}
+
+\newcommand{\hlineB}[1]{\noalign{\hrule height #1\arrayrulewidth}}
+
+\newcommand{\bc}[1]{\textcolor{blue}{bc: #1}}
+\newcommand{\hx}[1]{\textcolor{purple}{hx: #1}}
+\newcommand{\ly}[1]{\textcolor{teal}{ly: #1}}
+
+\newcommand{\methodname}{\textbf{Spectral Progressive Diffusion}}

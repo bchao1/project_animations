@@ -1,0 +1,36 @@
+
+\begin{table*}[t!]
+    \centering
+    \caption{\textbf{Quantitative comparisons on latent-space image generation with fine-tuning.} We evaluate Z-Image at $1024^2$ resolution and group methods into wall-clock speedup tiers. Speedup is calculated relative to the 50-step Z-Image baseline wall-clock runtime on a single H100 GPU. \textcolor{blue}{\textbf{T}} and \textcolor{red}{\textbf{S}} denote temporal and spatial acceleration methods, respectively. All metrics are evaluated using the same protocol as Table~\ref{tab:flux-main}.}
+    \label{tab:zimage-supp}
+    \resizebox{\textwidth}{!}{
+    \begin{scriptsize}
+    \begin{tabular}{cccccccccc}
+         \toprule
+        \multirow{2}{*}{Method} & \multirow{2}{*}{Accel.} & \multirow{2}{*}{Latency (s) $\downarrow$} & \multirow{2}{*}{Speedup (s) $\uparrow$} & \multirow{2}{*}{TFLOPs $\downarrow$} & Overall & \multicolumn{2}{c}{Image quality} & \multicolumn{2}{c}{Text alignment} \\
+        \cmidrule(lr){6-10}
+        & & & & & ImageReward $\uparrow$ & CLIP-IQA $\uparrow$ & NIQE $\downarrow$ & T2I-Comp. $\uparrow$ & GenEval $\uparrow$  \\
+        \midrule
+        Z-Image (50 steps) & - & 21.25 & 1.00$\times$ & 4941.23 & 0.965 & 0.700 & 5.41 & 0.731 & 0.745  \\
+        \cmidrule(lr){1-10}
+        Z-Image (32 steps) & \textcolor{blue}{\textbf{T}} & 13.59 & 1.56$\times$ & 3166.62 & \underline{0.957} & 0.697 & \textbf{5.44} & 0.686 & 0.725  \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & 12.90 & 1.65$\times$ & 3132.03 & 0.904 & 0.688 & 5.87 & 0.658 & \underline{0.730} \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=3$)}     & \textcolor{red}{\textbf{S}}       & \underline{12.19} & \underline{1.74$\times$} & \underline{2871.09} & 0.875 & 0.690 & \underline{5.59} & 0.650 & 0.682 \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & 12.87 & 1.65$\times$ & 3132.03 & \textbf{0.982} & \textbf{0.699} & 5.72 & \textbf{0.725} & \textbf{0.731} \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S=3$)}     & \textcolor{red}{\textbf{S}}       & 12.23 & 1.74$\times$ & \underline{2871.09} & 0.954 & \underline{0.697} & 5.75 & \underline{0.717} & 0.728 \\
+        \textbf{Ours (LoRA, $\delta=0.05$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & \textbf{10.59} & \textbf{2.01$\times$} & \textbf{2436.19} & 0.919 & 0.684 & 6.12 & 0.661 & 0.718 \\
+        \cmidrule(lr){1-10}
+        Z-Image (10 steps) & \textcolor{blue}{\textbf{T}} & 4.26 & 4.99$\times$ & 997.68 & 0.851 & 0.659 & 5.95 & \underline{0.678} & \underline{0.705} \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & \underline{4.22} & \underline{5.04$\times$} & \underline{962.95} & \underline{0.860} & \underline{0.668} & 6.17 & 0.677 & 0.693 \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=3$)}     & \textcolor{red}{\textbf{S}}       & \textbf{4.01} & \textbf{5.30$\times$} & \textbf{875.97} & 0.827 & 0.662 & \underline{5.78} & 0.676 & 0.655 \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       &  4.24 & 5.01$\times$ & \underline{962.95} & \textbf{0.923} & \textbf{0.683} & \textbf{5.58} & \textbf{0.706} & \textbf{0.738} \\
+        \cmidrule(lr){1-10}
+        Z-Image (7 steps) & \textcolor{blue}{\textbf{T}} & 3.56 & 5.97$\times$ & 701.92 & 0.763 & 0.631 & \textbf{6.14} & 0.648 & 0.667 \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & 2.75 & 7.73$\times$ & \underline{678.77} & \underline{0.804} & \underline{0.641} & 6.46 & \underline{0.665} & \underline{0.680} \\
+        \textbf{Ours (TF, $\delta=0.01$, $S=3$)}     & \textcolor{red}{\textbf{S}}       & \textbf{2.63} & \textbf{8.08$\times$} & \textbf{609.18} & 0.759 & 0.630 & \underline{6.16} & 0.658 & 0.645 \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S=2$)}     & \textcolor{red}{\textbf{S}}       & \underline{2.72} & \underline{7.81$\times$} & \underline{678.77} & \textbf{0.918} & \textbf{0.658} & 6.57 & \textbf{0.683} & \textbf{0.744} \\
+        \bottomrule
+    \end{tabular}
+    \end{scriptsize}
+    }
+\end{table*}

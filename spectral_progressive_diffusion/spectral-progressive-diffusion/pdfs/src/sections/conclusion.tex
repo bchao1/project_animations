@@ -1,0 +1,25 @@
+\section{Discussion}\vspace{-5pt}
+\label{sec:conclusion}
+In this work, we introduce Spectral Progressive Diffusion, a generation framework that leverages spectral autoregression in diffusion models to match computation to frequencies where signal emerges from noise. 
+Through a principled spectral noise expansion mechanism and an optimal resolution schedule derived from the model’s power spectrum, we enable progressive resolution growth along the denoising trajectory of pre-trained image and video models, achieving notable speedups. While our approach applies directly in a training-free setting, it implicitly assumes that the underlying model can generalize across varying resolutions. Though modern DiT models are trained on multiple resolutions, the continuous schedules we employ may include intermediate resolutions not seen during training. In practice, using a small number of transitions near the training distribution suffices to achieve substantial efficiency gains in both image and video generation. Our fine-tuning strategy aligns the model with the progressive-resolution trajectory, reducing the training--inference gap and improving quality, suggesting the use of our method during pretraining as a promising direction. While we focus on spatial spectra, extending the framework to temporal frequencies is a natural direction for accelerating video generation. Overall, our approach provides a principled and complementary approach for improving generation efficiency via the spectral autoregressive structure of diffusion models while maintaining high generation quality.
+
+
+
+
+\iffalse
+\paragraph{Limitations and future work.} While our approach applies directly in a training-free setting, it implicitly assumes that the underlying model can generalize across varying resolutions.
+In practice, modern DiT architectures are not restricted to a fixed resolution, and most state-of-the-art models are trained on multiple resolutions.
+Still, the discrete set of resolutions seen during training does not span the continuous range of resolutions our schedule can operate at, potentially leaving some intermediate resolutions outside the model's data distribution.
+Empirically, we find that even with a few transitions, which stay close to the in-distribution regime, our approach delivers significant efficiency gains on both image and video generation.
+Our fine-tuning strategy aligns the model with the progressive-resolution trajectory, further closing the training-inference gap and improving quality. This suggests that adapting our framework during pretraining is a promising direction.
+While we focus on the spatial spectra, extending our framework to temporal frequencies in video models is a natural avenue for accelerating video generation. Overall, our approach provides a principled, complementary path to improving generative efficiency via the spectral autoregressive structure of diffusion models.
+\fi
+
+
+
+% We introduce Spectral Progressive Diffusion, a progressive generation framework that eliminates computation on noise-dominated high-frequency components in early denoising, yielding substantial efficiency gains without degrading image quality. Its effectiveness depends on the multi-resolution capabilities of the underlying pretrained model, suggesting adaptation during pretraining as a promising direction. While we focus on the spatial spectra, extending our framework to temporal frequencies is a natural avenue for accelerating video generation. Overall, our approach provides a principled, complementary path to improving generative efficiency via the spectral autoregressive structure of diffusion models.
+
+% freq-domain CFG, 
+% limitation: pretrained models that do not support multi-resolution - leading to pretraining strategies. video tempory redudancy, power-law assumption
+
+% future work: pretraining, distillation, CFG,

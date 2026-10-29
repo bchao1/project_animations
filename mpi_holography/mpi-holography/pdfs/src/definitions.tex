@@ -1,0 +1,180 @@
+\newcommand{\rref}{\mathbf{r}_{\text{0}}}
+\newcommand{\xref}{{x}_{\text{0}}}
+\newcommand{\yref}{{y}_{\text{0}}}
+\newcommand{\zref}{{z}_{\text{0}}}
+
+\newcommand{\rlocal}{\mathbf{r}_{l}}
+\newcommand{\xlocal}{{x}_{l}}
+\newcommand{\ylocal}{{y}_{l}}
+\newcommand{\zlocal}{{z}_{l}}
+
+
+\newcommand{\cov}{\mathbf{\Sigma}}
+% \newcommand{\rot}{\mathbf{R}}
+\newcommand{\rot}{\mathbf{R}}
+\newcommand{\rotc}{\mathbf{C}}
+% \newcommand{\sca}{\mathbf{S}}
+\newcommand{\sca}{\mathbf{S}}
+\newcommand{\kvec}{\mathbf{k}}
+
+% \newcommand{\rlocal}{\mathbf{r}_{l}}
+% \newcommand{\xlocal}{{x}_{l}}
+% \newcommand{\ylocal}{{y}_{l}}
+% \newcommand{\zlocal}{{z}_{l}}
+
+
+\definecolor{mg}{rgb}{0.639,0.984,0.722}
+\definecolor{my}{rgb}{0.996,0.875,0.643}
+\definecolor{mr}{rgb}{0.941,0.561,0.620}
+\newcommand{\ccg}{\cellcolor{mg}}  % cell color green
+\newcommand{\ccy}{\cellcolor{my}}  % cell color yellow
+\newcommand{\ccr}{\cellcolor{mr}}  % cell color red
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\newcommand{\bluecheck}{{\color{blue}\checkmark}}
+\newcommand{\blackcheck}{{\color{black}\cmark}}
+\newcommand{\redx}{{\Large\color{\red}\xmark} }
+
+% table font size
+\newcommand{\headfontsize}{\scriptsize}
+\newcommand{\tablerefsize}{\tiny}
+\newcommand{\vertice}{\mathbf{v}}
+\newcommand{\normal}{\mathbf{n}}
+
+\newcommand{\roundedtriangle}{%
+  \begin{tikzpicture}[baseline=0ex, scale=0.06]
+    \draw[thick] (1.5,1.5) circle (1.5);
+  \end{tikzpicture}%
+}
+% cell colors + check / triangle / x mark
+\newcommand*\colourcheck[1]{%
+  \expandafter\newcommand\csname #1check\endcsname{\textcolor{#1}{\ding{51}}}%
+}
+\colourcheck{red}
+\colourcheck{green}
+
+\newcommand*\colourxx[1]{%
+  \expandafter\newcommand\csname #1xx\endcsname{\textcolor{#1}{\ding{55}}}%
+}
+\colourxx{red}
+\colourxx{green}
+
+\newcommand*\colourtriangle[1]{%
+  \expandafter\newcommand\csname #1triangle\endcsname{\textcolor{#1}{$\varDelta$}}%
+}
+\colourtriangle{yellow}
+
+
+%%%%%%% Color cells, black font
+%\newcommand{\greenvcell}{\ccg \cmark}
+%\newcommand{\redxcell}{\ccr \xmark}
+% \newcommand{\yellowtrcell}{\ccy $\varDelta $  } %\triangle
+%\newcommand{\yellowtrcell}{\ccy $\roundedtriangle $  } %\triangle
+%\newcommand{\greenxcell}{\ccg \xmark}
+%\newcommand{\redvcell}{\ccr \cmark}
+
+
+% 1. Define custom colors (More muted, professional palette)
+\definecolor{statusgreen}{RGB}{34, 139, 34}   % ForestGreen
+\definecolor{statusorange}{RGB}{218, 165, 32} % GoldenRod
+\definecolor{statusred}{RGB}{178, 34, 34}     % FireBrick
+\definecolor{rowhighlight}{RGB}{240, 248, 255} % Very light AliceBlue for the 'Ours' row
+
+% 2. Define new symbol macros to replace the old cell coloring
+% We use icons instead of full cell backgrounds for a cleaner look
+\newcommand{\resGood}{\textcolor{statusgreen}{\ding{52}}}       % Heavy Check
+\newcommand{\resAvg}{\textcolor{statusorange}{\textbf{\roundedtriangle}}} % Bold Dash
+\newcommand{\resBad}{\textcolor{statusred}{\ding{56}}}          % Heavy Cross
+
+% 3. Map your old commands to the new style so you don't have to change data
+% This ensures 'greenvcell' automatically becomes the new icon
+\newcommand{\greenvcell}{\resGood}
+\newcommand{\yellowtrcell}{\resAvg}
+\newcommand{\redxcell}{\resBad}
+
+
+%%%%%%% No background, color font
+% \newcommand{\greenvcell}{\greencheck}
+% \newcommand{\redxcell}{\redxx}
+% \newcommand{\yellowtrcell}{\yellowtriangle} %\triangle
+% \newcommand{\redvcell}{\redcheck}
+% \newcommand{\greenxcell}{\greenxx}
+
+
+\newcommand{\ctcell}{>{\centering\arraybackslash}}
+\newcommand{\gw}[1]{\textcolor{purple}{[GW: #1]}}
+\newcommand{\sy}[1]{\textcolor{blue}{[SC: #1]}}
+\newcommand{\bc}[1]{\textcolor{red}{[BC: #1]}}
+\newcommand{\jy}[1]{\textcolor{olive}{[JY: #1]}}
+\newcommand{\edit}[1]{\textcolor{red}{#1}}
+
+
+
+
+
+
+%%%%%%% For equations
+
+
+\newcommand{\citl}{CITL}
+\newcommand{\revised}[1]{{#1}}
+\newcommand{\editsy}[1]{\textcolor{red}{#1}}
+\newcommand{\prop}{\mathcal{P}}
+\newcommand{\firstprop}{\prop_1}
+\newcommand{\secprop}{\prop_2}
+\newcommand{\prophat}{\widehat{g}}
+\newcommand{\firstprophat}{\prophat_1}
+\newcommand{\secprophat}{\prophat_2}
+\newcommand{\target}{a_{target}}
+\newcommand{\phaseslm}{\phi}
+\newcommand{\efficiency}{\eta}
+\newcommand{\fourier}{\mathcal{F}}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\transfer}{\mathcal{H}}
+\newcommand{\fx}{f_x}
+\newcommand{\fy}{f_y}
+\newcommand{\numpixelx}{N_x}
+\newcommand{\numpixely}{N_y}
+\newcommand{\phasepool}{\mathbb{P}}
+\newcommand{\capturedpool}{\mathbb{C}}
+\newcommand{\rgbd}{\mathbb{RGBD}}
+\newcommand{\lossbp}{\texttt{loss\_bp}}
+\newcommand{\fbp}{\texttt{f\_bp}}
+\newcommand{\gbp}{\texttt{g\_bp}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\idx}{i}
+\newcommand{\maxidx}{N}
+\newcommand{\angularspectrum}{\hat{u}}
+\newcommand{\pixelcoord}{\mathbf{r}}
+\newcommand{\transmittance}{\mathcal{T}}
+
+
+\newcommand{\coordinate}{\mathbf{x}}
+\newcommand{\freqcoords}{\mathbf{k}}
+\newcommand{\mean}{\bm{\mu}}
+
+
+
+\newcommand{\worldspace}{w}
+\newcommand{\viewspace}{r}
+\newcommand{\canonicalspace}{c}
+\newcommand{\objectspace}{o}
+% \newcommand{\centergaussian}{\mathbf{p}}
+\newcommand{\centergaussian}{{\bm{\mu}}}
+\newcommand{\projectivemapping}{\mathbf{m}}
+
+
+\newcommand{\mat}[1]{\mathbb{R}^{{#1}\times{#1}}}
+\newcommand{\arr}[1]{\mathbb{R}^{{#1} \times 1}} % name vector as array since name collision
+
+
+
+\makeatletter
+\newcommand\xleftrightarrow[2][]{%
+  \ext@arrow 9999{\longleftrightarrowfill@}{#1}{#2}}
+\newcommand\longleftrightarrowfill@{%
+  \arrowfill@\leftarrow\relbar\rightarrow}
+\makeatother
+
+

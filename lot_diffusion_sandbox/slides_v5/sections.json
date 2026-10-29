@@ -1,0 +1,317 @@
+[
+ {
+  "scene": "S02_Known",
+  "index": 0,
+  "name": "prompt",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S02_Known_00_prompt.mp4",
+  "duration_s": 0.7,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S02_Known_00_prompt_last.png",
+  "description": "Prompt excerpt box, detail phrases amber, sky phrase purple"
+ },
+ {
+  "scene": "S02_Known",
+  "index": 1,
+  "name": "detail_map",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S02_Known_01_detail_map.mp4",
+  "duration_s": 1.0,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S02_Known_01_detail_map_last.png",
+  "description": "Prompt arrow to painted detail map with brush legend"
+ },
+ {
+  "scene": "S02_Known",
+  "index": 2,
+  "name": "other_sources",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S02_Known_02_other_sources.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S02_Known_02_other_sources_last.png",
+  "description": "Map plus note: masks, boxes, texture, depth also give layouts"
+ },
+ {
+  "scene": "S02_Known",
+  "index": 3,
+  "name": "question",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S02_Known_03_question.mp4",
+  "duration_s": 0.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S02_Known_03_question_last.png",
+  "description": "Question card: spend tokens where the plan says?"
+ },
+ {
+  "scene": "S03_Layout",
+  "index": 0,
+  "name": "detail_field",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S03_Layout_00_detail_field.mp4",
+  "duration_s": 0.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S03_Layout_00_detail_field_last.png",
+  "description": "Detail field D on the 64 x 64 token grid"
+ },
+ {
+  "scene": "S03_Layout",
+  "index": 1,
+  "name": "coarse_tokens",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S03_Layout_01_coarse_tokens.mp4",
+  "duration_s": 1.1,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S03_Layout_01_coarse_tokens_last.png",
+  "description": "Detail field beside 64 coarse 8 x 8 shaded tokens"
+ },
+ {
+  "scene": "S03_Layout",
+  "index": 2,
+  "name": "split",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S03_Layout_02_split.mp4",
+  "duration_s": 4.9,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S03_Layout_02_split_last.png",
+  "description": "Final LoT layout, 1,546 tokens, extent-count key"
+ },
+ {
+  "scene": "S03_Layout",
+  "index": 3,
+  "name": "extents",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S03_Layout_03_extents.mp4",
+  "duration_s": 1.6,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S03_Layout_03_extents_last.png",
+  "description": "Token extent shapes (1,1)...(2,4) beside the layout"
+ },
+ {
+  "scene": "S03_Layout",
+  "index": 4,
+  "name": "compression",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S03_Layout_04_compression.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S03_Layout_04_compression_last.png",
+  "description": "Adds L = 1,546 and HW/L = 2.65x compression"
+ },
+ {
+  "scene": "S04_Naive",
+  "index": 0,
+  "name": "one_vector",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S04_Naive_00_one_vector.mp4",
+  "duration_s": 0.9,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S04_Naive_00_one_vector_last.png",
+  "description": "Shaded LoT layout: one vector per token"
+ },
+ {
+  "scene": "S04_Naive",
+  "index": 1,
+  "name": "blocky",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S04_Naive_01_blocky.mp4",
+  "duration_s": 1.5,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S04_Naive_01_blocky_last.png",
+  "description": "Toy decode, one value per token, red 'blocky'"
+ },
+ {
+  "scene": "S04_Naive",
+  "index": 2,
+  "name": "lot_output",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S04_Naive_02_lot_output.mp4",
+  "duration_s": 0.9,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S04_Naive_02_lot_output_last.png",
+  "description": "Real LoT output beside the blocky toy decode"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 0,
+  "name": "zoom_patch",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_00_zoom_patch.mp4",
+  "duration_s": 1.9,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_00_zoom_patch_last.png",
+  "description": "Layout with highlighted 4 x 4 grass token, noisy patch tiles"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 1,
+  "name": "token_dit_head",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_01_token_dit_head.mp4",
+  "duration_s": 1.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_01_token_dit_head_last.png",
+  "description": "Patch to one token to DiT+LoRA to 4 x 4 head"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 2,
+  "name": "eq9",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_02_eq9.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_02_eq9_last.png",
+  "description": "Eq. 9 asymmetric flow equation added top right"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 3,
+  "name": "eq9_terms",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_03_eq9_terms.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_03_eq9_terms_last.png",
+  "description": "Eq. 9 terms labelled: from the head, completed from x_t"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 4,
+  "name": "clean_estimate",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_04_clean_estimate.mp4",
+  "duration_s": 1.2,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_04_clean_estimate_last.png",
+  "description": "Clean estimate tiles plus toy exactness check"
+ },
+ {
+  "scene": "S05_AsymFlow",
+  "index": 5,
+  "name": "sampler",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S05_AsymFlow_05_sampler.mp4",
+  "duration_s": 3.05,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S05_AsymFlow_05_sampler_last.png",
+  "description": "Toy sampler: patch and token at t = 1...0"
+ },
+ {
+  "scene": "S06_DiT",
+  "index": 0,
+  "name": "inputs",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S06_DiT_00_inputs.mp4",
+  "duration_s": 2.1,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S06_DiT_00_inputs_last.png",
+  "description": "Layout into per-extent input projections and DiT"
+ },
+ {
+  "scene": "S06_DiT",
+  "index": 1,
+  "name": "outputs",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S06_DiT_01_outputs.mp4",
+  "duration_s": 1.6,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S06_DiT_01_outputs_last.png",
+  "description": "Per-extent output heads to full-resolution flow grid"
+ },
+ {
+  "scene": "S06_DiT",
+  "index": 2,
+  "name": "shape_embedding",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S06_DiT_02_shape_embedding.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S06_DiT_02_shape_embedding_last.png",
+  "description": "Shape embedding s(e) formula above the pipeline"
+ },
+ {
+  "scene": "S06_DiT",
+  "index": 3,
+  "name": "rope",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S06_DiT_03_rope.mp4",
+  "duration_s": 0.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S06_DiT_03_rope_last.png",
+  "description": "RoPE at patch centre: tokens with centre dots, formula"
+ },
+ {
+  "scene": "S07_Sources",
+  "index": 0,
+  "name": "fig4_deer",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S07_Sources_00_fig4_deer.mp4",
+  "duration_s": 1.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S07_Sources_00_fig4_deer_last.png",
+  "description": "Fig. 4 deer: four layout sources, compression and speedup"
+ },
+ {
+  "scene": "S07_Sources",
+  "index": 1,
+  "name": "video_clips",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S07_Sources_01_video_clips.mp4",
+  "duration_s": 6.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S07_Sources_01_video_clips_last.png",
+  "description": "Three site video clips with layouts, last frame"
+ },
+ {
+  "scene": "S08_Results",
+  "index": 0,
+  "name": "tab1_plot",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S08_Results_00_tab1_plot.mp4",
+  "duration_s": 2.0,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S08_Results_00_tab1_plot_last.png",
+  "description": "HPSv3 vs speedup plot, Tab. 1, legend"
+ },
+ {
+  "scene": "S08_Results",
+  "index": 1,
+  "name": "tab2_video",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S08_Results_01_tab2_video.mp4",
+  "duration_s": 0.3,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S08_Results_01_tab2_video_last.png",
+  "description": "Plot plus Tab. 2 video speedup and imaging lines"
+ },
+ {
+  "scene": "S08_Results",
+  "index": 2,
+  "name": "fig7a_image",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S08_Results_02_fig7a_image.mp4",
+  "duration_s": 1.6,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S08_Results_02_fig7a_image_last.png",
+  "description": "Fig. 7a five methods at 1,269 tokens, LoT framed"
+ },
+ {
+  "scene": "S08_Results",
+  "index": 3,
+  "name": "fig7b_video",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S08_Results_03_fig7b_video.mp4",
+  "duration_s": 1.6,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S08_Results_03_fig7b_video_last.png",
+  "description": "Fig. 7b video rows, ToMe-SD noisy, LoT framed"
+ },
+ {
+  "scene": "S08_Results",
+  "index": 4,
+  "name": "ablation",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/S08_Results_04_ablation.mp4",
+  "duration_s": 1.6,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/teaser_5min/slides_v5/qa/S08_Results_04_ablation_last.png",
+  "description": "Tab. 3 ablation bars, full LoT 10.35 highest"
+ },
+ {
+  "scene": "LoT_edit_v5",
+  "index": 0,
+  "name": "edit_session",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_clip/slides_v5/LoT_edit_v5_00_edit_session.mp4",
+  "duration_s": 20.0,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_clip/slides_v5/qa/LoT_edit_v5_00_edit_session_last.png",
+  "description": "Speed equation: 25x times 4.3x = about 109x"
+ },
+ {
+  "scene": "LoT_drift_v4",
+  "index": 0,
+  "name": "drift_100_turns",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_results_clip/slides_v5/LoT_drift_v4_00_drift_100_turns.mp4",
+  "duration_s": 20.0,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_results_clip/slides_v5/qa/LoT_drift_v4_00_drift_100_turns_last.png",
+  "description": "Turn 100 image; CLIP-IQA, MUSIQ curves, LoT vs full res"
+ },
+ {
+  "scene": "LoT_ctx_v4",
+  "index": 0,
+  "name": "context_sizes",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_results_clip/slides_v5/LoT_ctx_v4_00_context_sizes.mp4",
+  "duration_s": 20.0,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/edit_results_clip/slides_v5/qa/LoT_ctx_v4_00_context_sizes_last.png",
+  "description": "Turn 100 at 4 context sizes; s/edit, speedups"
+ },
+ {
+  "scene": "LoT_spacetime_v17_color_item31",
+  "index": 0,
+  "name": "layout_per_frame",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/LoT_spacetime_v17_color_item31_00_layout_per_frame.mp4",
+  "duration_s": 2.8,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/qa/LoT_spacetime_v17_color_item31_00_layout_per_frame_last.png",
+  "description": "Video, frame layout, per-frame slabs stepping out in time"
+ },
+ {
+  "scene": "LoT_spacetime_v17_color_item31",
+  "index": 1,
+  "name": "stacked_in_time",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/LoT_spacetime_v17_color_item31_01_stacked_in_time.mp4",
+  "duration_s": 2.817,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/qa/LoT_spacetime_v17_color_item31_01_stacked_in_time_last.png",
+  "description": "Oblique stacked space-time volume of per-frame layouts"
+ },
+ {
+  "scene": "LoT_spacetime_v17_color_item31",
+  "index": 2,
+  "name": "shrink_and_settle",
+  "file": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/LoT_spacetime_v17_color_item31_02_shrink_and_settle.mp4",
+  "duration_s": 8.184,
+  "last_frame": "/home/brianchc/project_animations/lot_diffusion_sandbox/spacetime_clip/slides_v5/qa/LoT_spacetime_v17_color_item31_02_shrink_and_settle_last.png",
+  "description": "Settled token slab at 36.8% of full-resolution wireframe"
+ }
+]

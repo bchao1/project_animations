@@ -1,0 +1,392 @@
+[
+ {
+  "id": "000000000042",
+  "prompt": "a dog, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1351,
+    "compression": 3.0318282753515913,
+    "parsed": 1351
+   },
+   "sam3_box": {
+    "tokens": 2320,
+    "compression": 1.7655172413793103,
+    "parsed": 2320
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   }
+  }
+ },
+ {
+  "id": "000000000034",
+  "prompt": "a zebra, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 703,
+    "compression": 5.826458036984353,
+    "parsed": 703
+   },
+   "sam3_box": {
+    "tokens": 880,
+    "compression": 4.654545454545454,
+    "parsed": 880
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   }
+  }
+ },
+ {
+  "id": "000000000025",
+  "prompt": "a giraffe, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 385,
+    "compression": 10.638961038961039,
+    "parsed": 385
+   },
+   "sam3_box": {
+    "tokens": 1300,
+    "compression": 3.1507692307692308,
+    "parsed": 1300
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 1027,
+    "compression": 3.988315481986368,
+    "parsed": 1027
+   }
+  }
+ },
+ {
+  "id": "000000000072",
+  "prompt": "a giraffe, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 2125,
+    "compression": 1.927529411764706,
+    "parsed": 2125
+   },
+   "sam3_box": {
+    "tokens": 3070,
+    "compression": 1.3342019543973942,
+    "parsed": 3070
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 3280,
+    "compression": 1.248780487804878,
+    "parsed": 3280
+   }
+  }
+ },
+ {
+  "id": "000000000092",
+  "prompt": "a cake, appetizing food photography with soft side light, with a fork, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 2506,
+    "compression": 1.6344772545889865,
+    "parsed": 2506
+   },
+   "sam3_box": {
+    "tokens": 3025,
+    "compression": 1.3540495867768596,
+    "parsed": 3025
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   }
+  }
+ },
+ {
+  "id": "000000000113",
+  "prompt": "a person, candid documentary photography in a natural everyday setting, with a cake, a cup, a chair, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1960,
+    "compression": 2.089795918367347,
+    "parsed": 1960
+   },
+   "sam3_box": {
+    "tokens": 2224,
+    "compression": 1.841726618705036,
+    "parsed": 2224
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 3280,
+    "compression": 1.248780487804878,
+    "parsed": 3280
+   }
+  }
+ },
+ {
+  "id": "000000000127",
+  "prompt": "a person, candid documentary photography in a natural everyday setting, with a dining table, a handbag, a cup, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1339,
+    "compression": 3.0589992531740107,
+    "parsed": 1339
+   },
+   "sam3_box": {
+    "tokens": 832,
+    "compression": 4.923076923076923,
+    "parsed": 832
+   },
+   "vrs": {
+    "tokens": 2050,
+    "compression": 1.9980487804878049,
+    "parsed": 2050
+   },
+   "dof": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   }
+  }
+ },
+ {
+  "id": "000000000142",
+  "prompt": "a sandwich, appetizing food photography with soft side light, with a bottle, a banana, a dining table, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 454,
+    "compression": 9.022026431718063,
+    "parsed": 454
+   },
+   "sam3_box": {
+    "tokens": 529,
+    "compression": 7.742911153119093,
+    "parsed": 529
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 1024,
+    "compression": 4.0,
+    "parsed": 1024
+   }
+  }
+ },
+ {
+  "id": "000000000144",
+  "prompt": "a giraffe, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1369,
+    "compression": 2.991964937910884,
+    "parsed": 1369
+   },
+   "sam3_box": {
+    "tokens": 3049,
+    "compression": 1.3433912758281403,
+    "parsed": 3049
+   },
+   "vrs": {
+    "tokens": 2050,
+    "compression": 1.9980487804878049,
+    "parsed": 2050
+   },
+   "dof": {
+    "tokens": 3280,
+    "compression": 1.248780487804878,
+    "parsed": 3280
+   }
+  }
+ },
+ {
+  "id": "000000000154",
+  "prompt": "a zebra, detailed wildlife photography in a natural setting, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1879,
+    "compression": 2.1798829164449174,
+    "parsed": 1879
+   },
+   "sam3_box": {
+    "tokens": 2062,
+    "compression": 1.9864209505334627,
+    "parsed": 2062
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 3280,
+    "compression": 1.248780487804878,
+    "parsed": 3280
+   }
+  }
+ },
+ {
+  "id": "000000000194",
+  "prompt": "a pizza, appetizing food photography with soft side light, with a knife, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 3592,
+    "compression": 1.1403118040089086,
+    "parsed": 3655
+   },
+   "sam3_box": {
+    "tokens": 3856,
+    "compression": 1.062240663900415,
+    "parsed": 3856
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   }
+  }
+ },
+ {
+  "id": "000000000201",
+  "prompt": "a snowboard, photorealistic editorial photography with natural light, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1513,
+    "compression": 2.7072042300066093,
+    "parsed": 1513
+   },
+   "sam3_box": {
+    "tokens": 1546,
+    "compression": 2.6494178525226393,
+    "parsed": 3562
+   },
+   "vrs": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   },
+   "dof": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   }
+  }
+ },
+ {
+  "id": "000000000283",
+  "prompt": "a dining table, photorealistic editorial photography with natural light, with a chair, a bottle, a wine glass, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 646,
+    "compression": 6.340557275541796,
+    "parsed": 2032
+   },
+   "sam3_box": {
+    "tokens": 3280,
+    "compression": 1.248780487804878,
+    "parsed": 3280
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   }
+  }
+ },
+ {
+  "id": "000000000294",
+  "prompt": "a person, candid documentary photography in a natural everyday setting, with a spoon, a microwave, a knife, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1948,
+    "compression": 2.102669404517454,
+    "parsed": 1948
+   },
+   "sam3_box": {
+    "tokens": 2806,
+    "compression": 1.459729151817534,
+    "parsed": 2806
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   }
+  }
+ },
+ {
+  "id": "000000000307",
+  "prompt": "a dog, detailed wildlife photography in a natural setting, with a frisbee, a car, detailed composition.",
+  "sources": {
+   "sam3_mask": {
+    "tokens": 1348,
+    "compression": 3.0385756676557865,
+    "parsed": 1348
+   },
+   "sam3_box": {
+    "tokens": 1420,
+    "compression": 2.8845070422535213,
+    "parsed": 1420
+   },
+   "vrs": {
+    "tokens": 3277,
+    "compression": 1.2499237107110162,
+    "parsed": 3277
+   },
+   "dof": {
+    "tokens": 2047,
+    "compression": 2.0009770395701025,
+    "parsed": 2047
+   }
+  }
+ }
+]

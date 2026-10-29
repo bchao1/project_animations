@@ -1,0 +1,564 @@
+Supplemental Document
+High-brightness holographic projection:
+supplement
+BRIAN CHAO, MANU GOPAKUMAR, SUYEON CHOI,
+AND GORDON
+WETZSTEIN∗
+Electrical Engineering Department, Stanford University, 350 Jane Stanford Way, Stanford, California
+94305, USA
+∗gordon.wetzstein@stanford.edu
+This supplement published with Optica Publishing Group on 25 July 2023 by The Authors under
+the terms of the Creative Commons Attribution 4.0 License in the format provided by the authors
+and unedited. Further distribution of this work must maintain attribution to the author(s) and the
+published article’s title, journal citation, and DOI.
+Supplement DOI: https://doi.org/10.6084/m9.figshare.23596260
+Parent Article DOI: https://doi.org/10.1364/OL.489617
+
+
+=== PAGE ===
+Supplement
+High-Brightness Holographic
+Projection
+1. HARDWARE IMPLEMENTATION
+A. Details on Benchtop Setup
+Fig. S1. (a) Schematic diagram of the proposed holographic projector. (b) Physical setup of the
+holographic projector. The light emmited by the single-mode laser fiber is first collimated by
+a 100mm lens before arriving at the beam splitter, and then reflected off the SLM. The SLM-
+modulated field forms a 2D Fresnel hologram, which is then relayed onto the projection screen
+by a projection lens. An additional aperture in front of the projection lens is used to filter out
+the higher diffraction orders.
+In addition to the hardware details listed in the main paper, we show additional photographs of
+our setup in Fig. S1. The distance values in in Fig. S1(a) satisfy the following relationships:
+z1 + z2 = z
+1
+d1
++ 1
+d2
+= 1
+f
+z2 + d1 = C
+(S1)
+where z is the propagation distance from the SLM to the 2D hologram, z1 is the distance from the
+SLM to the beam splitter, z2 is the distance from the beam splitter to the 2D hologram, f is the
+focal length of the projection lens, d1 is the distance from the 2D hologram to the projection lens,
+and d2 is the distance from the projection lens to the projection screen.
+In our setup, the propagation distance z is around 20 cm. A Nikon AF Nikkor 50mm f/1.4D
+lens is used to magnify the holographic image and project it on a screen d2 = 87 cm away from
+the lens. From S1, we can compute that d1 = 5.3 cm. Hence, the magnification of the projection
+system is M = d2
+d1 = 87
+5.3 = 16.4.
+We use a TI DLP6750Q1EVM SLM133 with a pixel pitch of 10.8 µm. The region of interest
+(ROI) on the SLM is 700 × 1190 pixels, which translates to an area of 7.56 × 12.85 mm2. Hence,
+the projection area is 16.4 · 7.56 × 16.4 · 12.85 mm2 = 12.4 × 21.1 cm2.
+B. Propagation Distance Calibration
+To generate high-quality holograms, our method requires precise calibration of the distance z,
+which is the propagation distance from the SLM to the 2D hologram plane. Note that once the
+
+
+=== PAGE ===
+setup is fixed, the distances z1, d2, and z2 + d1 are all constant, which are expressed as boldface in
+Eq. (S1). Hence, the propagation distance z can be directly expressed as
+z1 + C −
+d2 f
+f + d2
+(S2)
+In practice, we first obtain a coarse estimate of the propagation distance ˆz we hope to work with
+in simulation, which we will describe in Section 2. Next, we implement the hardware such that Eq.
+(S2) roughly matches the coarse propagation distance. We do a per-color channel calibration step
+where we run camera-in-the-loop [1] optimization on a test image using different propagation
+distances in the range (ˆz −∆z, ˆz + ∆z). We record the distance z* that corresponds to the best
+image reconstruction performance, which serves as the final estimate of the propagation distance.
+C. Planar Homography Calibration
+In the homography calibration step, we use a similar procedure described in [1] and apply a
+planar homography to accurately register the captured projected images to the ground truth
+target images. Our implementation uses a target binary pattern consisting of 18 × 11 white dots
+where every dot is spaced 70 pixels apart. Therefore, the region of interest (ROI) has 700 × 1190
+pixels and the projection area is around 12.4 × 21.7 cm2.
+D. Laser Power Calibration
+In order to incorporate the light efficiency loss function in our optimization process, it is important
+that we know the maximum intensity sum ∑|usrc|2 that could possibly be recorded by the camera
+sensor. To measure this, we display a zero-phase pattern on the SLM and capture the output
+intensity on the display screen. A constant zero-phase pattern indicates no phase modulation of
+the collimated laser beam at the SLM plane, and thus the reflected wavefront should simply be a
+plane wave. We perform this calibration to compute ∑|usrc|2 for all three color channels.
+2
+
+
+=== PAGE ===
+2. THE EFFECT OF PROPAGATION DISTANCE ON LIGHT EFFICIENCY AND IMAGE
+BRIGHTNESS
+𝜃
+2D Image Plane
+SLM Plane
+(c)
+2D Image Plane
+SLM Plane
+𝜃
+(d)
+2D Image Plane
+SLM Plane
+𝜃
+(a)
+2D Image Plane
+SLM Plane
+𝑑
+𝜃
+(b)
+𝐿
+Fig. S2. (a) The sub-hologram cone of an SLM pixel. The propagation d is proportional to the
+radius L of the sub-hologram cone. (b) When the sub-hologram of an SLM pixel covers the
+whole projection region, the light modulated by the SLM pixel can in theory be redirected
+anywhere within the projection region. (c) We can also define the sub-hologram cone of a pixel
+on the image plane, which is essentially the flipped version of (a). From this perspective, a
+pixel in the image receives light from all SLM pixels within the sub-hologram cone. (d) When
+the sub-hologram cone of an image pixel covers the whole SLM region, all pixels from the SLM
+contribute to the image formation of that pixel.
+We denote the pixel pitch of the SLM by p, the spatial resolution of the SLM by H × W, the
+maximum diffraction angle of an SLM pixel by θ, the laser wavelength by λ, and the propagation
+distance from the SLM plane to the image plane by d. The maximum diffraction angle θ of an
+SLM pixel can be computed by θ = sin−1 λ
+2p.
+In Fresnel holography, the light diffracted by an SLM pixel can in theory reach anywhere within
+a disk of radius L on the 2D image plane. The extent to which the diffracted light from a single
+SLM pixel can reach is often referred to as the sub-hologram cone [2, 3]. The linear relationship
+between L and d is illustrated in Fig. S2(a) and Eq. S3.
+L
+d = tanθ =⇒L
+d = tan sin−1 λ
+2p =⇒d =
+L
+tan sin−1 λ
+2p
+(S3)
+Conversely, light from all SLM pixels within the disk of radius L can reach a single point on the
+image plane. Hence, to achieve high brightness and light efficiency projection, it is essential that
+we implement our system with a large sub-hologram cone, and incidentally, a long propagation
+distance d.
+As shown in S3, there propagation distance d depends on the wavelength λ of the laser and
+the pixel pitch p of the SLM. Furthermore, to reconstruct a hologram with a larger spatial extent
+(i.e. larger SLM), L also needs to increase. To characterize the propagation distance in a display-
+agnostic fashion, it makes sense to express the d in terms of normalized unit d∗instead of metric
+length. Here, we define the value d∗by
+3
+
+
+=== PAGE ===
+d∗=
+R
+tan sin−1 λ
+2p
+=
+√
+H2 + W2p
+2tan sin−1 λ
+2p
+(S4)
+where R =
+√
+H2+W2p
+2
+is the radius of the smallest circle that covers the full SLM ROI. Now, d can
+be expressed as d = αd∗and the dimensionless value α can be used to characterize propagation
+distance in a display-agnostic fashion. For instance, for displays with α = 1, the subhologram
+cone of the center pixel of the SLM covers the whole imaging region on the 2D image plane, as
+shown in Fig. S3. Given a display, larger α also corresponds to a larger propagation distance as
+the relationship between α and d is linear.
+2D Image Plane
+SLM Plane
+𝑅=
+𝐻! + 𝑊!𝑝
+2
+𝑑∗
+𝜃
+(a)
+2D Image Plane
+SLM Plane
+𝑑= 𝛼𝑑∗
+𝜃
+(b)
+𝐿= 𝛼𝑅
+Fig. S3. As shown in the diagram, d∗is determined by the fixed parameters given a display
+architecture and can be used as a normalized unit. The dimensionless value α is then used to
+express the propagation distance.
+In our system, the pixel pitch p = 10.8 µm. The size of the SLM ROI is 7.56 × 12.85 mm2, hence
+R =
+√
+7.562+12.852
+2
+= 7.45 mm2. We let λ be the wavelength of the green laser, which is 517 nm.
+Hence, d∗= 31.11cm.
+From simulation results in Fig. S4, we see that the light efficiency of the projection system peaks
+around 20 cm = 0.643d∗. The final calibrated propagation distances for red, green, and blue
+channels are 19.7, 19.9, and 20.1 cm, respectively, and corresponds to α values of 0.633, 0.639, 0.643.
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Propagation distance  (d*)
+50
+60
+70
+80
+90
+Light efficiency (%)
+Without light efficiency loss
+With light efficiency loss
+Fig. S4. Light efficiency with respect to propagation distance in simulation. The light efficiency
+performance is evaluated on the whole testing dataset. We see that the light efficiency peaks
+when the propagation distance is around 0.64 d∗(20 cm)
+.
+4
+
+
+=== PAGE ===
+3. SOFTWARE IMPLEMENTATION
+We implement all optimization algorithms and model training procedures in PyTorch, and we
+describe our implementation in detail in the following sections.
+A. Iterative Phase Optimization
+The pseudocode for both SGD-ASM and SGD-model is outlined in Alg. S1. The propagation
+operator fp could either be the angular spectrum method fASM [4] or a learned propagation
+model fmodel [1, 5], which corresponds to the SGD-ASM and SGD-model algorithm, respectively.
+Other than SGD using a learned model and ASM, we also perform SGD with camera-in-the-
+loop (CITL) optimization [1]. Details of the CITL process are explained thoroughly in various
+prior works [1, 6, 7], and we outline the pseudocode in Alg. S2.
+We initialize the phase pattern with values in the range (-0.5, 0.5) and initialize s to 1. The
+scaling factor s is updated in each iteration to minimize the mean-squared-error between s · arecon
+and atarget:
+s∗= argmins∥s · arecon −atarget∥2 = aTreconatarget
+aT
+targetatarget
+(S5)
+where arecon is the amplitude of the predicted 2D hologram image and atarget is the amplitude
+of the target image, both in vectorized form. We run the phase optimization for 2000 iterations
+with a learning rate of 0.02. To optimize heavily quantized phase-only SLMs, we follow the same
+optimization protocol using Gumbel-Softmax as described in Choi et al. [5] to deal with discrete
+(in our case 4 bits, 16 levels) phase levels.
+Algorithm S1. SGD Hologram Optimization
+f_prop(·, z) : propagate a field through any propagation model fp for a distance z
+f_backprop(·) : backpropagation through fp
+loss_backprop(·) : backpropagation through loss function
+s : scaling factor.
+atarget : amplitude of target image
+1: foreach k in 1 . . . K do
+2:
+ˆu ←f_prop(eiϕ, z)
+3:
+s ←| ˆu|Tatarget
+a2
+target
+▷Compute scaling factor to minimize ∥s · | ˆu| −atarget∥2
+4:
+ϕ ←f_backprop(loss_backprop(L(s · | ˆu|, atarget)))
+5: return ϕ
+Algorithm S2. SGD-CITL Hologram Optimization
+f_prop(·, z) : propagate a field through any propagation model fp for a distance z
+camera_prop(·) : camera captured and homography-corrected intensity (raw mode)
+f_backprop(·) : backpropagation through fp
+loss_backprop(·) : backpropagation through loss function
+replace(s, t) : replace values of s with t, but retain gradients from s
+s : scaling factor
+atarget : amplitude of target image
+1: foreach k in 1 . . . K do
+2:
+ˆu ←f_prop(eiϕ, z)
+3:
+I ←camera_prop(ϕ)
+▷Display phase pattern ϕ on SLM and capture
+4:
+s ←| ˆu|Tatarget
+a2
+target
+5:
+ϕ ←f_backprop(loss_backprop(L(s · replace(| ˆu|,
+√
+I), atarget)))
+6: return ϕ
+5
+
+
+=== PAGE ===
+B. Model Architecture and Training Details
+fASM (·, z )
+Target:
+Captured 2D 
+image on 
+projection screen
+Input:
+SLM phase
+Adjusted target 
+amplitudes & phases
+ASM 
+propagation
+CNNtarget
+CNNSLM
+Adjusted SLM 
+amplitudes & phases
+lut
+Propagated target 
+amplitudes & phases
+t
+asrc
+src
+a
+Fig. S5. Network architecture of our calibrated wave propagation model.
+For the learned wave propagation model, we use the same architecture as in Choi et al. [5]. Since
+we are only working with 2D projection, we train our model on one fixed propagation z, which
+is the distance from the SLM to the 2D hologram plane. As shown in [6], the distance from
+the SLM to the hologram plane needs to be calibrated per color channel, and the final distance
+measurements are 19.7, 19.9, and 20.1 cm for red, green, and blue channels, respectively. We use a
+batch size of 4 and a learning rate of 4e−4. We generate 4800 phases using SGD-ASM for each
+color channel and captured the intensities on the projection screen to generate a paired dataset.
+Instead of capturing images formed on the hologram plane, we capture the images displayed
+on the projection screen since this would allow the model to additionally learn to compensate
+for the existing artifacts induced by the projection screen. The dataset is partitioned into train,
+validation, and training sets with a ratio of 8:1:1. The training takes around 24 hours to converge
+on an NVIDIA A6000 GPU.
+6
+
+
+=== PAGE ===
+4. EVALUATION OF BRIGHTNESS
+A. Characterizing Brightness
+Recall that the scaling factor s is computed at each update step to minimize the mean-squared-
+error between s · arecon and atarget. Intuitively, the factor s can be interpreted as the amplitude of
+the laser illumination that is needed such that the captured/reconstructed image intensity best
+matches the target image intensity. Hence, a small s corresponds to lower laser power and high
+image brightness, and vice versa.
+Suppose the scaling factor s of the three color channels is defined by sR, sG, sB. The total power
+budget to display a full-color hologram is therefore s2
+R + s2
+G + s2
+B. The brightness of the full-color
+hologram can therefore be characterized as
+1
+s2
+R+s2
+G+s2
+B .
+B. Comparison with Conventional Displays
+The peak brightness of conventional amplitude modulation displays is limited by the maximum
+output power of the pixels in the backlight panel L. When displaying a target image I using
+conventional displays, the measured intensity of the displayed image would be I · max(L)
+max(I) . The
+scaling factor s is therefore
+r
+max(I)
+max(L). Similar to the calculation in Section A, the brightness of a
+full-color image displayed using conventional displays can be characterized as
+1
+max(IR)
+max(LR) + max(IG)
+max(LG) + max(IB)
+max(LB)
+(S6)
+where IR, IG, IB are the RGB channels of the image, and LR, LG, LB are the maximum output
+power of the RGB pixels.
+To mimic conventional displays using our hologram display engine, we assume that our
+reflective phase SLM operates purely as a mirror and does not perform phase modulation. Each
+SLM pixel is then analogous to the backlight pixels of conventional displays. The maximum
+output power of each pixel is thus max(L) =
+P
+H×W , where P is the calibrated total laser output
+power (See 1-C) and H, W are the spatial resolutions of the SLM. From Fig. S6, we see that under a
+fixed power budget, conventional displays are much dimmer compared to holographic displays.
+Fig. S6. Brightness of holographic displays compared with conventional amplitude modula-
+tion displays under a fixed power budget in simulation. We see that holographic displays can
+achieve much higher brightness given a fixed power budget. Furthermore, the brightness in-
+creases as the propagation distance in the holographic display increases.
+7
+
+
+=== PAGE ===
+5. THE EFFECT OF PROPAGATION DISTANCE ON IMAGE QUALITY
+Fig. S7. Comparison of experimentally captured images optimized using different propagation
+distances. Visible wave-like artifacts are shown in the zoom-in crops of the long propagation
+distance (z = 0.64 d∗) case.
+To perform light reallocation effectively, the propagation distance z from the SLM plane to the 2D
+hologram plane needs to be long enough such that the sub-hologram cones of the SLM pixels
+cover the whole projection region. However, it is generally hard to produce good image quality
+using a long propagation distance due to tricky issues in frequency domain sampling. There has
+been extensive research on more clever wave propagation algorithms that improve holographic
+image quality [8, 9].
+Here, we show SGD with camera-in-the-loop (CITL) [1] optimization results using different
+propagation distances. As shown in Fig. S7, long propagation distances give rise to severe fringe
+artifacts and chromatic blur, suggesting that naive SGD might not work with long propagation
+distances. Hence, we leverage a learned wave propagation model to compensate for these
+artifacts.
+6. THE EFFECT OF LIGHT EFFICIENCY LOSS FUNCTION WEIGHT
+Fig. S8. Qualitative and quantitative results of varying the light efficiency loss function regular-
+ization weight. By increasing the regularization weight, we are able to constrain more light to
+the projection region.
+We show experimentally captured 2D hologram results optimized using different light efficiency
+loss function weights in Fig. S8. As the loss function weight increases, we observe that more
+light is restricted within the projection region, improving image brightness. However, the image
+quality slightly drops. Thus, the light efficiency loss function weight is a parameter that should
+8
+
+
+=== PAGE ===
+be tuned depending on the application. For example, a large weight should be used if display
+brightness is prioritized over image quality, such as outdoor projection under sunlight.
+9
+
+
+=== PAGE ===
+7. EXPERIMENTS ON ASM PROPAGATION AND CAMERA-IN-THE-LOOP (CITL) OPTI-
+MIZATION
+Other than SGD-model presented in the main paper, we also show images optimized using an
+ideal wave propagation model (SGD-ASM) and camera-in-the-loop (CITL) techniques [1] (SGD-
+CITL) in Fig. S9 and compare with SGD-model. For the ideal wave propagator, we use the angular
+spectrum method [4]. Our light efficiency loss function works with both cases although less
+significant, demonstrating the importance of using a camera-calibrated learned wave propagation
+model. Similar to SGD-model, SGD-CITL corrects the illumination nonuniformity artifacts present
+in SGD-ASM but generates fringe artifacts. We suspect that this is mainly due to the incorrect
+gradients that arise from long propagation distances accumulating over CITL optimization steps.
+10
+
+
+=== PAGE ===
+Fig. S9. Comparison of experimentally captured images optimized using different methods.
+The light efficiency loss function also works well for SGD-CITL, but wave-like artifacts arise in
+the final optimized image. SGD-model generates clean results with no noticeable artifacts and
+has the best brightness improvement when optimized with the light efficiency loss function.
+11
+
+
+=== PAGE ===
+8. ADDITIONAL RESULTS ON SGD-MODEL
+This section includes additional captured results in support of those shown in the paper for
+different target images. The light efficiency loss function successfully improves the brightness and
+retains image quality in all cases. We also show a sparse image test result, where the brightness
+improvement is less significant.
+Fig. S10. The light efficiency loss function improves the brightness of projected images by
+around 20-30% for all natural images while maintaining image quality.
+12
+
+
+=== PAGE ===
+9. THE EFFECT OF ROI SIZE ON IMAGE BRIGHTNESS AND IMAGE RECONSTRUC-
+TION QUALITY
+In our main setup, the native resolution of the SLM is 800 × 1280 pixels and the resolution of
+the region of interest (ROI) on the SLM is 700 × 1190 pixels. This translates to a large projection
+region of 12 × 21 cm2 after the 2D hologram is magnified onto the projection screen. SLM pixels
+outside of the ROI are not optimized.
+The reason we used a ROI slightly smaller than the SLM resolution is illustrated in Fig. S11. It
+is impractical to set the ROI to the full support of the wavefield or a spatial extent much larger
+than the SLM area because such a setting would lead to bad image quality, as shown in Fig.
+S11. The degrees of freedom of the SLM pixels are not enough to generate high-image quality
+holograms with spatial resolution significantly larger than the native SLM resolution. As the ROI
+decreases, we see that the image reconstruction performance gradually improves. This is why
+most prior works in CGH [1, 2, 5–7] have an ROI slightly smaller than or equal to the native SLM
+resolution. Our goal is to improve the brightness of the system while maintaining image quality
+for a comfortable viewing experience. Hence, we follow prior works and also employ the setting
+where the ROI is slightly smaller than the SLM resolution.
+Fig. S11. Here, we optimize SLM phases to reconstruct a 2D sinusoidal pattern, as shown in
+Fig. S12. Optimizing a 2D hologram whose spatial resolution is larger than the SLM resolution
+leads to bad image reconstruction quality. As the ROI decreases (leftward on the horizontal
+axis), the image reconstruction quality greatly improves.
+Fig. S12 shows the relationship between brightness improvement and ROI size. In our projector,
+the ROI size is close to the SLM size (1.0 in the plot), and we see a decent improvement in
+brightness. In other applications where we only need a small projection region, i.e. the ROI is
+small, we observe an even more drastic improvement in image brightness and light efficiency
+when the 2D holograms are optimized using our loss function. From the small ROI optimization
+results in Fig. S12(b), we see that most light is not redirected to the ROI when our loss function is
+not applied. The plot in Fig. S12(a) demonstrates that the brightness of a 2D sinusoidal intensity
+pattern improves by 10-fold for a small ROI size of 100 × 160 pixels when images are optimized
+with the light efficiency loss function. This suggests that our loss function is very crucial for small
+projection region applications or cases when the SLM resolution is much higher than the required
+projection region resolution.
+13
+
+
+=== PAGE ===
+Fig. S12. (a) The brightness improvement with respect to ROI size in simulation. As the pro-
+jection area decreases, the effect of our loss function becomes more significant. (b) Holograms
+with small ROI (1/4 of the SLM resolution) optimized without (top) and with (bottom) our loss
+function. The ROI is the center region with the sinusoidal pattern. (c) Holograms with large
+ROI (full SLM resolution) optimized without (top) and with (bottom) our loss function. Note
+that the image brightness here is adjusted to clearly show the light outside of the unoptimized
+region, and does not represent the actual image brightness.
+We repeat the same experiment for a natural image and the results are shown in Fig. S13 and
+Fig. S14. Similar trends can observed in both plots.
+Fig. S13. The same trend in Fig. S11 can be observed for natural images. Here, we optimize
+SLM phases to reconstruct a 2D natural image, as shown in Fig. S14. Optimizing a 2D holo-
+gram whose spatial resolution is larger than the SLM resolution leads to bad image reconstruc-
+tion quality. As the ROI decreases (leftward on the horizontal axis), the image reconstruction
+quality greatly improves.
+14
+
+
+=== PAGE ===
+Fig. S14. The same trend in Fig. S12 can be observed for natural images. (a) The brightness
+improvement with respect to ROI size in simulation. As the projection area decreases, the effect
+of our loss function becomes more significant. (b) Holograms with small ROI (1/4 of the SLM
+resolution) optimized without (top) and with (bottom) our loss function. The ROI is the center
+region with the sinusoidal pattern. (c) Holograms with large ROI (full SLM resolution) opti-
+mized without (top) and with (bottom) our loss function. Note that the image brightness here
+is adjusted to clearly show the light outside of the unoptimized region, and does not represent
+the actual image brightness.
+15
+
+
+=== PAGE ===
+10. BRIGHTNESS IMPROVEMENT COMPARISON BETWEEN SIMULATION AND EX-
+PERIMENTAL RESULTS
+We average the brightness improvement of holograms when using our loss function over the
+whole testing set. In simulation, the brightness improvement is 66%. For the experimentally
+captured results, the brightness improvement is 33%. Although this seems like a fairly large
+difference, we believe this discrepancy can be attributed to the the way we performed our
+brightness calculation based on the scale factor s (see Section 4 of supplementary materials). The
+scale factor s is computed such that the reconstructed hologram best matches the target hologram
+intensity in terms of pixel-wise mean-squared error. This makes the brightness calculation very
+sensitive to the captured image quality. In our experimental setup, there are multiple sources of
+error during capture, such as camera dark shot noise, which effects the scale factor s and hence the
+brightness calculation. In the future, we plan to use more precise methods to measure the total
+luminous flux of the projected holograms and compute actual brightness of the image.
+Another source of error comes from the total energy term in Eq. 3 in the manuscript. In practice,
+we calculate the total allocatable energy by calculating the intensity sum of the captured image
+when a blank phase pattern is displayed on the SLM. However, errors such as camera dark shot
+noise will affect the precision of measurement. In the future, we plan to use more precise methods
+to measure the total luminous flux of the projected holograms and compute the actual allocatable
+energy of the holograms.
+In conclusion, although there is a mismatch between the simulated and captured hologram
+brightness improvement, we believe our brightness calculation method serves as a good proxy
+and that more precise measurement methods can be adopted in the future to bridge the gap
+between experimentally captured and simulated results.
+16
+
+
+=== PAGE ===
+REFERENCES
+1.
+Y. Peng, S. Choi, N. Padmanaban, and G. Wetzstein, “Neural holography with camera-in-the-
+loop training,” ACM Transactions on Graph. 39, 1–14 (2020).
+2.
+L. Shi, B. Li, C. Kim, P. Kellnhofer, and W. Matusik, “Towards real-time photorealistic 3d
+holography with deep neural networks,” Nature 592 (2021).
+3.
+A. Maimone, A. Georgiou, and J. S. Kollin, “Holographic near-eye displays for virtual and
+augmented reality,” ACM Trans. Graph. 36 (2017).
+4.
+J. W. Goodman, Introduction to Fourier optics (W.H. Freeman, Macmillan Learning, New York,
+2017), fourth edition ed.
+5.
+S. Choi, M. Gopakumar, Y. Peng, J. Kim, M. O’Toole, and G. Wetzstein, “Time-multiplexed
+Neural Holography: A Flexible Framework for Holographic Near-eye Displays with Fast
+Heavily-quantized Spatial Light Modulators,” in Special Interest Group on Computer Graphics
+and Interactive Techniques Conference Proceedings, (ACM, Vancouver BC Canada, 2022), pp. 1–9.
+6.
+S. Choi, J. Kim, Y. Peng, and G. Wetzstein, “Optimizing Image Quality for Holographic
+Near-eye Displays with Michelson Holography,” OSA Opt. (2021).
+7.
+Y. Peng, S. Choi, J. Kim, and G. Wetzstein, “Speckle-free holography with partially coherent
+light sources and camera-in-the-loop calibration,” Sci. Adv. 7, eabg5040 (2021).
+8.
+K. Matsushima and T. Shimobaba, “Band-limited angular spectrum method for numerical
+simulation of free-space propagation in far and near fields,” Opt. Express 17, 19662–19673
+(2009).
+9.
+W. Zhang, H. Zhang, and G. Jin, “Band-extended angular spectrum method for accurate
+diffraction calculation in a wide propagation range,” Opt. Lett. 45, 1543–1546 (2020).
+17

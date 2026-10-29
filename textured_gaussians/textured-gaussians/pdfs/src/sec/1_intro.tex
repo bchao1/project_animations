@@ -1,0 +1,43 @@
+\section{Introduction}
+\label{sec:intro}
+Neural rendering \cite{tewari2022advances} achieves unprecedented novel-view synthesis and 3D reconstruction quality, offering solutions to a myriad of applications ranging from surface reconstruction \cite{li2023neuralangelo, wang2021neus}, SLAM \cite{rosinol2023nerfslam, nice2022CVPR}, material estimation and relighting \cite{nerfactor2021, nerv2021}, to virtual teleportation and human avatar animation \cite{weng2022humannerf, su2021anerf}. Recently, 3D Gaussian Splatting~(3DGS)~\cite{kerbl3Dgaussians} emerged as a state-of-the-art novel-view synthesis technique, with desirable properties such as high image quality results, fast training and rendering time, and an explicit primitives-based representation. 
+Subsequent works in Gaussian Splatting have focused on topics such as improving surface reconstruction quality \cite{Huang2DGS2024, guedon2023sugar}, scene editing \cite{guedon2024frosting, chen2024gaussianeditor}, dynamic scene reconstruction \cite{ yang2023deformable3dgs,shih2024modeling}, and 3D generation \cite{tang2023dreamgaussian, ren2023dreamgaussian4d}.
+Despite the success, 3DGS sometimes fails to model detailed appearances, as demonstrated in Figure~\ref{fig:teaser}.
+%However, few works have worked on improving the expressivity of individual Gaussian primitives. % to improve novel view synthesis performance.
+
+% HY: Despite the success, 3DGS fails to reconstruct 
+
+In 3DGS, each Gaussian can only represent a single color and the shape of an ellipsoid given a camera viewpoint. 
+This dramatically limits the set of appearances and shapes a single Gaussian can represent. 
+To address the issue, \citet{huang2024spatial} modified the viewing direction calculation in 3DGS such that pixels covered by the same Gaussian exhibit a smooth color and opacity variation. 
+However, this color variation across a single Gaussian is minuscule due to the spherical harmonics representation of colors, preventing them from representing complex textures. ~\citet{xu2024texturegs} proposed only using Gaussians to represent scene geometry and leveraged a learned UV mapping module and a global 2D RGB texture map to project textures onto Gaussian surfaces. 
+However, the unit-sphere representation of textures significantly constrains the capacity of their model, and thus, their method fails to reconstruct objects with complex geometry or large-scale scenes.
+
+Our method builds upon 3DGS and draws inspiration from mesh-based 3D representations that model appearance using texture mapping. 
+As shown in Figure~\ref{fig:rgba_textures}, we augment each Gaussian with its alpha, RGB, or RGBA texture map so that each Gaussian is capable of representing a rich set of textures and shapes.
+We call this representation~\emph{Textured Gaussians}. 
+With RGB textures, individual Gaussians can represent higher-frequency color variations. 
+The alpha maps allow Gaussians to represent a wider variety of shapes, instead of just ellipsoids. 
+To achieve this, we build custom CUDA kernels that perform ray-Gaussian intersection and texture mapping and integrate them with 3DGS. 
+Consequently, our method not only inherits all desirable properties of 3DGS, such as fast training and rendering time and explicit 3D representation, but also substantially improves rendered image quality, especially with a small number of Gaussians. 
+
+% We summarize our contributions as follows ...
+In summary, our contributions include:
+\begin{itemize}
+    \item Introduction of a generalized appearance model for 3D Gaussians that handles spatially varying color and opacity by augmenting 3D Gaussians with alpha, RGB, or RGBA texture maps. 
+    \item Validation that Textured Gaussians improves 3DGS on a wide variety of \textit{both} object-level and scene-level datasets.
+    \item Demonstration that our method greatly outperforms 3DGS when the number of Gaussians is small and achieves better performance than 3DGS with alpha-only textures given the same model size.
+\end{itemize}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{sec/figures/rgba_textures.pdf}
+    \caption{\textbf{Variants of our Textured Gaussians model.} 
+    Textured Gaussians encapsulate four kinds of color and opacity spatial variations. 
+    The top row of the figure shows the texture map associated with each Gaussian, and the bottom row shows the rendered Textured Gaussians. 
+    The constant-color and constant-alpha model (no textures) corresponds to the original 3DGS formation, which can only represent a single color up to a Gaussian falloff factor within the Gaussian extent. 
+    Textured Gaussians can already model spatially varying colors using only alpha textures since each pixel can be alpha-composited differently. 
+    The model achieves maximum expressivity when leveraging the full RGBA texture map, where each Gaussian is capable of representing complex shapes and high frequency textures.}
+    \label{fig:rgba_textures}
+\end{figure}
+

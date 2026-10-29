@@ -1,0 +1,20 @@
+/home/brianchc/project_animations/coded_aperture_lf_display/scratch/toy_direct.py:31: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  print(it, round(float(loss), 4), round(psnr(Fc.detach(), Fg), 2), round(time.time() - t0), flush=True)
+baseline 22.00228500366211 2.2271952629089355
+0 0.0829 20.34 3
+200 0.0265 28.34 12
+400 0.0201 30.55 20
+600 0.018 31.63 28
+800 0.017 32.13 37
+1000 0.0163 32.43 45
+1200 0.0159 32.63 53
+1400 0.0156 32.74 63
+1600 0.0154 32.81 72
+1800 0.0152 32.85 80
+2000 0.0151 32.89 89
+2200 0.0151 32.92 98
+2400 0.015 32.94 107
+2600 0.0149 32.97 115
+2800 0.0149 32.99 123
+2999 0.0148 33.01 131

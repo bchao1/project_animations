@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Models — 10 s clip, pick a style</title>
+<style>
+  :root { --bg:#0e1016; --card:#161922; --fg:#eceff4; --muted:#8a93a3; --line:#2a2f3a; --pick:#f0ac5f; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: Lato, "Helvetica Neue", Arial, sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:rgba(14,16,22,.94); backdrop-filter:blur(6px);
+           border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:18px; letter-spacing:.14em; margin:0 12px 0 0; font-weight:900; }
+  .sub { color:var(--muted); font-size:14px; }
+  button { background:#232834; color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:7px 12px;
+           font:inherit; font-size:14px; cursor:pointer; }
+  button:hover { border-color:#58c4dd; }
+  #picked { margin-left:auto; font-size:14px; color:var(--muted); }
+  #picked b { color:var(--pick); }
+  main { display:grid; grid-template-columns:repeat(auto-fill, minmax(520px, 1fr)); gap:22px; padding:24px; }
+  .card { background:var(--card); border:2px solid transparent; border-radius:14px; overflow:hidden; transition:border-color .15s; }
+  .card.is-picked { border-color:var(--pick); }
+  video { display:block; width:100%; aspect-ratio:16/9; background:#000; cursor:zoom-in; }
+  .meta { display:flex; align-items:center; gap:12px; padding:12px 14px; }
+  .num { font-weight:900; font-size:20px; color:var(--muted); min-width:34px; }
+  .name { font-weight:700; font-size:16px; }
+  .desc { color:var(--muted); font-size:13px; margin-top:3px; line-height:1.35; }
+  .meta .grow { flex:1; }
+  .pick.on { background:var(--pick); color:#111; border-color:var(--pick); font-weight:700; }
+  a.dl { color:var(--muted); font-size:13px; text-decoration:none; }
+  a.dl:hover { color:var(--fg); }
+  #lightbox { position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:10; }
+  #lightbox.open { display:flex; }
+  #lightbox video { width:min(96vw, 170vh); cursor:zoom-out; }
+  #lightbox .cap { position:absolute; top:14px; left:20px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>WORLD MODELS</h1>
+  <span class="sub">10 s clip · 10 styles · 1080p60 · click a video to view it large</span>
+  <button id="sync">Restart all in sync</button>
+  <button id="copy">Copy my picks</button>
+  <span id="picked">Picked: <b>none yet</b></span>
+</header>
+<main id="grid"></main>
+<div id="lightbox"><span class="cap"></span><video controls loop playsinline></video></div>
+<script>
+const STYLES = [
+  ["s01_chips", "Control chips", "WORLD MODELS = Camera + Hands + Time + Memory; each paper lights its chip. Card + paper figures + lower-third."],
+  ["s02_fullbleed", "Full-bleed stories", "Demo fills the frame, story-style progress bars on top, figure inset, whip-slide transitions."],
+  ["s03_equation", "Equation + brace", "next frames = G( past | camera, hands, time, memory ); a brace slides to each control."],
+  ["s04_gridzoom", "Grid zoom", "Opens on a 2×2 wall of all four demos, zooms into each, pulls back out at the end."],
+  ["s05_carousel", "Carousel", "Cards slide sideways; neighbours peek in dimmed; figure sticker on the card."],
+  ["s06_paper2demo", "Paper → demo", "Paper figure → arrow with animated icon → generated world; step tracker along the bottom."],
+  ["s07_paperwhite", "Paper white", "Light theme: venue pills, soft shadows, a dot walking along a control line."],
+  ["s08_glyph2video", "Glyph → video", "Big animated concept diagram per idea; the demo grows out of it and it shrinks to a badge."],
+  ["s09_frustum", "Camera frustum", "A wireframe camera projects onto the demo; light pulses down the rays at each change."],
+  ["s10_kinetic", "Kinetic type", "Big title types on over dimmed footage, then glides to a lower-third as it brightens."],
+];
+const grid = document.getElementById("grid");
+const picks = new Set(JSON.parse(localStorage.getItem("wm_picks") || "[]"));
+function renderPicks() {
+  const el = document.querySelector("#picked b");
+  const list = STYLES.filter(s => picks.has(s[0])).map(s => s[0].slice(1, 3) + " " + s[1]);
+  el.textContent = list.length ? list.join(", ") : "none yet";
+  localStorage.setItem("wm_picks", JSON.stringify([...picks]));
+}
+STYLES.forEach(([id, name, desc]) => {
+  const card = document.createElement("div");
+  card.className = "card" + (picks.has(id) ? " is-picked" : "");
+  card.innerHTML = `
+    <video src="videos/${id}.mp4" poster="posters/${id}.jpg" muted loop playsinline preload="auto" autoplay></video>
+    <div class="meta">
+      <div class="num">${id.slice(1, 3)}</div>
+      <div class="grow"><div class="name">${name}</div><div class="desc">${desc}</div></div>
+      <a class="dl" href="videos/${id}.mp4" download="WorldModels_${id}_1080p60.mp4">download</a>
+      <button class="pick ${picks.has(id) ? "on" : ""}">${picks.has(id) ? "Picked" : "Pick"}</button>
+    </div>`;
+  const btn = card.querySelector(".pick");
+  btn.onclick = () => {
+    picks.has(id) ? picks.delete(id) : picks.add(id);
+    const on = picks.has(id);
+    btn.classList.toggle("on", on); btn.textContent = on ? "Picked" : "Pick";
+    card.classList.toggle("is-picked", on); renderPicks();
+  };
+  card.querySelector("video").onclick = () => {
+    const lb = document.getElementById("lightbox"), v = lb.querySelector("video");
+    lb.querySelector(".cap").textContent = `${id.slice(1, 3)} · ${name}  (click outside or Esc to close)`;
+    v.src = `videos/${id}.mp4`; v.currentTime = 0; v.muted = true; lb.classList.add("open"); v.play();
+  };
+  grid.appendChild(card);
+});
+renderPicks();
+document.getElementById("sync").onclick = () =>
+  document.querySelectorAll("#grid video").forEach(v => { v.currentTime = 0; v.play(); });
+document.getElementById("copy").onclick = () => {
+  const txt = document.querySelector("#picked b").textContent;
+  navigator.clipboard?.writeText(txt).then(() => { document.getElementById("copy").textContent = "Copied!";
+    setTimeout(() => document.getElementById("copy").textContent = "Copy my picks", 1200); });
+};
+const lb = document.getElementById("lightbox");
+lb.onclick = e => { if (e.target === lb || e.target.tagName === "VIDEO") { lb.classList.remove("open"); lb.querySelector("video").pause(); } };
+document.addEventListener("keydown", e => { if (e.key === "Escape") { lb.classList.remove("open"); lb.querySelector("video").pause(); } });
+</script>
+</body>
+</html>

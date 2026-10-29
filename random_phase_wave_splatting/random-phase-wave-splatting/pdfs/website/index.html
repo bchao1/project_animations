@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="A novel algorithm to convert optimized 2D Gaussians from Gaussian splatting to holograms.">
+  <meta name="keywords" content="holography, holographic displays, gaussian splatting, neural rendering, 3DGS, wave propagation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-full-width">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">
+            <span style="font-weight: 900;">Random-phase Gaussian Wave Splatting</span><br><span style="font-weight: 100;">for Computer-generated Holography</span>
+          </h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://bchao1.github.io">Brian Chao</a>*
+            </span>
+            <span class="author-block">
+              <a href="">Jackie Yang</a>*
+            </span>
+            <span class="author-block">
+              <a href="https://choisuyeon.github.io">Suyeon Choi</a>
+            </span>
+            <span class="author-block">
+              <a href="https://manugopa.github.io">Manu Gopakumar</a>
+            </span>
+            <span class="author-block">
+              <a href="https://manugopa.github.io">Ryota Koiso</a>
+            </span>
+            <span class="author-block">
+              <a href="https://web.stanford.edu/~gordonwz/">Gordon Wetzstein</a>
+            </span>
+            <p style="font-size: smaller;">*equal contribution</p>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Stanford University</span>
+          </div>
+          <!---
+          <div class="is-size-4 publication-authors">
+            <span class="author-block"><em></em></span>
+          </div>
+        -->
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="static/files/gws_rp.pdf"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Arxiv Link. -->
+              
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2508.17480"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+            
+              
+              <!-- Video Link. -->
+              <!---
+              <span class="link-block">
+                <a href="https://www.youtube.com/watch?v=ttDCDbhEf7Q"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span>
+              
+              <span class="link-block">
+                <a href="https://drive.google.com/drive/folders/15FvHyIU-k80BaLLSV0zGOM_WidRPoo4U"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-google-drive"></i>
+                  </span>
+                  <span>Paper (High-Res & Compressed)</span>
+                </a>
+              </span>
+            -->
+              
+              <!--
+              <span class="link-block">
+                <a href=""
+                   class="button is-normal is-rounded is-dark">
+                  <span>Results</span>
+                  </a>
+              </span>
+              -->
+              <!-- Code Link. -->
+               <!--
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (Coming Soon)</span>
+                  </a>
+              </span>
+            -->
+            </div>
+          </div>
+          
+          <!-- Related Work Section -->
+          <div class="column has-text-centered" style="margin-top: 2rem;">
+            <div class="notification is-info is-light" style="max-width: 50%; margin: 0 auto;">
+              <p class="is-size-5">
+                <strong>Related Work:</strong> Please visit our 
+                <a href="https://bchao1.github.io/gaussian-wave-splatting/" class="has-text-weight-bold">
+                  Gaussian Wave Splatting (GWS)
+                </a> 
+                project website to learn about our prior work on converting Gaussians to <i>smooth-phase</i> holograms.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="teaser-video-container">
+        <div class="teaser-video-wrapper" id="teaser-video-wrapper">
+          <video id="teaser-video" preload="auto" autoplay loop muted playsinline>
+            <source src="static/videos/captured/kitchen.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p class="has-text-centered is-8" style="margin-top: 10px; margin-bottom: 10px;"><strong>Experimentally captured 3D focal stacks of generated holograms on a holographic display prototype.</strong><br> (hover over the video to pause)</p>
+      <div class="buttons is-centered">
+        <button class="button is-active-teaser" id="teaser-button-kitchen" onclick="selectTeaserScene('kitchen')">Kitchen</button>
+        <button class="button" id="teaser-button-materials" onclick="selectTeaserScene('materials')">Materials</button>
+        <button class="button" id="teaser-button-hotdog" onclick="selectTeaserScene('hotdog')">Hotdog</button>
+      </div>
+      <h2 class="subtitle has-text-centered">
+        Gaussian splatting techniques take a few casually captured photographs as 
+        input and output a Gaussian scene representation. <strong>Random-phase Gaussian Wave Splatting (GWS-RP) </strong> 
+        turns these types of representations into holograms that reconstructs <strong>natural, physically-accurate defocus blur and light field parallax</strong>
+        that can be directly displayed on emerging holographic displays.  
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="carousel-label" class="column is-full-width">
+        <div class="column has-text-centered">
+          <h2 class="title is-4">Experimentally Captured Focal Stacks of Random-phase GWS (GWS-RP) Holograms</h2>
+        </div>
+      </div>
+      <div id="carousel-div" class="carousel results-carousel">
+        <div class="item item-bicycle">
+          <video poster="" id="bicycle" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/bicycle.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-counter">
+          <video poster="" id="counter" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/counter.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-kitchen">
+          <video poster="" id="kitchen" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/kitchen.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-materials">
+          <video poster="" id="materials" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/materials.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-hotdog">
+          <video poster="" id="hotdog" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/hotdog.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-lego">
+          <video poster="" id="lego" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/lego.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-ship">
+          <video poster="" id="ship" autoplay muted loop playsinline height="100%">
+            <source src="static/videos/captured/ship.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <br>
+      <p class="has-text-centered">
+        We experimentally captured 3D focal stacks of generated holograms on a holographic display prototype.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Holographic near-eye displays offer ultra-compact form factors for virtual and augmented reality systems, 
+          but rely on advanced computer-generated holography (CGH) algorithms to convert 3D scenes into interference patterns 
+          that can be displayed on spatial light modulators (SLMs). <strong><a href="https://bchao1.github.io/gaussian-wave-splatting/">Gaussian Wave Splatting (GWS)</a></strong> 
+          has recently emerged as a 
+          powerful CGH paradigm that allows for the conversion of Gaussians, a state-of-the-art neural 3D representation, into holograms. 
+          However, GWS assumes smooth-phase distributions over the Gaussian primitives, limiting their ability to model view-dependent effects 
+          and reconstruct accurate defocus blur, and severely under-utilizing the space--bandwidth product of the SLM. 
+          </p>
+
+          <p>
+            In this work, we propose <strong>random-phase GWS (GWS-RP)</strong> to improve bandwidth utilization, 
+            which has the effect of increasing eyebox size, 
+            reconstructing accurate defocus blur and parallax, and supporting time-multiplexed rendering to suppress speckle artifacts. 
+            At the core of GWS-RP are 
+            <ol>
+              <li>a fundamentally new <strong>wavefront compositing procedure</strong> and</li>
+              <li>an <strong>alpha-blending scheme</strong> specifically 
+                designed for random-phase Gaussian primitives, ensuring physically correct color reconstruction and robust occlusion handling. </li>
+            </ol>
+
+            Additionally, we present the <i>first formally derived algorithm</i> for applying random phase to Gaussian primitives, 
+            grounded in rigorous statistical optics analysis and validated through practical near-eye display applications. 
+            Through extensive simulations and experimental validations, we demonstrate that these advancements, collectively 
+            with time-multiplexing, uniquely enables full-bandwith light field CGH that supports accurate accurate parallax and defocus,
+            yielding state-of-the-art image quality and perceptually faithful 3D holograms for next-generation near-eye displays.            
+          </p>
+
+ 
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+<section class="section fullwidth">
+  <div class="container is-max-desktop">
+<!-- Model Pipeline. -->
+<div class="columns is-centered has-text-centered">
+  <div class="column is-full-width">
+    <h2 class="title is-3">Overview</h2>
+    <div class="content has-text-centered">
+      <img src="./static/images/overview.svg" style="width: 100%;">
+    </div>
+    <div class="content has-text-justified">
+      <p>
+        <strong>Random-phase Gaussian Wave Splatting (GWS-RP)</strong> takes a set of optimized <a href="https://surfsplatting.github.io/">2D Gaussians </a> 
+        as input and outputs a hologram that can be directly displayed on emerging holographic displays. Unlike <a href="https://bchao1.github.io/gaussian-wave-splatting/">Gaussian Wave Splatting (GWS)</a>, 
+        which assumes smooth-phase distributions over the Gaussian primitives, GWS-RP applies random phases to the Gaussians, which <b>increases the eyebox size, 
+          reconstructs accurate defocus blur and parallax, and supports time-multiplexed rendering to suppress speckle artifacts</b>.
+        
+        At the core of GWS-RP is
+
+        <ol style="list-style-type: decimal; padding-left: 20px;">
+          <li>a novel wavefront compositing and alpha-blending scheme (<strong>Random-phase Alpha Blending</strong>), and</li>
+          <li>a principled way of applying random phases to Gaussian primitives (<strong>Structured Random Phase</strong>).</li>
+        </ol>
+
+        These advancements collectively lead to high image quality and perceptually realistic 3D holograms for next-generation near-eye displays, 
+        as we demonstrate through extensive simulated and experimental results.
+      </p>
+    </div>
+    
+          <h3 class="title is-4 has-text-centered">1. Random-phase Alpha Blending</h3>
+      <div class="content has-text-centered">
+        <img src="./static/images/alpha_blending.svg" style="width: 100%;">
+      </div>
+    <div class="content has-text-justified">
+      <p>
+        We propose a novel wavefront compositing scheme that performs back-to-front compositing of Gaussian primitives, 
+        inspired by the silhouette method from prior polygon-based computer-generated holography (CGH) research. Furthermore, 
+        we introduce a completely new alpha-blending formulation compatible with arbitrary random-phase primitives, based on the observation
+        that alpha blending of wavefronts is linear in the <i>intensity</i> domain for random-phase wavefronts, instead of 
+        the <i>amplitude</i> domain for smooth-phase wavefronts.
+        <br>
+        <br>
+        Together, these two algorithmic advancements reproduce accurate color and reconstructs exact defocus blur and occlusion of random-phase 
+        Gaussian wavefronts, while fully eliminating the dark halo artifacts commonly observed in previous alpha-blending approaches.
+      </p>
+    </div>
+          <h3 class="title is-4 has-text-centered">2. Structured Random Phase</h3>
+      <div class="content has-text-centered">
+        <img src="./static/images/structured_rp.png" style="width: 80%;">
+      </div>
+    <div class="content has-text-justified">
+      <p>
+        We discuss a principled way of applying random phases to Gaussian primitives, <strong>which allows for the correct modeling of 
+        any angular emission profile, or Fourier spectrum, of the Gaussian primitive while maintaining its amplitude distribution in 
+        the spatial domain</strong>. This is different from prior random-phase CGH methods where only fully diffuse surfaces can be reconstructed.
+        This allows for the correct reconstruction of 
+        view-dependent effects such as specular colors using spherical harmonics, and introduces new capabilities for GWS-RP such as 
+       <strong>programmatical control of the depth of field of the hologram</strong>. For the first time, we provide rigorous and extensive proofs 
+        grounded in statistical optics that validate the mathematical correctness of the heuristic outlined in the GWS supplemental materials.
+      </p>
+    </div>
+  </div>
+</div>
+<!--/ Model Pipeline -->
+</div>
+</section>
+
+<section class="section">
+  <div class="container is-fluid">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Interactive Comparisons</h2>
+        
+        <!-- 3D Focal Stack Comparison -->
+        <div class="columns is-variable is-4 mb-6">
+          <!-- Left side controls -->
+          <div class="column is-4">
+            <div class="box">
+              <h3 class="subtitle is-4 has-text-centered">3D Focal Stack Comparison</h3>
+              
+              <!-- Scene selector -->
+              <div class="field">
+                <label class="label">Scene</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="scene-selector">
+                      <option value="bicycle">Bicycle</option>
+                      <option value="counter">Counter</option>
+                      <option value="kitchen">Kitchen</option>
+                      <option value="materials">Materials</option>
+                      <option value="hotdog">Hotdog</option>
+                      <option value="lego">Lego</option>
+                      <option value="chair">Chair</option>
+                      <option value="ship">Ship</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Phase selector buttons -->
+              <div class="field">
+                <div class="buttons is-centered phase-buttons">
+                  <button class="button is-rounded is-active" data-phase="smooth">Smooth-phase GWS</button>
+                  <button class="button is-rounded" data-phase="random">Random-phase GWS</button>
+                </div>
+              </div>
+              
+
+              
+              <div class="content has-text-justified mt-4">
+                <p class="description-text">
+                  Select different scenes and GWS variants to compare the 3D focal stack reconstruction quality 
+                  between smooth-phase and random-phase GWS approaches.
+                  Random-phase GWS shows improved bandwidth utilization and more accurate defocus blur 
+                  while smooth-phase GWS exhibits unnatural defocus blur with ringing artifacts.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right side video display -->
+          <div class="column is-8">
+            <div class="box video-container has-text-centered">
+              <video id="focal-stack-video" muted loop playsinline style="width: 100%; border: 2px solid black;">
+                <source src="./static/videos/sim_fs_videos/bicycle_smooth.mp4" type="video/mp4">
+              </video>
+              <!--<p class="video-caption mt-2">3D Focal Stack Reconstruction</p>
+              
+              <!-- Depth Slider -->
+              <div class="depth-slider-container mt-4" style="width: 80%; margin: 0 auto;">
+                <div class="depth-labels">
+                  <span class="depth-label">Far</span>
+                  <span class="depth-label">Near</span>
+                </div>
+                <div class="depth-slider-track">
+                  <div class="depth-slider-thumb" id="depth-slider-thumb"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 4D Light Field Comparison -->
+        <div class="columns is-variable is-4">
+          <!-- Left side controls -->
+          <div class="column is-4">
+            <div class="box">
+              <h3 class="subtitle is-4 has-text-centered">4D Light Field Comparison</h3>
+              
+              <!-- Scene selector -->
+              <div class="field">
+                <label class="label">Scene</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="scene-selector-2">
+                      <option value="bicycle">Bicycle</option>
+                      <option value="counter">Counter</option>
+                      <option value="kitchen">Kitchen</option>
+                      <option value="materials">Materials</option>
+                      <option value="hotdog">Hotdog</option>
+                      <option value="lego">Lego</option>
+                      <option value="chair">Chair</option>
+                      <option value="ship">Ship</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Phase selector buttons -->
+              <div class="field">
+                <div class="buttons is-centered phase-buttons-2">
+                  <button class="button is-rounded is-active" data-phase="smooth">Smooth-phase GWS</button>
+                  <button class="button is-rounded" data-phase="random">Random-phase GWS</button>
+                </div>
+              </div>
+              
+              <div class="content has-text-justified mt-4">
+                <p class="description-text">
+                  Select different scenes and GWS variants to compare the 4D light field <strong>horizontal parallax</strong> effects 
+                  between smooth-phase and random-phase GWS approaches.
+                  Random-phase GWS demonstrates natural view-dependent effects and improved parallax, while
+                  smooth-phase GWS suffer from severe image quality degradation as the pupil moves away from the center of the 
+                  eyebox.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right side video display -->
+          <div class="column is-8">
+            <div class="box video-container has-text-centered">
+              <video id="lightfield-video" muted loop playsinline style="width: 100%; border: 2px solid black;">
+                <source src="./static/videos/sim_lf_videos/bicycle_smooth.mp4" type="video/mp4">
+              </video>
+              <!--<p class="video-caption mt-2">4D Light Field Parallax</p>-->
+              
+              <!-- Parallax Slider -->
+              <div class="depth-slider-container mt-4" style="width: 80%; margin: 0 auto;">
+                <div class="depth-labels">
+                  <span class="depth-label">Left</span>
+                  <span class="depth-label">Right</span>
+                </div>
+                <div class="depth-slider-track">
+                  <div class="depth-slider-thumb" id="parallax-slider-thumb"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Extended 4D Light Field Results -->
+        <div class="columns is-variable is-4">
+          <!-- Left side controls -->
+          <div class="column is-4">
+            <div class="box">
+              <h3 class="subtitle is-4 has-text-centered">Extended 4D Light Field Results</h3>
+              
+              <!-- Scene selector -->
+              <div class="field">
+                <label class="label">Scene</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="scene-selector-3">
+                      <option value="bicycle">Bicycle</option>
+                      <option value="counter">Counter</option>
+                      <option value="kitchen">Kitchen</option>
+                      <option value="materials">Materials</option>
+                      <option value="hotdog">Hotdog</option>
+                      <option value="lego">Lego</option>
+                      <option value="chair">Chair</option>
+                      <option value="ship">Ship</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="content has-text-justified mt-4">
+                <p class="description-text">
+                  Select different scenes to view extended 4D light field results with <strong>full 2D parallax</strong> using random phase GWS. These results demonstrate the full range of 
+                  view-dependent effects and natural parallax across various scenes.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right side video display -->
+          <div class="column is-8">
+            <div class="box video-container has-text-centered">
+              <video id="extended-lightfield-video" autoplay muted loop playsinline style="width: 100%; border: 2px solid black;">
+                <source src="./static/videos/parallax_sim/bicycle.mp4" type="video/mp4">
+              </video>
+              <p class="video-caption mt-2">4D Light Field Parallax from Random Phase GWS</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" class="fullwidth-gray-bg">
+  <div class="container">
+    <section class="section" id="BibTeX">
+      <div class="container is-max-desktop content">
+        <h2 class="title">BibTeX</h2>
+        <pre><code>
+          @misc{chao2025randgws,
+            title={Random-phase Gaussian Wave Splatting for Computer-generated Holography},
+            author={Chao, Brian and Yang, Jacqueline and Choi, Suyeon and Gopakumar, Manu and Koiso, Ryota and Wetzstein, Gordon},
+            year={2025},
+          }
+        </code></pre>
+      </div>
+    </section>
+    <div class="content has-text-centered">
+      
+      <a class="icon-link"
+         href="https://arxiv.org/pdf/2505.06582">
+        <i class="ai ai-arxiv"></i>
+      </a>
+    
+      <a class="icon-link" href="" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+      <a class="icon-link" href="https://drive.google.com/file/d/1tdLECuTQ-z7GU1ueCJBeKqGuSVu9Lbry/view?usp=sharing" class="external-link" disabled>
+        <i class="fab fa-google-drive"></i>
+      </a>
+      <br>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            This means you are free to borrow the <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a> of this website,
+            we just ask that you link back to this page in the footer.
+            Please remember to remove the analytics code included in the header of the website which
+            you do not want on your website.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

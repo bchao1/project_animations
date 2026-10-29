@@ -1,0 +1,23 @@
+Gaussian-based scene representations have been shown to be expressive and efficiently rendered via differentiable splatting. Our work builds on recent 2DGS methods~\cite{huang20242d}, where a 2D or flat Gaussian is defined by its center $\bm{\mu} \in \mathbb{R}^3$, two principal tangent vectors $\mathbf{t}_u, \mathbf{t}_v \in \mathbb{R}^3$ that control the orientation of the Gaussian, and two scaling factors $s_u, s_v \in \mathbb{R}$ that control the variance of the Gaussian. 
+
+%In 2DGS \cite{huang20242d}, 3D scenes are represented with 2D Gaussian disks instead of 3D Gaussians \cite{kerbl20233d}, and images are rendered using differentiable volume rendering. Specifically, 2DGS explicitly defines a 2D Gaussian by its center $\bm{\mu} \in \mathbb{R}^3$, two principal tangential vectors $\mathbf{t}_u, \mathbf{t}_v \in \mathbb{R}^3$ that control the orientation of the Gaussian, and two scaling factors $s_u, s_v \in \mathbb{R}$ that control the variance of the Gaussian. 
+
+To render the color of a pixel, the colors associated with each Gaussian are alpha-composited from front to back as
+%following the conventional volume rendering equation:
+%
+\begin{equation}
+    \mathbf{c} = \sum_{\idx=1}^\maxidx \mathbf{c}_\idx \alpha_\idx \prod_{j=1}^{\idx-1}(1 - \alpha_j), \label{eq:gs_volume_rendering}
+\end{equation}
+%
+where $\idx$ is the index of the Gaussians, $\mathbf{c}_\idx$ is the color of each Gaussian computed from the per-Gaussian spherical harmonic coefficients and viewing direction, and $\alpha_\idx$ is the alpha value computed from the opacity $o_\idx$ associated with each Gaussian and the standard Gaussian value \revision{$\mathcal{G}_i$} evaluated at the UV coordinate $(u, v) \in \mathbb{R}^2$ corresponding the pixel location in the local 2D Gaussian tangent plane as
+%
+\begin{equation}
+    \alpha_i = \mathcal{G}_i({u, v})\cdot o_i .
+    \label{eq:opacity}
+\end{equation}
+
+%Please refer to Huang et al.~\shortcite{huang20242d} for details on calculating $(u, v)$ from 2D Gaussian parameters and pixel location $\mathbf{p}$ using explicit ray--Gaussian intersection. 
+
+The attributes (center, rotation, scale, opacity, and spherical harmonic coefficients) of the Gaussians are optimized using gradient descent optimization with photometric losses between rendered and target images as described by Huang et al.~\shortcite{huang20242d}.
+
+%Given a collection of optimized 2D Gaussians, we then perform Wave Splatting to compute 3D holograms that faithfully represent the 3D scene.

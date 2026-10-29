@@ -1,0 +1,2400 @@
+=== page 1 ===
+Random-phase Wave Splatting of Translucent Primitives for
+Computer-generated Holography — Supplementary Material
+ANONYMOUS AUTHOR(S)
+SUBMISSION ID: 1220
+This document serves as the supplementary material to the paper “Random-
+phase Wave Splatting of Translucent Primitives for Computer-generated Holog-
+raphy”. The sections of this supplementary material are organized as follows.
+In Section S1, we describe in detail how to splat a collection of random-
+phase primitives using different alpha blending techniques to generated a
+hologram. We also elaborate on the optimization of 2DGS models, triangle
+splatting models, and textured meshes used for baseline comparisons and
+the generation procedure of ground truth focal stacks and light fields used
+for quantitative baseline comparisons.
+In Section S2, we describe the experimental holographic display setup
+and the complex wavefront phase-encoding schemes we used to validate
+our algorithm.
+In Section S3, we provide a detailed theoretical analysis based on statistical
+optics that quantifies the various properties of holograms given their phase
+characteristics, such as depth of field and bandwidth utilization.
+In Section S4, we perform a theoretical analysis of our random phase alpha
+blending algorithm. We derive exact convergence bounds of the cross term
+in random-phase alpha blending and discuss optimal phase distributions for
+alpha blending.
+In Section S5, we provide a detailed theoretical analysis and mathematical
+derivations of the proposed structured random phase algorithm that applies
+random phase to primitives in a principled manner.
+In Section S6, we provide extensive simulated experiments to validate our
+method, including extended quantitative and qualitative baseline compar-
+isons.
+In Section S7, we show an extensive set of experimentally captured results.
+S1
+Additional Details on Software
+In this section, we provide pseudocodes and implementation details
+of the various algorithms and procedures described in the paper.
+S1.1
+Data Preprocessing
+Random-phase Wave Splatting transforms a set of optimized 2D
+primitives to holograms. We closely follow the holographics pipeline
+described in Gaussian Wave Splatting (GWS) [3] to transform the
+2D primitives in the world space to the SLM hologram space. Please
+refer to GWS for more details.
+S1.2
+Implementations of CGH Algorithm Baselines
+We provide the pseudocodes for the various baseline algorithms
+described in our paper, including our Random-phase Wave Splatting
+(RPWS) algorithm (Algorithm 3), Gaussian Wave Splatting (GWS)
+proposed in [3] (Algorithm 1), and random-phase polygon-based
+CGH using the silhouette method (Algorithm 2).
+S1.3
+Implementations of Alpha Blending Methods for
+Wavefronts
+We provide the pseudocodes for the various alpha blending and wave
+compositing methods for random-phase primitives described in the
+ablation study section in the main manuscript. Crucial modifications
+are highlighted in magenta.
+• Gaussian Wave Splatting (GWS) [3] (Algorithm 4): we naïvely
+extend alpha wave blending to support random-phase prim-
+itives by multiplying the primitive wavefronts by a random
+phase map and then perform the GWS algorithm (Algorithm
+1), which is the straightforward extension as described in
+the GWS supplementary materials.
+• GWS with square root alpha blending (Algorithm 5): we
+integrate our square root alpha blending formulation with
+GWS. Like RPWS, we optimize Gaussians to reconstruct the
+intensity of the target image, and use the intensity-optimized
+Gaussians for CGH.
+• RPWS without square root alpha blending (Algorithm 6):
+we remove the square root alpha blending formulation in
+RPWS. Like GWS, we optimize Gaussians to reconstruct the
+amplitude (original value) of the target image, and use the
+amplitude-optimized Gaussians for CGH.
+• Random-phase Wave Splatting (Algorithm 3): our final al-
+gorithm that combines both back-to-front compositing and
+square-root alpha blending.
+S1.4
+Details on 2DGS Models
+We use the open source gsplat [30] library to optimize 2DGS mod-
+els for Random-phase Wave Splatting CGH calculation. All models
+are optimized using default parameters defined in the open source
+code base.
+To flexibly control the number of the optimized Gaussians, we
+used the 3DGS-MCMC densification strategy [13] which is also sup-
+ported in gsplat. All 2DGS models are constrained to a maximum
+of 100k Gaussians throughout optimization.
+For 2DGS models used for GWS [3], we optimized the Gaussians
+to reconstruct the original target image (treating the target image
+as the amplitude), and directly extract the per-Gaussian optimized
+colors for GWS hologram generation. For 2DGS models used for our
+RPWS algorithm, we optimized the Gaussians to reconstruct the
+square of the target image (treating the squared target image as the
+intensity), and take the square root of the per-Gaussian optimized
+colors for RPWS hologram generation. This is necessary for our
+square-root alpha blending algorithm, as described clearly in the
+main paper and Sec. S4.
+S1.5
+Details on Textured Mesh Models
+To be able to apply polygon-based CGH on meshes, the meshes are
+required to have per-face colors since it is unclear how to apply tex-
+ture mapping in polygon-based CGH. However, a disproportionate
+number of triangles is required to reconstruct detailed appearance
+when using per-face colors, therefore almost all high-quality mesh
+models do not use per-face colors and leverage texture mapping.
+Therefore, we start from optimized textured mesh models released
+
+=== page 2 ===
+ALGORITHM 1: Gaussian Wave Splatting [Choi, Chao et al., 2025]
+▶First sort primitives from front (close to SLM) to back (far from SLM) based on depth values
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘, 𝑅𝑘, 𝜇𝑘: The depth, opacity, color, scale, rotation, and the center of 𝑘th Gaussian. The Gaussian splatting model is
+optimized to exactly reconstruct the target image.
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Input: 𝑡eps: Threshold for low alpha value, used to ignore low transmittance primitives. We set 𝑡eps =
+255 following 3DGS [12].
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢SLM ←0𝑁𝑥×𝑁𝑦▶Wavefront at SLM plane
+𝑇←1𝑁𝑥×𝑁𝑦▶Initialize transmittance map
+foreach 𝑘in 1 . . . 𝐾do
+𝑢𝑘←Generate Gaussian wavefront(𝑅𝑘, 𝜇𝑘) ▶Generated the Gaussian wavefront using the mean and rotation of the Gaussian
+𝑢SLM ←𝑢SLM + P(𝑇· 𝑢𝑘,𝑧𝑘, 𝜆) · 𝑐𝑘· 𝑜𝑘▶Splat the wavefront onto the SLM plane by propagating the masked wavefront the SLM
+plane, multiplying the propagated wavefront by the the primitive color and opacity, and add to the wavefront on the SLM plane
+𝛼𝑘←𝑜𝑘· |𝑢𝑘| ▶Compute the alpha map from the primitive opacity and the primitive wavefront amplitude
+𝛼𝑘←𝛼𝑘· (𝛼𝑘> 𝑡eps) ▶Ignore low alpha values like in Gaussian Splatting [12]
+𝑇←𝑇· (1 −𝛼𝑘) ▶Update the transmittance map
+end
+return 𝑢SLM
+ALGORITHM 2: Random-phase Polygon-based CGH using the Silhouette Method [17, 19, 20]
+▶First sort primitives from back (far from SLM) to front (close to SLM) based on depth values.
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘: The depth, opacity, and color of the 𝑘th primitive
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢←0 ▶Initialize accumulated wavefront
+foreach 𝑘in 1 . . . 𝐾do
+if 𝑘= 1 then
+𝑢′ ←𝑢▶Processing first primitive so previous accumulated wavefront is zero
+end
+else
+𝑢′ ←P(𝑢,𝑧𝑘, 𝜆) ▶Propagate previous accumulated wavefront to current depth
+end
+𝑢𝑘←Generate polygon wavefront(k) ▶Generate the wavefront of the polygon based on its geometry, such as the position of
+its vertices and its rotation
+𝑢𝑘←P(𝑢𝑘,𝑧𝑘, 𝜆) ▶Propagate object wavefront to its depth
+𝑢𝑘←𝑢𝑘𝑒𝑖𝜙𝑘,𝜙𝑘∈R2,𝜙𝑖
+𝑘
+i.i.d.
+∼U(−𝜋, 𝜋) ▶Modulate primitive wavefront with i.i.d. 2D random phase map
+𝑢←(1 −|𝑢𝑘| · 𝑜𝑘) · 𝑢′ + 𝑢𝑘· 𝑐𝑘· 𝑜𝑘▶Combine previous accumulated wavefront and current object wavefront to get new
+accumulated wavefront
+𝑢←P(𝑢, −𝑧𝑘, 𝜆) ▶Propagate accumulated wavefront back to SLM plane
+end
+𝑢SLM ←𝑢
+return 𝑢SLM
+by the NeRF2Mesh [29] authors and calculate per-face colors by
+averaging the per-vertex colors to acquire the textured meshes that
+are applicable for polygon-based CGH.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 3 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+ALGORITHM 3: RPWS (Ours)
+▶First sort primitives from back (far from SLM) to front (close to SLM) based on depth values.
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘, 𝑅𝑘, 𝜇𝑘: The depth, opacity, color, scale, rotation, and the center of 𝑘th Gaussian. The Gaussian splatting model is
+optimized to reconstruct the square of the target image.
+Input: 𝑄𝑘: the Fourier amplitude distribution of the 𝑘th Gaussian.
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢←0 ▶Initialize accumulated wavefront
+foreach 𝑘in 1 . . . 𝐾do
+if 𝑘= 1 then
+𝑢′ ←𝑢▶Processing first primitive so previous accumulated wavefront is zero
+end
+else
+𝑢′ ←P(𝑢,𝑧𝑘, 𝜆) ▶Propagate previous accumulated wavefront to current depth
+end
+𝑢𝑘←Generate Gaussian wavefront(𝑅𝑘, 𝜇𝑘) ▶Generated the Gaussian wavefront using the mean and rotation of the Gaussian
+𝑢𝑘←P(𝑢𝑘,𝑧𝑘, 𝜆) · 𝑜𝑘▶Propagate object wavefront to its depth and multiply by opacity
+𝑞𝑘←F −1{𝑄𝑘𝑒𝑖𝜙𝑘},𝜙𝑘∈R2,𝜙𝑖
+𝑘
+i.i.d.
+∼U(−𝜋, 𝜋) ▶Generate the spatial kernel using structured random phase
+𝜙←arg(𝑢𝑘) + arg(𝑞𝑘) ▶Retrieve the phase of the modulated wavefront 𝑢𝑘𝑞𝑘
+𝑢←
+√︁
+(1 −|𝑢𝑘|) · 𝑢′ +
+√︁
+|𝑢𝑘||𝑞𝑘| · √𝑐𝑘· 𝑒𝑖𝜙▶Combine previous accumulated wavefront and current object wavefront using RPWS
+alpha blending equation to get new accumulated wavefront
+𝑢←P(𝑢, −𝑧𝑘, 𝜆) ▶Propagate accumulated wavefront back to SLM plane
+end
+𝑢SLM ←𝑢
+return 𝑢SLM
+S1.6
+Details on Triangle Splatting Models
+We use the code provided by the authors of Triangle Splatting [10]
+to optimize our soft-edged triangle splat models for RPWS. Similar
+to 2DGS models for RPWS, we optimize triangle splats to reconstruct
+the square of the target image, and extract the square root of the
+per-triangle optimized colors for RPWS hologram generation.
+S2
+Additional Details on Hardware
+S2.1
+Experimental Setup
+To experimentally validate our algorithms, we build a holographic
+display benchtop prototype using a FISBA READYBeam™Ind2
+fiber-coupled module with three optically aligned laser diodes with
+wavelengths of 638, 521, and 443 nm, respectively, and a Holoeye
+PLUTO phase-only liquid crystal on silicon (LCOS) SLM with a
+resolution of 1920×1080 pixels, a pixel pitch of 8 𝜇m, and a precision
+of 8 bits. We follow an optical configuration similar to those used
+in Choi et al. [5] and Shi et al. [28], which is shown in Fig. S1. Color
+images are captured with separate exposures for each wavelength
+and combined in post-processing. All images are captured with a
+FLIR Grasshopper3 2.3 MP color USB3 vision sensor. In our setup,
+the target complex hologram is reconstructed at 4 cm away from
+the SLM, and its depth range in hologram space is approximately 0.5
+cm. With a 50 mm eyepiece, the Pluto SLM achieves a 4 mm eyebox
+and 14◦horizontal FoV; simulated light fields use a 1.4 mm pupil.
+We mount the camera sensor on a Thorlabs MTS25-Z8 25mm mo-
+torized translation stage to experimentally capture 3D focal stacks
+of the synthesized holograms. For horizontal parallax and light-field
+acquisition, an adjustable pupil is positioned at the Fourier plane
+and translated using a Newport CONEX-AGP motorized horizontal
+stage.
+S2.2
+Phase Encoding
+Our CGH algorithm encodes Gaussian-based scene representations
+into a complex-valued wavefront, similar to other primitive-based
+methods. While one can build a hardware setup with multiple SLMs
+to modulate complex-valued wavefronts [26, 27], most holographic
+display setups use phase-only SLMs, requiring phase encoding tech-
+niques. To encode the complex-valued wavefront splatted onto the
+SLM plane into a phase-only pattern, we use stochastic gradient
+descent (SGD) as described in recent literature [4, 25] to synthesize
+phase-only holograms that reconstruct a target complex wavefront.
+To directly supervise on complex wavefronts, we follow the loss
+function design proposed by Chen et al. [2] where the loss is com-
+puted independently between the real and imaginary values of the
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 4 ===
+ALGORITHM 4: Naïve GWS for random-phase Gaussians
+▶First sort primitives from front (close to SLM) to back (far from SLM) based on depth values
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘, 𝑅𝑘, 𝜇𝑘: The depth, opacity, color, scale, rotation, and the center of 𝑘th Gaussian. The Gaussian splatting model is
+optimized to exactly reconstruct the target image.
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Input: 𝑡eps: Threshold for low alpha value, used to ignore low transmittance primitives. We set 𝑡eps =
+255 following 3DGS [12].
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢SLM ←0𝑁𝑥×𝑁𝑦▶Wavefront at SLM plane
+𝑇←1𝑁𝑥×𝑁𝑦▶Initialize transmittance map
+foreach 𝑘in 1 . . . 𝐾do
+𝑢𝑘←Generate Gaussian wavefront(𝑅𝑘, 𝜇𝑘) ▶Generated the Gaussian wavefront using the mean and rotation of the Gaussian
+𝑢𝑘←𝑢𝑘𝑒𝑖𝜙𝑘,𝜙𝑘∈R2,𝜙𝑖
+𝑘
+i.i.d.
+∼U(−𝜋, 𝜋) ▶Modulate primitive wavefront with i.i.d. 2D random phase map
+𝑢SLM ←𝑢SLM + P(𝑇· 𝑢𝑘,𝑧𝑘, 𝜆) · 𝑐𝑘· 𝑜𝑘▶Splat the wavefront onto the SLM plane by propagating the masked wavefront the SLM
+plane, multiplying the propagated wavefront by the the primitive color and opacity, and add to the wavefront on the SLM plane
+𝛼𝑘←𝑜𝑘· |𝑢𝑘| ▶Compute the alpha map from the primitive opacity and the primitive wavefront amplitude
+𝛼𝑘←𝛼𝑘· (𝛼𝑘> 𝑡eps) ▶Ignore low alpha values like in Gaussian Splatting [12]
+𝑇←𝑇· (1 −𝛼𝑘) ▶Update the transmittance map
+end
+return 𝑢SLM
+ALGORITHM 5: GWS with square root alpha blending
+▶First sort primitives from front (close to SLM) to back (far from SLM) based on depth values
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘, 𝑅𝑘, 𝜇𝑘: The depth, opacity, color, scale, rotation, and the center of 𝑘th Gaussian. The Gaussian splatting model is
+optimized to reconstruct the intensity of the target image.
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Input: 𝑡eps: Threshold for low alpha value, used to ignore low transmittance primitives. We set 𝑡eps =
+255 following 3DGS [12].
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢SLM ←0𝑁𝑥×𝑁𝑦▶Wavefront at SLM plane
+𝑇←1𝑁𝑥×𝑁𝑦▶Initialize transmittance map
+foreach 𝑘in 1 . . . 𝐾do
+𝑢𝑘←Generate Gaussian wavefront(𝑅𝑘, 𝜇𝑘) ▶Generated the Gaussian wavefront using the mean and rotation of the Gaussian
+𝑢𝑘←𝑢𝑘𝑒𝑖𝜙𝑘,𝜙𝑘∈R2,𝜙𝑖
+𝑘
+i.i.d.
+∼U(−𝜋, 𝜋) ▶Modulate primitive wavefront with i.i.d. 2D random phase map
+𝑢SLM ←𝑢SLM + P(
+√︁
+𝑇· |𝑢𝑘| · 𝑒𝑖𝜙𝑘,𝑧𝑘, 𝜆) · √𝑐𝑘· √𝑜𝑘▶Splat the wavefront onto the SLM plane by propagating the masked
+wavefront the SLM plane with the sqaure root alpha blending formulation, and add to the wavefront on the SLM plane
+𝛼𝑘←𝑜𝑘· |𝑢𝑘| ▶Compute the alpha map from the primitive opacity and the primitive wavefront amplitude
+𝛼𝑘←𝛼𝑘· (𝛼𝑘> 𝑡eps) ▶Ignore low alpha values like in Gaussian Splatting [12]
+𝑇←𝑇· (1 −𝛼𝑘) ▶Update the transmittance map
+end
+return 𝑢SLM
+reconstructed field and the corresponding values in the target com-
+plex field, that is:
+L(𝑢recon,𝑢target) =
+ℜ(𝑢recon𝑒𝑖𝜙0) −ℜ(𝑢target)
+1
++
+ℑ(𝑢recon𝑒𝑖𝜙0) −ℑ(𝑢target)
+1
+(S1)
+where 𝜙0 = −arg⟨𝑢recon,𝑢∗
+target⟩is the global phase offset correc-
+tion term that aligns the phase distribution of the reconstructed and
+target complex field to minimize phase wrapping artifacts. This is es-
+pecially crucial in reconstructing the DPAC-encoded, smooth-phase
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 5 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+ALGORITHM 6: RPWS without square root alpha blending
+▶First sort primitives from back (far from SLM) to front (close to SLM) based on depth values.
+▶P(𝑢,𝑧, 𝜆) = F −1(F (𝑢)H (𝜆,𝑧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 𝐾: Number of primitives
+Input: 𝑧𝑘,𝑜𝑘,𝑐𝑘, 𝑅𝑘, 𝜇𝑘: The depth, opacity, color, scale, rotation, and the center of 𝑘th Gaussian. The Gaussian splatting model is
+optimized to exactly reconstruct the target image.
+Input: 𝑄𝑘: the Fourier amplitude distribution of the 𝑘th Gaussian.
+Input: 𝑁𝑥, 𝑁𝑦: Image dimensions
+Input: 𝜆: Illumination wavelength
+Output: 𝑢SLM: Wavefront at the SLM plane
+𝑢←0 ▶Initialize accumulated wavefront
+foreach 𝑘in 1 . . . 𝐾do
+if 𝑘= 1 then
+𝑢′ ←𝑢▶Processing first primitive so previous accumulated wavefront is zero
+end
+else
+𝑢′ ←P(𝑢,𝑧𝑘, 𝜆) ▶Propagate previous accumulated wavefront to current depth
+end
+𝑢𝑘←Generate Gaussian wavefront(𝑅𝑘, 𝜇𝑘) ▶Generated the Gaussian wavefront using the mean and rotation of the Gaussian
+𝑢𝑘←P(𝑢𝑘,𝑧𝑘, 𝜆) · 𝑜𝑘▶Propagate object wavefront to its depth and multiply by opacity
+𝑞𝑘←F −1{𝑄𝑘𝑒𝑖𝜙𝑘},𝜙𝑘∈R2,𝜙𝑖
+𝑘
+i.i.d.
+∼U(−𝜋, 𝜋) ▶Generate the spatial kernel using structured random phase
+𝜙←arg(𝑢𝑘) + arg(𝑞𝑘) ▶Retrieve the phase of the modulated wavefront 𝑢𝑘𝑞𝑘
+𝑢←(1 −|𝑢𝑘|) · 𝑢′ + |𝑢𝑘||𝑞𝑘| · 𝑐𝑘· 𝑒𝑖𝜙▶Combine previous accumulated wavefront and current object wavefront without square
+root alpha blending to get new accumulated wavefront
+𝑢←P(𝑢, −𝑧𝑘, 𝜆) ▶Propagate accumulated wavefront back to SLM plane
+end
+𝑢SLM ←𝑢
+return 𝑢SLM
+GWS wavefronts [3], as we illustrate in the Fig. S2. For reconstruct-
+ing random-phase wavefronts, the phase correction term presents
+little to no effect since inner product of two random complex fields
+is zero in expectation.
+The phase values are iteratively updated through the gradient of
+the loss function defined in Eq. S1, using standard gradient descent
+optimizers such as Adam [15].
+S3
+Theoretical Analysis on the Phase Distribution of
+Holograms
+In this section, we describe the various characteristics of random-
+phase and smooth-phase holograms, including bandwidth utilization
+and depth of field, and provide detailed mathematical derivations
+based on statistical optics [8] and Fourier analysis.
+S3.1
+Bandwidth Utilization
+Consider the wavefront of a single Gaussian 𝑢(x) = 𝑎(x)𝑒𝑖𝜙(x),
+where x ∈R2 are the spatial coordinates. For smooth-phase Gaus-
+sians, we assume that 𝜙(x) = 𝜙0. For random-phase Gaussians, we
+assume that 𝜙𝑖(x) iid∼U(−𝜋, 𝜋), meaninig that the phase at differ-
+ent spatial locations in the phase map are i.i.d. uniform random
+distributions. To formally quantify the bandwidth characteristics of
+𝑢(x), we can analyze the power spectral density, or the intensity of
+the Fourier transform of the wavefront ˆ𝑢(k), where k ∈R2 are the
+spatial frequency coordinates:
+| ˆ𝑢(k)|2 = ˆ𝑢(k) ˆ𝑢∗(k)
+(S2)
+The Wiener-Khinchin Theorem in statistical optics [8] states that
+the expected value of the power spectral density is equal to the
+Fourier transform of the autocorrelation function 𝑅𝑢(x1, x2),
+x1, x2 ∈R2, with respect to the difference variable 𝝆= x1 −x2:
+E
+
+| ˆ𝑢(k)|2
+= E
+
+ˆ𝑢(k) ˆ𝑢∗(k)
+
+= F {𝑅𝑢(𝝆)}
+(S3)
+=
+∬
+R2 𝑅𝑢(𝝆) 𝑒−𝑖2𝜋k·𝝆𝑑2𝝆,
+(S4)
+=
+∬
+R2
+∬
+R2 𝑅𝑢(x1, x2) 𝑒−𝑖2𝜋k·(x1−x2) 𝑑2x1 𝑑2x2. (S5)
+where 𝑅𝑢(𝝆) = E
+
+𝑢(x)𝑢∗(x + 𝝆)
+
+is the mutual intensity function,
+and E[·] denotes the ensemble average over different realizations
+of the random wavefronts (e.g. time-multiplexing).
+For a constant-phase Gaussian wavefront 𝑢(x) = 𝑎(x)𝑒𝑖𝜙0,𝜙0 ∈
+R, the mutual intensity 𝑅𝑢(𝝆) is simply the autocorrelation of the
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 6 ===
+Laser
+SLM
+4F system 
+lens 1
+4F system 
+lens 2
+Fourier filter
+Collimation lens
+Beam splitter
+Translation stage
+Sensor
+Fig. S1. Holographic display prototype used for the experimental
+results. We built a standard holographic display prototype to experimentally
+validate our algorithms. A camera sensor is mounted on top of a motorized
+linear translation stage to experimentally capture focal stacks.
+No global phase correction
+With global phase correction
+Fig. S2. Effect of phase correction term 𝜙0 on DPAC-encoded smooth-
+phase hologram reconstruction. Without the global phase correction
+term, severe phase-wrapping is present in the SGD-optimized smooth-phase
+GWS holograms. With the global phase correction term, SGD is able to
+successfully reconstruct the smooth phase distribution.
+amplitude, which is a broad signal with large spatial support:
+𝑅𝑢(𝝆) = E
+h
+𝑎(x)𝑎(x + 𝝆)𝑒𝑖(𝜙0−𝜙0)i
+(S6)
+=
+∫
+R2 𝑎(x) 𝑎(x + 𝝆) 𝑑x = 𝑅𝑎(𝝆)
+(S7)
+resulting in a narrow spectrum and hence a small bandwidth.
+On the other hand, the mutual intensity 𝑅𝑢(𝝆) for a random-
+phase Gaussian wavefront is a delta function with narrow spatial
+support:
+𝑅𝑢(𝝆) =
+∫
+R2 𝑎(x) 𝑎(x + 𝜌) E
+h
+𝑒𝑖(𝜙(x)−𝜙(x+𝝆))i
+𝑑x
+(S8)
+=
+(∫
+𝑎(x)2 𝑑x,
+𝝆= 0
+0,
+𝝆≠0
+(S9)
+=
+∫
+𝑎(x)2 𝑑x
+
+𝛿(𝝆)
+(S10)
+since the phase 𝜙(x) is spatially uncorrelated (delta-correlated):
+E
+h
+𝑒𝑖(𝜙(x)−𝜙(x+𝝆))i
+=
+(
+1,
+𝝆= 0
+0,
+𝝆≠0
+(S11)
+which results in a broad spectrum with large bandwidth.
+From the above analysis, we see that random-phase holograms
+maximally utilizes the SLM bandwidth while constant or smooth
+phase holograms severely under-utilize the SLM bandwidth. Random-
+phase holograms generated using RPWS can therefore naturally
+support large eyebox and parallax, shallow depth of field, and natu-
+ral defocus blur, as we show in the following section on depth of
+field.
+S3.2
+Depth of Field
+Random-phase holograms naturally support shallow depth of field
+due to the larger spatial spread across depths compared to smooth-
+phase holograms. This allows the hologram to create larger blur
+variations across different depths, which is crucial for 3D perception.
+With additional time-multiplexing to reduce speckles, the defocus
+blur of random phase holograms at different depths closely emulates
+incoherent defocus blur.
+To formally quantify the spatial spread of a wavefront 𝑢(x) prop-
+agated to a specific depth 𝑧∈R, we can analyze the variance of the
+intensity of the propagated field 𝑢(x,𝑧):
+𝜎2(𝑧) =
+∬
+|x|2 |𝑢(x,𝑧)|2 𝑑2x
+(S12)
+Since variance by definition quantifies how spread out a distribu-
+tion is, the variance of the intensity of the propagated wavefront
+naturally characterizes the spatial spread of the wavefront.
+We now show that Eq. S12 can be rewritten as:
+𝜎2(𝑧) ≈𝜎2(0) +
+ 𝑧
+𝑘
+2
+· 𝜎2
+k
+(S13)
+where the first term 𝜎2(0) =
+∬
+x2|𝑢(x)|2 𝑑2x is the variance of the
+initial intensity field (which are the same for smooth-phase and
+random-phase wavefronts that have the same amplitude) and the
+second term includes the variance of the power spectral density
+𝜎2
+k =
+∬
+|k|2 |b𝑢(k)|2 𝑑2k that quantifies the angular spread. Note that
+the second term increases quadratically as propagation distance 𝑧
+increases.
+The propagated field 𝑢(x,𝑧), x ∈R2,𝑧∈R can be expressed as
+follows using the angular spectrum method [7]:
+𝑢(x,𝑧) =
+∬
+b𝑢(k) 𝑒𝑖𝑘𝑧𝑧𝑒𝑖k·x 𝑑2k
+(S14)
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 7 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+where k ∈R2,𝑘= 2𝜋
+𝜆, and 𝑘𝑧=
+√︁
+𝑘2 −|k|2. With the paraxial
+approximation |k| ≪𝑘, we can approximate 𝑘𝑧≈𝑘−|k|2
+2𝑘using
+Taylor’s expansion.
+Substituting 𝑘𝑧= 𝑘−|k|2
+2𝑘into Eq. S14, we get
+𝑢(x,𝑧) = 𝑒𝑖𝑘𝑧·
+∬
+b𝑢(k) 𝑒−𝑖|k|2𝑧
+2𝑘𝑒𝑖k·x 𝑑2k
+(S15)
+The angular spread 𝜎2(𝑧) can therefore be written as
+𝜎2(𝑧) =
+∬
+|x|2 |𝑢(x,𝑧)|2 𝑑2x =
+∬
+|x|2 | ˜𝑢(x,𝑧)|2 𝑑2x
+(S16)
+where 𝑢(x,𝑧) = 𝑒𝑖𝑘𝑧· ˜𝑢(x,𝑧).
+Letting ˜𝑢𝑧(k) = b𝑢(k) 𝑒−𝑖|k|2𝑧
+2𝑘, we can write the above equation as
+˜𝑢(x,𝑧) =
+∬
+˜𝑢𝑧(k) 𝑒𝑖k·x 𝑑2k
+(S17)
+That is, ˜𝑢(x) = F −1{ ˜𝑢𝑧(k,𝑧)}, or ˜𝑢𝑧(k) = F { ˜𝑢(x,𝑧)}.
+Using Parseval’s Theorem and the following property of the
+Fourier transform:
+F {x𝑢(x)} = 𝑖∇k ˜𝑢(k)
+(S18)
+We get
+∬
+x2| ˜𝑢(x,𝑧)|2𝑑2x =
+∬
+|∇k ˜𝑢𝑧(k)|2𝑑2k
+(S19)
+The gradient ∇k ˜𝑢𝑧(k) can be calculated as
+∇k ˜𝑢𝑧(k) = [∇kb𝑢(k)] 𝑒−𝑖|k|2𝑧
+2𝑘−𝑖𝑧
+𝑘kb𝑢(k) 𝑒−𝑖|k|2𝑧
+2𝑘
+(S20)
+Taking the squared amplitude of both sides, we get
+|∇k ˜𝑢𝑧(k)|2 = |∇kb𝑢(k)|2 +
+ 𝑧
+𝑘
+2
+|k|2 |b𝑢(k)|2
+−2𝑧
+𝑘ℑ
+
+k · b𝑢∗(k) ∇kb𝑢(k)
+
+(S21)
+Integrating both sides of the equation with respect to k and leverag-
+ing Eq. S19, we get
+∬
+x2| ˜𝑢(x,𝑧)|2𝑑2x =
+∬
+x2|𝑢(x)|2𝑑2x +
+ 𝑧
+𝑘
+2 ∬
+|k|2 |b𝑢(k)|2𝑑2k
+−2𝑧
+𝑘
+∬
+ℑ
+
+k · b𝑢∗(k) ∇kb𝑢(k)
+
+𝑑2k
+(S22)
+That is,
+𝜎2(𝑧) = 𝜎2(0) +
+ 𝑧
+𝑘
+2
+· 𝜎2
+k + cross-term
+(S23)
+From conclusions in statistical optics [8], the cross-term in Eq.
+S23 is zero in expectation if the wavefront is fully random, i.e. the
+energy is statistically isotropic in its angular spectrum and the
+wavefront has no preferred propagation direction. In the case of
+RPWS, we can safely assume that the generated hologram is indeed
+a random wavefront and thus the spatial spread of the wavefront
+can be exactly characterized by the sum of the variance of the initial
+intensity field and the variance of the power spectral density.
+Since the variance of the power spectral density of a random-
+phase wavefront is much larger than that of a smooth-phase wave-
+front, random phase holograms exhibits much larger spatial spread
+across depths. This property allows random phase holograms to
+accurately create different levels of defocus blur which is crucial for
+accommodation in AR/VR display systems.
+S4
+Theoretical Analysis on Random-phase Alpha Blending
+In random-phase alpha blending, cross terms emerge and can only
+be eliminated with time-multiplexing, i.e. taking the expectation
+of the alpha blending equation. In the manuscript, we sample the
+phases from a uniform 2𝜋distribution and observe that the cross
+terms indeed vanish. This naturally leads to the following question:
+what is the optimal phase distribution on the primitives surfaces
+that leads to the fastest decay of the cross term to 0?
+In this section, we prove that the cross term decays at the fastest
+possible asymptotic rate if and only if the sampled phase distribution
+𝑝(𝜙) satisfies the following conditions:
+E𝜙∼𝑝[𝑒𝑖𝜙] = 0
+and
+E𝜙∼𝑝[𝑒𝑖2𝜙] = 0,
+(S24)
+and that our choice of the uniform 2𝜋distribution perfectly satisfies
+this criteria.
+S4.1
+Mathematical Derivations
+Without loss of generality, consider the alpha blending of two
+random-phase wavefronts
+𝑎1𝑒𝑖𝜙1,
+𝑎2𝑒𝑖𝜙2,
+where 𝜙1,𝜙2 ∼𝑝(𝜙) are drawn from some random-phase distribu-
+tion. Expanding the intensity of their superposition yields
+𝑎1𝑒𝑖𝜙1 + 𝑎2𝑒𝑖𝜙22 = 𝑎2
+1 + 𝑎2
+2 + 2𝑎1𝑎2 cos(𝜙1 −𝜙2).
+The last term is the cross term which we want to eliminate. Its
+expectation depends on the phase statistics:
+E[cos(𝜙1 −𝜙2)]
+(S25)
+= E[cos𝜙1 cos𝜙2 + sin𝜙1 sin𝜙2]
+(S26)
+= E[cos𝜙1] E[cos𝜙2] + E[sin𝜙1] E[sin𝜙2]
+(S27)
+= E[cos𝜙]2 + E[sin𝜙]2
+(S28)
+=
+𝜑𝜙(1)
+2,
+(S29)
+where 𝜑𝜙(𝑡) = E[𝑒𝑖𝑡𝜙] is the characteristic function of random
+variable 𝜙.
+To suppress this cross term in practice, RPWS employs time mul-
+tiplexing. Specifically, we sample 𝑁independent pairs (𝜙𝑖
+1,𝜙𝑖
+2) with
+1 ≤𝑖≤𝑁and average the corresponding intensities over time,
+producing an 𝑁-frame time-multiplexed hologram. The effective
+cross term then becomes
+𝑁
+𝑁
+∑︁
+𝑖=1
+cos(𝜙𝑖
+1 −𝜙𝑖
+2).
+(S30)
+From the Central Limit Theorem, this empirical mean of the cross
+term follows the Gaussian distribution:
+𝐶𝑁=
+𝑁
+𝑁
+∑︁
+𝑖=1
+cos(𝜙𝑖
+1 −𝜙𝑖
+2)
+𝑑−→
+N
+
+𝜇, Var(cos(𝜙1−𝜙2))
+𝑁
+
+,
+where
+𝜇= E[cos(𝜙1 −𝜙2)] =
+𝜑𝜙(1)
+2,
+(S31)
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 8 ===
+The variance term can be derived as follows:
+Var(cos(𝜙1 −𝜙2))
+(S32)
+= E[cos(𝜙1 −𝜙2)2] −E[cos(𝜙1 −𝜙2)]2
+(S33)
+= E[cos(𝜙1 −𝜙2)2] −
+𝜑𝜙(1)
+4
+(S34)
+= 1
+2E[1 + cos(2(𝜙1 −𝜙2))] −
+𝜑𝜙(1)
+4
+(S35)
+= 1
+2 (1 +
+𝜑𝜙(2)
+2) −
+𝜑𝜙(1)
+4
+(S36)
+From Eq. S31, we observe that the emperical mean of the cross
+term is zero if and only if 𝜑𝜙(1) = 0. Plugging this back in Eq. S36,
+the variance of the empirical mean becomes
+2𝑁(1 +
+𝜑𝜙(2)
+2) ≥
+2𝑁
+(S37)
+Since we want the cross term to decay the fastest, this requires
+𝜑𝜙(2) = 0. Thus, in the optimal phase-distribution case (𝜑𝜙(1) =
+𝜑𝜙(2) = 0), the asymptotic variance is
+2𝑁, i.e., the standard error
+decays as
+√
+2𝑁.
+For the uniform 2𝜋distribution 𝜙∼U(−𝜋, 𝜋), we have
+𝜑𝜙(1) = E[𝑒𝑖𝜙] = 1
+2𝜋
+∫𝜋
+−𝜋
+𝑒𝑖𝜙𝑑𝜙= 1
+2𝜋
+"
+𝑒𝑖𝜙
+𝑖
+#𝜋
+−𝜋
+= 0,
+(S38)
+𝜑𝜙(2) = E[𝑒𝑖2𝜙] = 1
+2𝜋
+∫𝜋
+−𝜋
+𝑒𝑖2𝜙𝑑𝜙= 1
+4𝜋
+"
+𝑒𝑖𝜙
+𝑖
+#2𝜋
+−2𝜋
+= 0.
+(S39)
+Thus, the uniform phase distribution achieves
+𝜇= E[cos(𝜙1 −𝜙2)] = 0,
+𝜎2 = 1
+2,
+which yields the sharpest possible concentration rate for the time-
+multiplexed cross term:
+𝐶𝑁
+𝑑→N
+
+0,
+2𝑁
+
+,
+i.e.,
+SE(𝐶𝑁) =
+√
+2𝑁
+.
+S4.2
+The Family of Optimal Phase Distributions
+We have proved that the optimal phase distributions that satisfy
+𝜑𝜙(1) = 𝜑𝜙(2) = 0 lead to the fastest asymptotic decay rate of
+the cross term in random-phase alpha blending. Our choice of the
+uniform 2𝜋distribution is one of the many distributions that satisfy
+this criterion. Another such phase distribution is a discrete 4-point
+distribution:
+𝜙∼
+
+0, 𝜋
+2 , 𝜋, 3𝜋
+	
+(S40)
+yet this is not desirable since the full 2𝜋modulation range of the
+SLM cannot be utilized, leading to a smaller eyebox. Our choice of
+the uniform 2𝜋distribution, on the other hand, maximally utilizes
+the SLM bandwidth.
+It is worth noting that 𝜑𝜙(1) = 0 does not guarantee that 𝜑𝜙(2) =
+0. An example is the discrete 2-point distribution:
+𝜙∼
+
+0, 𝜋
+	
+(S41)
+where 𝜑𝜙(2) = 1, which leads to a slower decay rate of the cross-
+term. We empirically demonstrate this with the convergence plot in
+Fig. S3.
+Sample Size (N)
+0.2
+0.0
+0.2
+Sample Mean
+Convergence Comparison
+Discrete 2 Points ±1 std dev
+Discrete 2 Points Mean
+Discrete 4 Points ±1 std dev
+Discrete 4 Points Mean
+Uniform 2Pi ±1 std dev
+Uniform 2Pi Mean
+Theoretical Mean
+Fig. S3. Convergence comparison of cross terms. We analyze three
+different phase distributions that all have result zero expected value (dashed
+red line) for the cross term. The plot is generated by simulating the empirical
+mean in Eq. S30 with different 𝑁values, each with 1000 trials. The results of
+the trials are scattered on the plot shown as the light backgrounds, where the
+mean of the trials are plotted as dashed lines. The uniform 2𝜋distribution
+leads to the fastest convergence, as the envelope encompassing the trials
+shrinks the fastest.
+S5
+Theoretical Analysis on Structured Random Phase
+In the supplementary materials of GWS, the authors provided a high-
+level heuristic sketch to formally apply random phase to primitives
+to achieve non-diffuse reflectance properties. However, no formal
+proof was ever presented, and its practicality remain unknown
+since it was unclear if millions of such random-phase primitives
+can be alpha-blended accurately. In this paper, we closed this gap
+and resolve all these issues, and provide rigorous mathematical
+proofs showing that this algorithm is exact. We formally name this
+algorithm structured random phase, because we can assign arbitrary
+spatial structures to the Fourier spectrum of the primitive to freely
+control its reflectance properties.
+In structured random phase, we apply random phase to a prim-
+itive wavefront 𝑢(x) by convolving its spectrum ˆ𝑢(k) by a spec-
+tral kernel 𝑄(k)𝑒𝑖𝜙(k), 𝜙𝑖(k) iid∼U(−𝜋, 𝜋), and finally taking the
+inverse Fourier transform of the convolved spectrum to get the
+random phase modulated primitive wavefront ˜𝑢(x) = F −1{ ˆ𝑢(k) ∗
+𝑄(k)𝑒𝑖𝜙(k)}. By sampling different 𝜙(k) and time-multiplexing mul-
+tiple such wavefronts, the final spatial amplitude distribution of
+these time-multiplexed random-phase modulated wavefronts can be
+represented by
+√︁
+E[| ˜𝑢(x)|2], and the Fourier amplitude distribution
+exactly follows any predefined angular emission profile 𝑄(k), which
+could be spherical harmonics functions, pupil filters, etc. This is
+different from prior heuristic-based random-phase CGH methods
+where random phase is directly multiplied by the spatial amplitude
+distribution of the primitive wavefront and therefore can only model
+fully diffuse reflectance properties, i.e. 𝑄(k) = 1.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 9 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+𝑟= 0.25
+𝑟= 0.5
+𝑟= 1.0
+Fig. S4. Programmatically controlling depth of field of RPWS holograms using structured random phase. By setting different 𝑟values in the pupil
+function 𝑃(k,𝑟), we can programmatically control the depth of field of the synthesized RPWS holograms. With smaller 𝑟, the pupil is smaller and filters out
+high frequency components in the hologram spectrum, resulting in small blur and large depth of field. With large 𝑟, the hologram exhibits shallow depth of
+field and large blur.
+S5.1
+Mathematical Derivations
+Here, we show the full mathematical derivations for our structured
+random phase algorithm. We provide a formal analysis of the ampli-
+tude distribution of random-phase modulated wavefront ˜𝑢(x) given
+different spectral phase distributions 𝜙(k).
+Note that the modulated wavefront ˜𝑢(x) can be written as:
+˜𝑢(x) = F −1{ ˆ𝑢(k) ∗𝑄(k)𝑒𝑖𝜙(k)} = 𝑢(x) · F −1{𝑄(k)𝑒𝑖𝜙(k)} (S42)
+and thus the intensity distribution of the time-multiplexed modu-
+lated wavefronts can be represented by:
+E[| ˜𝑢(x)|2] = E[|𝑢(x) · F −1{𝑄(k)𝑒𝑖𝜙(k)}|2]
+(S43)
+= |𝑢(x)|2 · E[|F −1{𝑄(k)𝑒𝑖𝜙(k)}|2]
+(S44)
+In the following subsections, we show how different spectral
+phase distributions 𝜙(k) affect the spatial amplitude distribution
+of the modulated wavefront ˜𝑢(x). Specifically, we show that how a
+constant phase distribution 𝜙(k) = 𝜙0 breaks the spatial structure of
+𝑢(x) in the modulated wavefront, while a i.i.d. distribution𝜙𝑖(k) i.i.d.
+∼
+U(−𝜋, 𝜋) correctly retains the spatial structure of 𝑢(x) in the time-
+multiplexed modulated wavefronts E[| ˜𝑢(x)|2].
+S5.1.1
+Constant phase: 𝜙(k) = 𝜙0. In the case of constant phase,
+the expected value term in Eq. S44 becomes:
+E[|F −1{𝑄(k)𝑒𝑖𝜙(k)}|2] = |F −1{𝑄(k)}|2
+(S45)
+and thus solely depends on the Fourier amplitude distribution.
+Given a broadband angular emission profile 𝑄(k), the resulting in-
+verse Fourier transform is narrow. In the most extreme case where
+𝑄(k) = 1, its inverse Fourier transform simply degenerates to a
+delta function F −1{𝑄(k)} = 𝛿(x)). The spatial structure of 𝑢(x)
+therefore cannot be retained if 𝜙(k) = 𝜙0.
+S5.1.2
+Random phase: 𝜙𝑖(k) i.i.d.
+∼U(−𝜋, 𝜋) (Ours). Here, we prove
+that the structure of the original amplitude distribution of 𝑢(x) is
+retained in the time-multiplexed modulated wavefronts ˜𝑢(x), or the
+expected value of the modulated wavefront intensities, by sampling
+each spatial location 𝜙𝑖(k) in 𝜙(k) from the uniform distribution
+U(−𝜋, 𝜋).
+Let𝑣(x) = F −1{𝑄(k)𝑒𝑖𝜙(k)}, then |F −1{𝑄(k)𝑒𝑖𝜙(k)}|2 = |𝑣(x)|2 =
+⟨𝑣(x), 𝑣(x)∗⟩. We expand the above into the following expressions:
+|𝑣(x)|2 = ⟨𝑣(x), 𝑣(x)∗⟩
+(S46)
+= ⟨
+∬
+𝑄(k)𝑒𝑖𝜙(k)𝑒𝑖2𝜋k·x𝑑k,
+∬
+𝑄(k)𝑒−𝑖𝜙(k)𝑒−𝑖2𝜋k·x𝑑k⟩
+(S47)
+=
+⨌
+𝑄(k)𝑄(k′)𝑒𝑖(𝜙(k)−𝜙(k′))𝑒𝑖2𝜋x·(k−k′)𝑑k𝑑k′
+(S48)
+Now, taking the expected value of the above expressions, we get
+E[|𝑣(x)|2] =
+(S49)
+⨌
+𝑄(k)𝑄(k′)E[𝑒𝑖(𝜙(k)−𝜙(k′))]𝑒𝑖2𝜋x·(k−k′)𝑑k𝑑k′
+(S50)
+Note that since 𝜙(k) i.i.d.
+∼U(−𝜋, 𝜋) across all frequency locations k,
+the expected value can be represented as:
+E[𝑒𝑖(𝜙(k)−𝜙(k′))] =
+(
+1,
+k = k′
+|E[𝑒𝑖𝜙(k)]|2,
+k ≠k′
+(S51)
+It is trivial to show that |E[𝑒𝑖𝜙(k)]|2 = 0 when 𝜙(k) i.i.d.
+∼U(−𝜋, 𝜋).
+Hence, the above expression can be reduced to:
+E[𝑒𝑖(𝜙(k)−𝜙(k′))] = 𝛿(k −k′)
+(S52)
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 10 ===
+Plugging this back into Eq. S55, we get:
+E[|𝑣(x)|2] = E[|F −1{𝑄(k)𝑒𝑖𝜙(k)}|2]
+(S53)
+=
+⨌
+𝑄(k)𝑄(k′)𝛿(k −k′)𝑒𝑖2𝜋x·(k−k′)𝑑k𝑑k′
+(S54)
+=
+∬
+𝑄(k)2𝑑k = 𝑐∈R
+(S55)
+Hence, given a broad angular emission profile 𝑄(k), the expected
+value E[|F −1{𝑄(k)𝑒𝑖𝜙(k)}|2] is simply a constant scaling factor.
+This means that that spatial structure of 𝑢(x) is retained in the mod-
+ulated wavefront ˜𝑢(x), which is required for correct alpha blending
+and wave splatting operations.
+S5.2
+Phase Distribution of Primitives in the Spatial
+Domain
+In structured random phase, we applied random phase sampled
+from the uniform distribution U(−𝜋, 𝜋) to the primitive wavefronts
+in the Fourier domain instead of the spatial domain, i.e. applying
+random phase to the spectrum of the primitive wavefronts. This
+greatly differs from prior random phase CGH approaches where
+random phase is simply applied in the spatial domain, and thus
+the modulated wavefront can only achieve a flat angular emission
+profile or fully diffuse reflectance properties.
+It can be proved using the Central Limit Theorem that a uniform
+phase distribution U(−𝜋, 𝜋) in the Fourier domain corresponds to
+the same uniform phase distribution U(−𝜋, 𝜋) in the spatial domain.
+This finding is crucial as it suggests by applying random phase to
+the spectrum of the primitive wavefronts, the resulting hologram
+still maximally utilizes the SLM bandwidth as the full 2𝜋modulation
+range is used.
+S5.3
+Example Application: Depth of Field Control
+We show one example application of structured random phase,
+which is programmatic control over the depth of field of the gener-
+ated hologram. Here, we defined the Fourier amplitude distribution
+𝑄(k) as the pupil function 𝑃(k,𝑟):
+𝑃(k,𝑟) =
+(
+1,
+if ∥k∥≤𝑟
+0,
+otherwise ,
+(S56)
+By setting different values of 𝑟, we can directly control the blur
+size of the focal stacks reconstructed from the generated RPWS
+holograms, as shown in Fig. S4.
+S6
+Additional Simulation Results
+S6.1
+Details on Ground Truth Focal Stack and Light Field
+Generation
+We directly render ground truth light fields with 10 × 10 angular
+resolution from the optimized 2D Gaussians. Since 2D Gaussians
+are transformed into the orthographic space with respect to the
+SLM for RPWS rendering, we also render ground truth light fields
+in orthographic space. This involves a simple 2D shear of Gaussians
+at different depths and then performing orthographic projection.
+Given the rendered light fields, dense focal stacks can subsequently
+be synthesized using the shift-and-add algorithm in classic light
+field photography and synthetic aperture rendering [24].
+We now relate the parameters using in wave-optics to the pa-
+rameters used in geometric ground truth renderings. Given a pupil
+position 𝑝= (𝑓𝑥, 𝑓𝑦), 𝑓𝑥, 𝑓𝑦∈[−𝜆
+2𝑝, 𝜆
+2𝑝] in the Fourier plane, the
+corresponding orthographic viewing angle of the ground truth light
+field view can be defined by:
+𝜃𝑥= sin−1(𝑓𝑥)
+(S57)
+𝜃𝑦= sin−1(𝑓𝑦)
+(S58)
+and the 2D shear of a Gaussian located at depth 𝑧can simply be
+defined by:
+Δ𝑥= −𝑧· tan(𝜃𝑥)
+(S59)
+Δ𝑦= −𝑧· tan(𝜃𝑦)
+(S60)
+After shearing each Gaussian at each depth by its corresponding
+amount, we can perform orthographic projection on the sheared
+Gaussians to get the light field corresponding to the viewing angle
+(𝜃𝑥,𝜃𝑦).
+S6.2
+Extended Quantitative Baseline Comparisons
+We report per-scene 4D light field and 3D focal stack reconstruction
+performance of various CGH algorithms in terms of PSNR (↑), SSIM
+(↑), and LPIPS (↓) on the Blender [22] and Mip-NeRF 360 [1] datasets
+in Tables 1 and 2. We run our RPWS algorithm on Gaussians for the
+quantitative comparisons. We use dense, center-view focal stacks
+with 60 focal slices and 10 × 10 angular resolution light fields as
+ground truth data.
+In terms of light field reconstruction, RPWS consistently outper-
+forms GWS and polygon-based CGH across all metrics. For focal
+stack reconstruction, GWS achieves higher quantitative scores due
+to the sharper content produced by smooth-phase reconstruction,
+whereas speckle noise degrades RPWS metrics. However, as demon-
+strated in our qualitative results in the following sections, RPWS
+reconstructs natural defocus blur rather than the ringing artifacts
+observed in GWS, an effect that is not well captured by standard
+numerical metrics.
+S6.3
+Extended Qualitative Baseline Comparisons on
+Reconstructed Focal Stacks
+We show 3D focal stacks and zoomed-in patches of focal slices
+generated from holograms synthesized using different CGH base-
+lines, including our Random-phase Wave Splatting (RPWS) algo-
+rithm with Gaussians [12] and triangle splats [10], random-phase
+polygon-based CGH (Polygons-RP) using the silhouette method
+[18, 19, 21] and their time-multiplexed variants (1 frame, 8 frames,
+and 24 frames), and Gaussian Wave Splatting (GWS) [3] in Figs. S6
+to S15.
+Since GWS generates smooth-phase holograms, there is little vari-
+ation in blur size across depths and the blur shape is unnatural with
+ringing artifacts (coherent blur), leading to incorrect accommoda-
+tion cues. Single-frame random-phase holograms (Polygon-RP and
+RPWS) suffers from prominent speckle artifacts but image quality
+improves as time-multiplexing frames increase to 8 frames and 24
+frames. Random-phase polygon-based CGH generates much more
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 11 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Method - 3D representation
+Lego
+Chair
+Hotdog
+Materials
+Ship
+Avg.
+Polygons-RP (1 frame)
+14.35 / 0.10 / 0.82
+16.07 / 0.10 / 0.73
+18.01 / 0.15 / 0.78
+18.16 / 0.18 / 0.68
+18.54 / 0.17 / 0.76
+17.03 / 0.14 / 0.75
+Polygons-RP (8 frames)
+18.78 / 0.24 / 0.72
+18.80 / 0.23 / 0.65
+22.43 / 0.34 / 0.66
+20.08 / 0.32 / 0.58
+21.31 / 0.38 / 0.64
+20.28 / 0.30 / 0.65
+GWS
+10.72 / 0.16 / 0.68
+13.39 / 0.15 / 0.67
+14.96 / 0.19 / 0.60
+16.61 / 0.22 / 0.57
+16.08 / 0.19 / 0.64
+14.35 / 0.18 / 0.63
+RPWS-GS (1 frame)
+14.90 / 0.10 / 0.82
+17.09 / 0.11 / 0.73
+18.59 / 0.15 / 0.78
+20.22 / 0.22 / 0.68
+19.74 / 0.17 / 0.77
+18.91 / 0.15 / 0.76
+RPWS-GS (8 frames)
+20.95 / 0.26 / 0.70
+21.65 / 0.30 / 0.63
+24.67 / 0.37 / 0.67
+25.21 / 0.45 / 0.55
+24.67 / 0.42 / 0.65
+23.43 / 0.36 / 0.64
+RPWS-GS (24 frames)
+22.78 / 0.38 / 0.63
+22.70 / 0.40 / 0.56
+26.56 / 0.53 / 0.58
+26.43 / 0.56 / 0.48
+25.84 / 0.58 / 0.56
+24.86 / 0.49 / 0.56
+Method - 3D representation
+Kitchen
+Counter
+Bicycle
+Avg.
+Polygons-RP (1 frame)
+10.95 / 0.06 / 0.77
+12.09 / 0.21 / 0.78
+15.27 / 0.17 / 0.74
+12.77 / 0.15 / 0.76
+Polygons-RP (8 frames)
+14.86 / 0.14 / 0.71
+14.33 / 0.36 / 0.70
+17.70 / 0.31 / 0.67
+15.63 / 0.27 / 0.69
+GWS
+8.04 / 0.15 / 0.62
+10.51 / 0.20 / 0.59
+12.96 / 0.18 / 0.60
+10.50 / 0.18 / 0.60
+RPWS-GS (1 frame)
+11.92 / 0.09 / 0.76
+14.17 / 0.21 / 0.78
+16.44 / 0.20 / 0.74
+14.18 / 0.17 / 0.76
+RPWS-GS (8 frames)
+18.45 / 0.25 / 0.66
+19.82 / 0.42 / 0.66
+20.67 / 0.41 / 0.64
+19.65 / 0.36 / 0.65
+RPWS-GS (24 frames)
+20.72 / 0.38 / 0.56
+21.38 / 0.54 / 0.60
+21.56 / 0.51 / 0.57
+21.22 / 0.48 / 0.58
+Table 1. Quantitative simulated 4D light field reconstruction performance of different CGH algorithms on the Blender [22] and Mip-NeRF 360
+[1] datasets. We evaluate the 4D light field reconstruction performance of holograms generated using our Random-phase Wave Splatting (RPWS) algorithm
+and various baseline random-phase methods in terms of PSNR (↑), SSIM (↑), and LPIPS (↓). GWS has poor light field reconstruction performance since the
+GWS holograms have a highly-concentrated spectrum and thus a small eyebox, leading to severe image quality degradation as the pupil moves to the edge
+of the eyebox. RPWS (24 frames) achieves the best light field reconstruction performance among all baseline CGH methods. The single frame RPWS also
+achieves much better PSNR performance compared to RPWS since RPWS naturally supports a uniform and large eyebox even in the single-frame case. The
+time-multiplexed variants of RPWS also consistently outperforms their Polygons-RP counterparts with the same number of frames.
+Method - 3D representation
+Lego
+Chair
+Hotdog
+Materials
+Ship
+Avg.
+Polygons-RP (1 frame)
+14.88 / 0.11 / 0.89
+16.82 / 0.11 / 0.80
+18.51 / 0.16 / 0.81
+18.94 / 0.24 / 0.71
+19.43 / 0.20 / 0.79
+17.72 / 0.16 / 0.80
+Polygons-RP (8 frames)
+19.98 / 0.25 / 0.72
+20.02 / 0.26 / 0.66
+23.42 / 0.34 / 0.68
+21.18 / 0.40 / 0.59
+22.84 / 0.42 / 0.66
+21.49 / 0.34 / 0.66
+GWS
+26.63 / 0.66 / 0.42
+26.03 / 0.52 / 0.42
+29.50 / 0.81 / 0.33
+28.65 / 0.72 / 0.30
+27.34 / 0.77 / 0.37
+27.63 / 0.70 / 0.37
+RPWS-GS (1 frame)
+15.49 / 0.10 / 0.89
+18.02 / 0.09 / 0.81
+19.11 / 0.14 / 0.82
+21.14 / 0.27 / 0.70
+20.64 / 0.17 / 0.80
+18.88 / 0.16 / 0.80
+RPWS-GS (8 frames)
+22.58 / 0.27 / 0.71
+23.90 / 0.27 / 0.65
+26.12 / 0.35 / 0.66
+27.52 / 0.49 / 0.54
+27.00 / 0.43 / 0.66
+25.42 / 0.36 / 0.64
+RPWS-GS (24 frames)
+25.22 / 0.40 / 0.61
+25.65 / 0.43 / 0.56
+28.81 / 0.53 / 0.58
+29.56 / 0.62 / 0.46
+29.03 / 0.61 / 0.58
+27.65 / 0.52 / 0.56
+Method - 3D representation
+Kitchen
+Counter
+Bicycle
+Avg.
+Polygons-RP (1 frame)
+11.27 / 0.06 / 0.90
+12.49 / 0.19 / 0.85
+16.26 / 0.14 / 0.81
+13.34 / 0.13 / 0.85
+Polygons-RP (8 frames)
+15.63 / 0.16 / 0.80
+14.98 / 0.34 / 0.76
+19.55 / 0.33 / 0.71
+16.72 / 0.28 / 0.76
+GWS
+24.93 / 0.61 / 0.42
+26.01 / 0.80 / 0.36
+24.28 / 0.69 / 0.42
+25.07 / 0.70 / 0.40
+RPWS-GS (1 frame)
+12.18 / 0.07 / 0.89
+14.50 / 0.20 / 0.83
+17.44 / 0.19 / 0.80
+14.71 / 0.15 / 0.84
+RPWS-GS (8 frames)
+19.39 / 0.21 / 0.74
+20.76 / 0.41 / 0.70
+23.37 / 0.44 / 0.67
+21.17 / 0.36 / 0.70
+RPWS-GS (24 frames)
+22.36 / 0.36 / 0.65
+22.73 / 0.56 / 0.63
+25.08 / 0.61 / 0.61
+23.39 / 0.51 / 0.63
+Table 2. Quantitative simulated 3D focal stack reconstruction performance of different CGH algorithms on the Blender [22] and Mip-NeRF 360
+[1] datasets. We evaluate the 3D focal stack reconstruction performance of holograms generated using our Random-phase Wave Splatting algorithm and
+various baseline random-phase methods in terms of PSNR (↑), SSIM (↑), and LPIPS (↓). GWS (the only baseline without random phase) achieves the highest
+numerical PSNR due to its higher contrast from lack of additive noise. However, we see that of the random phase methods, our method performs best, with
+performance improving across all three metrics with multiplexing over additional frames.
+natural blur, but the in-focus image quality is inherently limited
+by the underlying low-quality per-face textured mesh 3D scene
+representation, which is also described in GWS [3]. RPWS achieves
+the most natural defocus blur that accurately emulates incoher-
+ent blur while achieving similar image quality in in-focus regions
+compared to GWS. With additional time-multiplexing, image recon-
+struction performances significantly improve for all random-phase
+CGH methods.
+S6.4
+Extended Qualitative Baseline Comparisons on
+Reconstructed Light Fields
+We show horizontal light fields and zoomed-in patches of light field
+views generated from holograms synthesized using different CGH
+baselines, including our Random-phase Wave Splatting (RPWS) al-
+gorithm with Gaussians [12] and triangle splats [10], random-phase
+polygon-based CGH (Polygons-RP) using the silhouette method
+[18, 19, 21] and their time-multiplexed variants (1 frame, 8 frames,
+and 24 frames), and Gaussian Wave Splatting (GWS) [3] in Figs. S16
+to S25.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 12 ===
+Since the energy of the wavefront is greatly concentrated around
+the center of the eyebox for GWS, light field views at the periphery
+of the eyebox are severely degraded and eventually disappear. For
+RPWS, the energy of the wavefront is evenly spread out across the
+eyebox, which results in accurate light field view reconstruction at
+all pupil locations within the eyebox. The image quality of random-
+phase polygon-based CGH is again limited by the coarse per-face
+textured mesh 3D representation. With additional time-multiplexing,
+image reconstruction performances significantly improve for all
+random-phase CGH methods.
+S6.5
+Comparisons with STFT-based Light Field CGH
+Despite belonging to fundamentally different algorithmic classes,
+we delineate the key distinctions between RPWS and STFT-based
+light field CGH methods. [4, 14]. STFT-based CGH methods require
+densely sampled per-view light field target. To generate holograms
+of a scene viewed from arbitrary viewpoints, the dense light field for
+each viewing position is required, which involves re-synthesizing
+the whole dense light field using either 3D modeling software or
+novel-view synthesis algorithms. Due to such impracticality, all prior
+STFT-based light field CGH works typically use synthetic datasets
+and not real-world scenes. Furthermore, STFT-based methods re-
+quire per-view iterative optimization, and suffer from spatio-angular
+tradeoffs and poor generalizability in intermediate views due to the
+window function used in STFT which we demonstrate int the quan-
+titative comparisons below.
+In contrast, our non-iterative method operates directly on pre-
+optimized, off-the-shelf Gaussian splats, enabling arbitrary-view
+rendering of real-world scenes without re-optimization of the 3D
+representation for each individual view. To render holograms of dif-
+ferent viewpoints of the same 3D scene, we simply transform each
+primitive using the corresponding view transform of that view fol-
+lowing the holographics pipeline described in GWS [3]. While we
+do not claim superiority, RPWS addresses a fundamentally different
+CGH regime that is optimized for real-world capture and forward
+compatibility with state-of-the-art primitives-based 3D representa-
+tions, benefiting from any ongoing advances in geometric primitive
+splatting.
+It is important to note that the high image quality reported by
+prior STFT-based methods is largely a consequence of the high-
+quality synthetic datasets they rely on, rather than the inherent
+superiority of the algorithm. In real captured 3D scenes, these meth-
+ods must also depend on novel view synthesis of primitive-based
+scene representations (e.g., Gaussians, triangles). Consequently, they
+would suffer from the exact same artifacts that are identical to those
+observed in RPWS, which arise from the limitations of the underly-
+ing 3D representation, not the CGH algorithm itself. Any attribution
+of these artifacts to RPWS itself is therefore a misinterpretation. As
+primitives-based 3D reconstruction methods continue to improve,
+these artifacts are expected to diminish, eventually allowing the
+underlying representation to achieve near-perfect image quality,
+just like synthetic datasets.
+We compare our RPWS algorithm with time-multiplexed, STFT-
+based light field CGH that include both per-frame and jointly opti-
+mized variants with a 3 × 3 Hann window and angular resolution
+CGH Algorithm
+Blender
+Mip-NeRF 360
+Training
+Testing
+Training
+Testing
+STFT-individual
+25.11/0.40/0.40
+23.42/0.33/0.43
+22.34/0.54/0.56
+20.11/0.37/0.64
+STFT-joint
+25.21/0.34/0.40
+23.76/0.29/0.42
+22.79/0.56/0.55
+20.61/0.39/0.61
+RPWS (Ours)
+23.23/0.34/0.44
+23.42/0.34/0.44
+19.50/0.35/0.65
+19.65/0.36/0.65
+Table 3. Quantitative light-field reconstruction performance of STFT-
+based CGH methods. We perform full-color, 8-frames light field recon-
+struction baseline comparisons of STFT-based CGH methods and RPWS on
+all test scenes from Blender and Mip-NeRF 360 datasets. Standard image
+quality metrics (PSNR (↑) / SSIM (↑) / LPIPS (↓)) are reported. RPWS
+exhibits strong cross-view consistency, with no drop in image quality across
+training and testing views, while STFT-based methods suffer from PSNR
+drops up to 2 dB.
+STFT-individual
+STFT-joint
+RPWS (Ours)
+PSNR (dB)
+Fig. S5. Average per-view PSNR heatmaps of RPWS and STFT-based
+CGH baselines. We report average per-view PSNR using 5 × 5 heatmaps
+across different CGH baselines. While STFT-based methods attain high
+reconstruction quality at training view positions (sub-sampled 3×3 light field
+views with white circular marks), their performance degrades noticeably
+at intermediate views. In contrast, RPWS exhibits the highest inter-view
+generalizability. Despite a lower average PSNR, it maintains consistent
+image quality across all viewpoints without degradation.
+matching RPWS’s simulated pupil size. All methods use 8-frames
+time-multiplexing. We then synthesize 5 × 5 light fields for all meth-
+ods using the same pupil for fair comparison. While train and test
+splits apply only to STFT-based CGH, which is an another appar-
+ent drawback of such methods, we evaluate RPWS on the same
+views and observe significantly stronger cross-view generalization.
+From Table 3 and Fig. S5, RPWS maintains consistent image quality
+across training and test views, while STFT-based methods exhibit
+variations of up to 2 dB. This is because for RPWS, the underlying
+Gaussian splatting model are optimized to reconstruct all views of a
+3D scene accurately from a set of casually captured images, where
+as discrete, dense light fields are only sampled from the underlying
+3D scene at fixed angular intervals ("training views").
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 13 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+S7
+Additional Experimental Results
+S7.1
+Experimentally Captured Baseline Comparisons on
+Focal Stacks
+We show experimentally-captured 3D focal stacks and zoomed-in
+patches of holograms synthesized using different CGH baselines
+and phase-encoded using SGD, including our Random-phase Wave
+Splatting (RPWS) algorithm with Gaussians [12] and triangle splats
+[10], random-phase polygon-based CGH (Polygons-RP) using the
+silhouette method [18, 19, 21] and their time-multiplexed variants
+(1 frame, 8 frames, and 24 frames), and Gaussian Wave Splatting
+(GWS) [3] in Figs. S26 to S32.
+The experimentally captured focal stacks well match the simula-
+tion results. RPWS achieves the best balance between high in-focus
+image quality and natural defocus blur. GWS achieves good in-focus
+image quality but suffers from ringing coherent blur artifacts and
+limited blur size in defocus regions. The in-focus image quality of
+polygon-based CGH is inherently limited by the per-face colored
+mesh 3D representation. With additional time-multiplexing, image
+quality significantly improves for all random-phase CGH methods.
+S7.2
+Experimentally Captured Baseline Comparisons on
+Light Fields
+We show experimentally-captured horizontal light fields and zoomed-
+in patches of holograms synthesized using different CGH baselines
+and phase-encoded using SGD, including our Random-phase Wave
+Splatting (RPWS) algorithm with Gaussians [12] and triangle splats
+[10], random-phase polygon-based CGH (Polygons-RP) using the
+silhouette method [18, 19, 21] and their time-multiplexed variants
+(1 frame, 8 frames, and 24 frames), and Gaussian Wave Splatting
+(GWS) [3] in Figs. S33 to S38.
+The experimentally captured horizontal light fields and paral-
+lax results closely match our simulations. The GWS baseline ex-
+hibits little to no parallax across views due to its limited effective
+eyebox. Polygon-based CGH produces larger parallax but suffers
+from degraded image quality caused by the coarse, textured mesh
+representation. In contrast, RPWS achieves both high image qual-
+ity and greater parallax than GWS. Furthermore, applying time-
+multiplexing substantially enhances image quality for all random-
+phase CGH methods.
+Additioanlly, we capture the horizontal parallax of RPWS holo-
+grams at multiple focal depths, as shown in Fig. S39 and Fig. S40.
+The observed view disparities scale proportionally with depth differ-
+ences. Nearby objects exhibit larger shifts when focused at distant
+planes, while distant objects shift more when focused near. These
+results confirm that the reconstructed parallax is geometrically con-
+sistent across all depth planes.
+S7.3
+Discussions on Contrast
+Our RPWS algorithm generates random-phase holograms. However,
+despite achieving similar image quality in simulation, random-phase
+holograms often experimentally exhibit significantly lower contrast
+than smooth-phase holograms. This discrepancy stems primarily
+from the fringing field effect (pixel crosstalk) inherent in liquid
+crystal-based SLMs [23]. Random-phase patterns are characterized
+by high-frequency spatial features with abrupt phase discontinuities
+between adjacent pixels. The SLM’s inability to physically resolve
+these sharp transitions leads to modulation errors that degrade
+diffraction efficiency and increase background noise, resulting in
+reduced contrast.
+Learning-based calibration is a potential solution for improving
+random-phase hologram contrast [4–6, 9, 11, 16, 25]. These methods
+train a neural network on datasets of SLM phase inputs and cap-
+tured outputs, creating a proxy forward operator that accounts for
+hardware imperfections. This learned model then replaces the ideal
+angular spectrum method used in hologram optimization to close
+the simulation-to-reality gap. Specifically, Kuo et al. [16] successfully
+modeled pixel crosstalk by introducing a learned blur kernel into
+the forward operator. These techniques are critical for maximixing
+the contrast of random-phase holograms.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 14 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S6. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 15 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S7. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 16 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S8. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 17 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S9. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 18 ===
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S10. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 19 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S11. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 20 ===
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S12. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 21 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S13. Simulated 3D focal stack reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 22 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Fig. S14. Simulated 3D focal stack reconstruction of RPWS holograms rendered from triangle splats [10]. RPWS naturally generalizes to other
+emerging primitives-based representations, such as soft-edged triangles [10]. RPWS generates holograms that accurately reconstructs 3D focal stacks.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 23 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Ground 
+truth
+RPWS 
+(triangle 
+splats)
+Fig. S15. Simulated 3D focal stack reconstruction of RPWS holograms rendered from triangle splats [10]. RPWS naturally generalizes to other
+emerging primitives-based representations, such as soft-edged triangles [10]. RPWS generates holograms that accurately reconstructs 3D focal stacks.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 24 ===
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S16. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 25 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+Fig. S17. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 26 ===
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S18. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 27 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+Fig. S19. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 28 ===
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S20. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 29 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S21. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 30 ===
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S22. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 31 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground Truth
+Polygons-RP (1f)
+Polygons-RP (8f)
+GWS (1f)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left 
+Right 
+RPWS-GS (1f)
+RPWS-GS (8f)
+RPWS-GS (24f)
+Fig. S23. Simulated horizontal light field reconstruction baseline comparisons. Polygon-based methods cannot reconstruct fine details in in-focus
+regions due to the poor underlying coarse textured mesh 3D representation. The spectrum of GWS holograms [3] are highly concentrated, leading to a small
+eyebox and severely degraded and dark images at the edge of the eyebox. Our RPWS algorithm generates holograms with a flat spectrum and thus can
+accurately reconstruct natural parallax across the full eyebox. The yellow vertical line is shown to demonstrate the horizontal parallax effects as the pupil
+moves across the eyebox.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 32 ===
+Ground truth
+RPWS (triangles)
+Ground truth
+RPWS (triangles)
+Ground truth
+RPWS (triangles)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left
+Right
+Fig. S24. Simulated 4D light field reconstruction of RPWS holograms rendered from triangle splats [10]. RPWS naturally generalizes to other
+emerging primitives-based representations, such as soft-edged triangles [10]. RPWS generates holograms that accurately reconstructs 4D light fields and
+parallax.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 33 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground truth
+RPWS (triangles)
+Ground truth
+RPWS (triangles)
+Ground truth
+RPWS (triangles)
+Center view
+Left view
+Epipolar crop 1
+Epipolar crop 2
+Left
+Right
+Fig. S25. Simulated 4D light field reconstruction of RPWS holograms rendered from triangle splats [10]. RPWS naturally generalizes to other
+emerging primitives-based representations, such as soft-edged triangles [10]. RPWS generates holograms that accurately reconstructs 4D light fields and
+parallax.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 34 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S26. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 35 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S27. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 36 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S28. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 37 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S29. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 38 ===
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S30. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 39 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Fig. S31. Experimentally captured 3D focal stack baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using
+different baseline CGH methods, and the results well match our simulations. Polygon-based methods cannot reconstruct fine details in in-focus regions due
+to the poor underlying coarse textured mesh 3D representation. GWS [3] achieves sharp reconstruction in in-focus regions but fails to reproduce accurate
+defocus blur, showing limited blur variation across depths and introducing ringing artifacts. Our RPWS algorithm accurately reconstructs natural defocus blur,
+and shows consistent image quality improvements with increased time-multiplexed frames.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 40 ===
+Front focus
+Middle focus
+Rear focus
+Zoom-in crops
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Fig. S32. Experimentally captured 3D focal stacks of RPWS triangle splats holograms. We experimentally capture 3D focal stacks of holograms
+generated using RPWS with triangle splats [10]. The results demonstrate that RPWS naturally generalizes from Gaussian to other translucent primitives such
+as soft-edged triangles, reconstructing focal stacks with equally high image quality and accurate defocus behavior.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 41 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Left view
+Middle view
+Right view
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS-SP (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S33. Experimentally captured horizontal light field baseline comparisons. We experimentally capture horizontal parallax of holograms generated
+using different baseline CGH methods, and the results closely match our simulations. GWS [3] fails to reproduce accurate parallax due to its limited eyebox,
+resulting in little to no observable disparity across light-field views. Polygon-based CGH produces larger parallax through random-phase modulation, but its
+image quality remains constrained by the coarse, textured mesh representation. In contrast, our RPWS method reconstructs both sharp image details and
+significantly larger parallax than the smooth-phase baseline GWS.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 42 ===
+Left view
+Middle view
+Right view
+Zoom-in crops
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS-SP (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Fig. S34. Experimentally captured horizontal light field baseline comparisons. We experimentally capture horizontal parallax of holograms generated
+using different baseline CGH methods, and the results closely match our simulations. GWS [3] fails to reproduce accurate parallax due to its limited eyebox,
+resulting in little to no observable disparity across light-field views. Polygon-based CGH produces larger parallax through random-phase modulation, but its
+image quality remains constrained by the coarse, textured mesh representation. In contrast, our RPWS method reconstructs both sharp image details and
+significantly larger parallax than the smooth-phase baseline GWS.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 43 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS-SP (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Left view
+Middle view
+Right view
+Zoom-in crops
+Fig. S35. Experimentally captured horizontal light field baseline comparisons. We experimentally capture horizontal parallax of holograms generated
+using different baseline CGH methods, and the results closely match our simulations. GWS [3] fails to reproduce accurate parallax due to its limited eyebox,
+resulting in little to no observable disparity across light-field views. Polygon-based CGH produces larger parallax through random-phase modulation, but its
+image quality remains constrained by the coarse, textured mesh representation. In contrast, our RPWS method reconstructs both sharp image details and
+significantly larger parallax than the smooth-phase baseline GWS.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 44 ===
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS-SP (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Left view
+Middle view
+Right view
+Zoom-in crops
+Fig. S36. Experimentally captured horizontal light field baseline comparisons. We experimentally capture horizontal parallax of holograms generated
+using different baseline CGH methods, and the results closely match our simulations. GWS [3] fails to reproduce accurate parallax due to its limited eyebox,
+resulting in little to no observable disparity across light-field views. Polygon-based CGH produces larger parallax through random-phase modulation, but its
+image quality remains constrained by the coarse, textured mesh representation. In contrast, our RPWS method reconstructs both sharp image details and
+significantly larger parallax than the smooth-phase baseline GWS.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 45 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Ground 
+Truth
+Polygons (1f)
+[Matsushima et al., 2014]
+GWS-SP (1f)
+[Choi, Chao et al., 2025]
+RPWS Gaussians (1f)
+(Ours)
+RPWS Gaussians (8f)
+(Ours)
+RPWS Gaussians (24f)
+(Ours)
+Polygons (8f)
+[Matsushima et al., 2014]
+Left view
+Middle view
+Right view
+Zoom-in crops
+Fig. S37. Experimentally captured horizontal light field baseline comparisons. We experimentally capture horizontal parallax of holograms generated
+using different baseline CGH methods, and the results closely match our simulations. GWS [3] fails to reproduce accurate parallax due to its limited eyebox,
+resulting in little to no observable disparity across light-field views. Polygon-based CGH produces larger parallax through random-phase modulation, but its
+image quality remains constrained by the coarse, textured mesh representation. In contrast, our RPWS method reconstructs both sharp image details and
+significantly larger parallax than the smooth-phase baseline GWS.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 46 ===
+Left view
+Middle view
+Right view
+Zoom-in crops
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Ground 
+Truth
+RPWS Triangles (24f)
+(Ours)
+Fig. S38. Experimentally captured horizontal parallax of RPWS triangle splats holograms. We experimentally capture horizontal parallax of holograms
+generated using RPWS with triangle splats [10]. The results demonstrate that RPWS naturally generalizes from Gaussian to other translucent primitives such
+as soft-edged triangles, reconstructing large and accurate parallax.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 47 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+Left view
+Middle view
+Right view
+Zoom-in crops
+Front focus
+Middle focus
+Rear focus
+Front focus
+Middle focus
+Rear focus
+Fig. S39. Experimentally captured parallax at different depth planes. We capture horizontal parallax of 24-frames RPWS holograms at multiple focal
+depths. The disparity between views increases proportionally with depth difference. Nearby objects shift more when focused at a distant plane, and distant
+objects shift more when focused near. This confirms that the reconstructed parallax is geometrically consistent across depth planes.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 48 ===
+Left view
+Middle view
+Right view
+Zoom-in crops
+Front focus
+Middle focus
+Rear focus
+Front focus
+Middle focus
+Rear focus
+Fig. S40. Experimentally captured parallax at different depth planes. We capture horizontal parallax of 24-frames RPWS holograms at multiple focal
+depths. The disparity between views increases proportionally with depth difference. Nearby objects shift more when focused at a distant plane, and distant
+objects shift more when focused near. This confirms that the reconstructed parallax is geometrically consistent across depth planes.
+, Vol. 1, No. 1, Article . Publication date: October 2025.
+
+=== page 49 ===
+Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography — Supplementary Material
+References
+[1] Barron, J. T., Mildenhall, B., Verbin, D., Srinivasan, P. P., and Hedman, P.
+Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields. In CVPR (2022).
+[2] Chen, C., Lee, B., Li, N.-N., Chae, M., Wang, D., Wang, Q.-H., and Lee, B. Multi-
+depth hologram generation using stochastic gradient descent algorithm with
+complex loss function. Opt. Express 29, 10 (May 2021), 15089–15103.
+[3] Choi, S., Chao, B., Yang, J., Gopakumar, M., and Wetzstein, G. Gaussian wave
+splatting for computer generated holography. ACM Transactions on Graphics
+(TOG) 44, 4 (2025), 1–11.
+[4] Choi, S., Gopakumar, M., Peng, Y., Kim, J., O’Toole, M., and Wetzstein, G. Time-
+multiplexed neural holography: a flexible framework for holographic near-eye
+displays with fast heavily-quantized spatial light modulators. In ACM SIGGRAPH
+2022 Conference Proceedings (2022), pp. 1–9.
+[5] Choi, S., Gopakumar, M., Peng, Y., Kim, J., and Wetzstein, G. Neural 3d
+holography: Learning accurate wave propagation models for 3d holographic
+virtual and augmented reality displays. ACM Transactions on Graphics (TOG) 40,
+6 (2021), 1–12.
+[6] Choi, S., Jang, C., Lanman, D., and Wetzstein, G. Synthetic aperture waveg-
+uide holography for compact mixed reality displays with large étendue. Nature
+Photonics (2025).
+[7] Goodman, J. W. Introduction to Fourier optics. Roberts and Company publishers,
+2005.
+[8] Goodman, J. W. Statistical Optics, 2nd ed. Wiley, 2015.
+[9] Gopakumar, M., Lee, G.-Y., Choi, S., Chao, B., Peng, Y., Kim, J., and Wetzstein,
+G. Full-colour 3d holographic augmented-reality displays with metasurface
+waveguides. Nature (2024), 1–7.
+[10] Held, J., Vandeghen, R., Deliege, A., Hamdi, A., Cioppa, A., Giancola, S.,
+Vedaldi, A., Ghanem, B., Tagliasacchi, A., and Van Droogenbroeck, M. Tri-
+angle splatting for real-time radiance field rendering. arXiv (2025).
+[11] Jang, C., Bang, K., Chae, M., Lee, B., and Lanman, D. Waveguide holography
+for 3d augmented reality glasses. Nature Communications 15, 1 (2024), 66.
+[12] Kerbl, B., Kopanas, G., Leimkühler, T., and Drettakis, G. 3D Gaussian Splat-
+ting for Real-Time Radiance Field Rendering. ACM TOG 42, 4 (July 2023).
+[13] Kheradmand, S., Rebain, D., Sharma, G., Sun, W., Tseng, Y.-C., Isack, H., Kar,
+A., Tagliasacchi, A., and Yi, K. M. 3d gaussian splatting as markov chain monte
+carlo. In NeurIPS (2024).
+[14] Kim, D., Nam, S.-W., Choi, S., Seo, J.-M., Wetzstein, G., and Jeong, Y. Holo-
+graphic parallax improves 3d perceptual realism. ACM Transactions on Graphics
+(TOG) 43, 4 (2024), 1–13.
+[15] Kingma, D. P., and Ba, J. Adam: A method for stochastic optimization. In
+International Conference on Learning Representations (ICLR) (2015).
+[16] Kuo, G., Schiffers, F., Lanman, D., Cossairt, O., and Matsuda, N. Multisource
+holography. ACM Transactions on Graphics (TOG) 42, 6 (2023), 1–14.
+[17] Matsushima, K. Computer-generated holograms for three-dimensional surface
+objects with shade and texture. Applied optics 44, 22 (2005), 4607–4614.
+[18] Matsushima, K. Exact hidden-surface removal in digitally synthetic full-parallax
+holograms.
+In Practical Holography XIX: Materials and Applications (2005),
+vol. 5742, SPIE, pp. 25–32.
+[19] Matsushima, K., and Nakahara, S. Extremely high-definition full-parallax
+computer-generated hologram created by the polygon-based method. Applied
+optics 48, 34 (2009), H54–H63.
+[20] Matsushima, K., Nakamura, M., and Nakahara, S. Silhouette method for
+hidden surface removal in computer holography and its acceleration using the
+switch-back technique. Optics express 22, 20 (2014), 24450–24465.
+[21] Matsushima, K., Schimmel, H., and Wyrowski, F. Fast calculation method for
+optical diffraction on tilted planes by use of the angular spectrum of plane waves.
+JOSA A 20, 9 (2003), 1755–1762.
+[22] Mildenhall, B., Srinivasan, P. P., Tancik, M., Barron, J. T., Ramamoorthi,
+R., and Ng, R. NeRF: Representing Scenes as Neural Radiance Fields for View
+Synthesis. In ECCV (2020).
+[23] Moser, S., Ritsch-Marte, M., and Thalhammer, G. Model-based compensation
+of pixel crosstalk in liquid crystal spatial light modulators. Opt. Express 27, 18
+(Sep 2019), 25046–25063.
+[24] Ng, R., Levoy, M., Brédif, M., Duval, G., Horowitz, M., and Hanrahan, P.
+Light field photography with a hand-held plenoptic camera. PhD thesis, Stanford
+university, 2005.
+[25] Peng, Y., Choi, S., Padmanaban, N., and Wetzstein, G. Neural holography with
+camera-in-the-loop training. ACM Transactions on Graphics (TOG) 39, 6 (2020),
+1–14.
+[26] Reichelt, S., Häussler, R., Fütterer, G., Leister, N., Kato, H., Usukura, N.,
+and Kanbayashi, Y. Full-range, complex spatial light modulator for real-time
+holography. Optics letters 37, 11 (2012), 1955–1957.
+[27] Shi, L., Huang, F.-C., Lopes, W., Matusik, W., and Luebke, D. Near-eye light
+field holographic rendering with spherical waves for wide field of view interactive
+3d computer graphics. ACM Transactions on Graphics (TOG) 36, 6 (2017), 1–17.
+[28] Shi, L., Li, B., Kim, C., Kellnhofer, P., and Matusik, W. Towards real-time
+photorealistic 3d holography with deep neural networks. Nature 591, 7849 (2021),
+234–239.
+[29] Tang, J., Zhou, H., Chen, X., Hu, T., Ding, E., Wang, J., and Zeng, G. Delicate
+textured mesh recovery from nerf via adaptive surface refinement. In ICCV (2023).
+[30] Ye, V., Li, R., Kerr, J., Turkulainen, M., Yi, B., Pan, Z., Seiskari, O., Ye, J., Hu,
+J., Tancik, M., and Kanazawa, A. gsplat: An open-source library for Gaussian
+splatting. arXiv preprint arXiv:2409.06765 (2024).
+, Vol. 1, No. 1, Article . Publication date: October 2025.

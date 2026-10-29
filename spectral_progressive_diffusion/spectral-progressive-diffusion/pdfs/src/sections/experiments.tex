@@ -1,0 +1,177 @@
+% !TEX root = ../main.tex
+\section{Experiments}
+\label{sec:exp}
+
+% \newcommand{\placeholderfig}[1]{\parbox[c][#1][c]{0.95\linewidth}{\centering\includegraphics[width=0.95\linewidth,height=#1,keepaspectratio]{example-image-a}}}
+
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/main_qual.pdf}
+  \caption{\textbf{Visual Generation Qualitative Comparisons.} For the main comparison of latent-space image generation, our method outperforms the state-of-the-art spatial acceleration method RALU \cite{ralu} in both visual fidelity and inference speed. Across all evaluated modalities (latent/pixel-space image generation and latent-space video generation), we achieve substantial acceleration over standard high-resolution baselines while preserving generation quality.}
+  \label{fig:qual}
+\end{figure}
+
+
+\subsection{Setup}
+\label{sec:exp:setup}
+
+We extensively evaluate our Spectral Progressive Diffusion framework on latent-space image generation with \textbf{FLUX.1-dev}~\citep{black2024flux} and \textbf{Z-Image}~\citep{zimage}, covering both training-free inference acceleration and fine-tuning with LoRA~\citep{hu2021lora}. We further demonstrate that our framework applies to pixel-space image generation with \textbf{PixelGen-XXL/16 T2I}~\citep{pixelgen} and latent-space video generation with \textbf{WAN~2.1-T2V-1.3B}~\citep{wan}. Each pretrained backbone uses its native resolution and default model-specific inference schedule.
+
+For latent- and pixel-space image generation, we follow RALU's~\citep{ralu} evaluation protocol, reporting ImageReward~\citep{imagereward} for overall quality, CLIP-IQA~\citep{wang2023clipiqa} and NIQE~\citep{mittal2013niqe} for image quality together with T2I-CompBench~\citep{t2icompbench} and GenEval~\citep{geneval} for prompt alignment. For video generation, we report VBench~\citep{vbench} scores across its standard evaluation dimensions. We report total FLOPs integrated over the full denoising trajectory using the same convention as RALU and end-to-end normalized wall-clock speedup. We use $\delta=0.01$ and Discrete Cosine Transform (DCT) as our spectral transformation $T_\Phi$ across the experiments and include ablation studies on $\delta$, $S$, and $T_\Phi$ in Sec.~\ref{sec:exp:ablations}. We include additional implementation and experimental details in Appendix Secs.~\ref{sec:image_generation} and~\ref{sec:video_generation}.
+
+% \hx{commented out per Howard -- configuration / activation-threshold table deferred}
+% Table~\ref{tab:setup} summarises the per-backbone configuration together with the activation thresholds $t_{0}$ (Eq.~\eqref{eq:activation}) induced by the default tolerance $\delta$.
+%
+% \begin{table}[t]
+%   \centering
+%   \small
+%   \caption{\textbf{Per-backbone configuration and activation thresholds} at the default tolerance $\delta$. \textit{Res.\ ratio} is the spatial downsampling between adjacent stages; \textit{Act.\ time $t_{0}$} and \textit{Act.\ step} follow from Eq.~\eqref{eq:activation}. Placeholder values (``-'') to be filled.}
+%   \label{tab:setup}
+%   \setlength{\tabcolsep}{5pt}
+%   \begin{tabular}{l c c c c c c c c}
+%     \toprule
+%     Backbone & Resolution & Steps & Shift & $\delta$ & Basis & Res.\ ratio & $t_{0}$ & Act.\ step \\
+%     \midrule
+%     PixelGen         & - & - & - & - & - & - & - & - \\
+%     SD3              & - & - & - & - & - & - & - & - \\
+%     FLUX.1-dev       & - & - & - & - & - & - & - & - \\
+%     WAN 2.1-T2V-1.3B & - & - & - & - & - & - & - & - \\
+%     \bottomrule
+%   \end{tabular}
+% \end{table}
+
+% \iffalse
+% \subsection{Empirical Validation of Power Spectrum and Resolution Schedule}
+% \label{sec:exp:validation}
+
+% \bc{I think this whole section can be moved to the supplement, and move Fig.2 to preliminaries}
+
+% We validate the two theoretical pillars of Section~\ref{sec:method:schedule} on our target backbones: (i) the power-law decay of the per-frequency signal power, and (ii) the prediction of Eq.~\eqref{eq:velocity-error-optimal} for when a pretrained velocity network actually starts to deviate from the input noise on each frequency. Figure~\ref{fig:wavelet-spectral} shows both.
+
+% \paragraph{Power spectra of natural images and latents.}
+% The left column of Fig.~\ref{fig:wavelet-spectral} overlays the radial power spectrum $P(|\omega|)$ measured on natural images, SD3 latents, FLUX.1-dev latents, and WAN~2.1 latents, with error bars across latent channels. All four curves admit a clean power-law fit $P(|\omega|) \propto |\omega|^{-\beta}$ with the exponent $\beta$ reported inline.
+
+% \paragraph{Per-frequency signal content in pretrained denoisers.}
+% The middle column of Fig.~\ref{fig:wavelet-spectral} measures, for a \emph{pretrained} velocity network $v_\theta$ without any modifications, the per-frequency squared deviation $\mathbb{E}\!\left[\bigl|v_\theta^{(\omega)}(x_t, t) - \epsilon^{(\omega)}\bigr|^2\right]$ as a function of timestep $t$, stratified by Haar sub-band on FLUX.1-dev and WAN~2.1. Comparing the model output against $\epsilon$ itself (rather than against the regression target $\epsilon - x_0$) directly probes whether the model is extracting any useful signal on that frequency: if the model simply outputs the input noise, the curve stays at zero. The measured curves are overlaid with the analytical prediction of Eq.~\eqref{eq:velocity-error-optimal} using the $\{P_\omega\}$ measured in the left column. Pretrained denoisers closely track the analytical curve: each sub-band stays at zero deviation while $\mathrm{SNR}_\omega(t)$ is small and rises sharply to $\sim 1 + P_\omega$ once $\mathrm{SNR}_\omega(t)$ crosses unity, confirming that noise-dominated frequencies are genuinely uninformative at their active times.
+
+% \input{figures/wavelet-spectral}
+
+% Further empirical validation comes from the spectral-passthrough experiment reported in Section~\ref{sec:exp:image} (Fig.~\ref{fig:passthrough} and the ``spectral passthrough'' rows of Tables~\ref{tab:flux-main} and~\ref{tab:wan-main}): replacing noise-dominated sub-bands with fresh Gaussian noise at every denoising step leaves generation quality essentially unchanged, confirming that at their active times these bands carry no information beyond noise.
+% \fi
+
+\vspace{-5pt}
+\subsection{Latent- and Pixel-Space Image Generation}
+\vspace{-5pt}
+\label{sec:exp:image}
+
+% \input{tables/latent_image_quan}
+% \input{tables/flux_short}
+% \input{tables/finetuning}
+% \input{tables/wan_vbench_quan}
+
+% We evaluate both training-free and LoRA fine-tuned variants of our Spectral Progressive Diffusion framework and report quantitative results on latent space image generation in Tables ~\ref{tab:flux-main} and \ref{tab:zimage-main} and qualitative comparisons in Fig.~\ref{fig:qual}.
+
+\paragraph{Training-free acceleration.} In Table~\ref{tab:flux-main} and Fig.~\ref{fig:qual}, we compare our training-free acceleration approach (Sec.~\ref{sec:method:noise-injection}) on FLUX.1-dev with training-free acceleration baselines that implement progressive resolution growing, including Bottleneck Sampling~\citep{bottleneck} and RALU~\citep{ralu}. Additional FLUX.1-dev comparisons are included in Appendix Sec.~\ref{subsec:image_latent}. Our approach consistently improves the speed-quality tradeoff over other methods across all three evaluated speedup regimes. Increasing $S=2$ to $S=3$ further improves efficiency, offering up to $7.36 \times$ FLOPs speedup and $7.09 \times$ wall clock speedup while maintaining high generation quality.
+
+% Thanks to our Spectral Progressive Diffusion framework and derived $\delta$-optimal resolution schedule (Secs.~\ref{sec:method:noise-injection}, \ref{sec:method:schedule:signal}), 
+
+% i removed: $\delta$ being the sole hyperparameter for our resolution schedule allows us to easily increase. i think claiming "sole hyperparam" should be toned down
+
+% "as it shares the same VAE backbone and hence the same resolution schedule as FLUX.1.dev -- no need for this IMO". the only reason is that we dont need to remeasure power spectrum, but realisticalluy we can do it on any model so this is not a strong argument (rather a neutral one, so i removed to save space)
+
+\vspace{-5pt}
+\paragraph{Spectral-transformation-based fine-tuning.} In Table~\ref{tab:zimage-main}, we demonstrate that our spectral-transformation-based fine-tuning method (Sec.~\ref{sec:method:lora}) further improves image quality and efficiency compared to training-free acceleration. Since FLUX.1-dev is guidance-distilled and its base model is not open-sourced, we select Z-Image \citep{zimage} as the base model for our latent-space image fine-tuning experiments. All models are fine-tuned with LoRA~\citep{hu2021lora} using rank 32 for 2000 iterations in both latent-space and pixel-space image generation experiments. Across both latent- and pixel-space image generation, our fine-tuning framework narrows the gap between training and inference, further improving generation quality while maintaining efficiency gains. % In particular, for latent-space image generation, our fine-tuned model with $S = 3$ resolution stages improves both the efficiency and quality compared to training-free inference with $S = 2$ where more denoising steps are in higher resolutions.
+We include additional implementation details and results in Appendix Sec.~\ref{subsec:image_pixel}.
+
+% Both training-free variants match or outperform all training-free baselines at equivalent or superior speedups (Table~\ref{tab:flux-main}). Increasing resolution stages from $S=2$ to $S=3$ further boosts efficiency with negligible image quality loss. Furthermore, the fine-tuned variant enables operation at a higher error threshold ($\delta=0.05$ vs. the training-free $\delta=0.01$), yielding simultaneous improvements in acceleration and image quality (Table \ref{tab:zimage-main}).
+
+% \paragraph{Training-free inference.}
+% The training-free setting tests whether our spectrum-derived schedule can be used as a plug-and-play modification to a pretrained generator, without changing its weights or sampler. On FLUX.1-dev, our method consistently improves the speed--quality tradeoff over spatial acceleration baselines across all evaluated budget regimes. At moderate acceleration, Ours ($S=2$) reaches $1.66\times$ wall-clock speedup and $1.70\times$ FLOP speedup while improving ImageReward and CLIP-IQA over RALU; at stronger acceleration, Ours ($S=2$) achieves $5.77\times$ wall-clock speedup with higher ImageReward and comparable text alignment to RALU. Increasing to $S=3$ further reduces compute, reaching up to $7.09\times$ wall-clock and $7.36\times$ FLOP speedup, with only gradual degradation in alignment metrics. These results support the central premise of our method: early high-resolution tokens are largely wasted on noise-dominated frequencies, so removing them until their predicted activation times yields substantial acceleration without requiring backbone-specific retraining.
+
+% \paragraph{LoRA fine-tuning.}
+% We next evaluate whether a lightweight adapter can absorb the remaining mismatch between the idealized spectral trajectory and the distribution seen by the pretrained backbone. In contrast to full retraining or architectural changes, our LoRA variant keeps the base model frozen and only trains low-rank adapters on the stage-specific velocity targets derived in Sec.~\ref{sec:method:lora}. This fine-tuning improves the quality--efficiency balance on Z-Image: Ours (LoRA) preserves essentially the same acceleration as the training-free $S=2$ configuration while improving ImageReward and NIQE, closing part of the gap to the full-resolution baseline. We view this as complementary to the training-free result: the schedule alone already gives immediate speedups, while LoRA provides a small-parameter path for models or operating points where the progressive spectral trajectory benefits from adaptation.
+
+%The passthrough row confirms that replacing noise-dominated bands with pure noise at every step is essentially lossless, isolating the speedup purely to the resolution schedule.
+
+%\paragraph{LoRA fine-tuning.}
+% Augmenting the backbone with a LoRA~\citep{hu2021lora} adapter trained on our per-frequency flow trajectory (Section~\ref{sec:method:lora}) recovers---and in many cells exceeds---the base backbone's quality at the same or stronger speedup. The adapter is trained only on noise-dominated-band rewrites at the post-transition resolution; the pretrained backbone is fully frozen. Compared to full retraining or architectural surgery, the LoRA approach adds at most a few percent trainable parameters to the original backbone and trains in a single-digit number of GPU-hours on a single H100; exact parameter counts and compute are reported in the appendix. The Ours-LoRA row in Table~\ref{tab:flux-main} and the rightmost column of Fig.~\ref{fig:qual} make the effect directly comparable against the training-free variants.
+
+\vspace{-5pt}
+\subsection{Latent-space Video Generation}
+\label{sec:exp:video}
+
+We further demonstrate the flexibility and robustness of our training-free acceleration approach on latent-space video generation (Table \ref{tab:wan_vbench_720p}, Fig. \ref{fig:qual}). To our knowledge, there are no diffusion acceleration approaches that were validated on all three generation modalities presented in Secs.~\ref{sec:exp:image}--\ref{sec:exp:video}. We observe trends consistent with image generation, where our method achieves significant speedups while preserving generation quality. We include additional implementation details and results in Appendix Sec.~\ref{sec:video_generation}.
+
+
+\vspace{-5pt}
+\subsection{Ablation Studies}
+\label{sec:exp:ablations}
+
+We ablate our core design choices, including error threshold $\delta$, resolution stages $S$, and spectral transformation $T_\Phi$, on latent-space image generation using FLUX.1-dev. We show the speed-quality Pareto frontier in Fig. \ref{fig:ablation}(a) for $\delta \in [0.001, 0.1]$, $S \in \{2, 3, 4\}$, and different spectral transformations $T_\Phi$. Consistent with our theory, increasing $\delta$ or $S$ further accelerates generation at the cost of gradual image quality loss. The Discrete Cosine Transform (DCT), Discrete Wavelet Transform (DWT), and Fourier Transform (FFT) achieve similar high-fidelity performance. Qualitative comparisons are given in Appendix Sec.~\ref{sec:ablation}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/ablation_freq_edit.pdf}
+  \caption{\textbf{(a): Ablation Studies on $\delta, S$ and $T_\Phi$.} We observe a clear tradeoff between image quality and efficiency when varying $\delta$ and $S$ as shown in the top plot. As shown in the bottom plot, all three transforms (DCT, DWT, FFT) achieve comparable quality and follow the same quality--efficiency tradeoff as $\delta$ increases. \textbf{(b): Frequency-based Image Editing.} Our method demonstrates superior prompt alignment and geometric consistency compared to standard SDEdit-style spatial-domain editing under identical step counts. Our method successfully edits the texture and style of the input image, whereas SDEdit fails to do so.}
+  \label{fig:ablation}
+\end{figure}
+
+
+\iffalse
+% move to supp
+\textbf{Resolution Stages $S$:} The primary speedup derives from bypassing native-resolution steps; consequently, $S=2$ configurations occupy the top-right of the Pareto curve, while higher $S$ provides diminishing efficiency gains by further optimizing the already-inexpensive low-resolution trajectory. \textbf{Spectral Transformation $T_\Phi$:} The Fourier Transform (FFT) tends to oversmooth results, whereas DCT and DWT achieve similar high-fidelity performance. We default to DCT for its native support of non-power-of-two resolution scaling.
+\fi
+
+
+
+\iffalse
+\begin{table}[t]
+  \centering
+  \footnotesize
+  \caption{\textbf{Ablation: tolerance $\delta$} on FLUX.1-dev, using the same metric set as Table~\ref{tab:flux-main}. Two blocks (training-free, LoRA). All values placeholder.}
+  \label{tab:delta-sweep}
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{c ccc ccccc}
+    \toprule
+    $\delta$ & Latency (s) $\downarrow$ & TFLOPs $\downarrow$ & Speed.\ $\uparrow$ & ImageReward $\uparrow$ & CLIP-IQA $\uparrow$ & NIQE $\downarrow$ & T2I-Comp.\ $\uparrow$ & GenEval $\uparrow$ \\
+    \midrule
+    \multicolumn{9}{l}{\textit{Training-free}} \\
+    0.001 & - & - & - & - & - & - & - & - \\
+    0.01  & - & - & - & - & - & - & - & - \\
+    0.1   & - & - & - & - & - & - & - & - \\
+    \midrule
+    \multicolumn{9}{l}{\textit{LoRA}} \\
+    0.001 & - & - & - & - & - & - & - & - \\
+    0.01  & - & - & - & - & - & - & - & - \\
+    0.1   & - & - & - & - & - & - & - & - \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{1em}
+
+  \small
+  \caption{\textbf{Ablation: number of resolution stages} on FLUX.1-dev. All values placeholder.}
+  \label{tab:stages-sweep}
+  \setlength{\tabcolsep}{8pt}
+  \begin{tabular}{c ccc}
+    \toprule
+    \# Stages & FID $\downarrow$ & FLOPs $\downarrow$ & Speedup $\uparrow$ \\
+    \midrule
+    2 & - & - & - \\
+    3 & - & - & - \\
+    4 & - & - & - \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+\fi
+
+\subsection{Frequency-based Image Editing}
+\label{sec:exp:applications}
+We demonstrate a unique \textit{frequency-based} image editing capability enabled by our method. Specifically, given an input $\mathbf{x}_\text{in}$ to edit, we add noise to the low-frequency part of $T_\Phi(\mathbf{x}_\text{in})$, perform spectral noise expansion and timestep alignment (Sec.~\ref{sec:method:noise-injection}), and then resume denoising from the timestep $t$ corresponding to the resolution schedule with the editing prompt. Fig.~\ref{fig:ablation}(b) shows our method achieves substantially improved prompt alignment and geometric consistency compared to a spatial-domain SDEdit-style baseline \cite{meng2022sdedit}. Additional details and editing results are in Appendix Sec.~\ref{sec:image_editing}.
+
+% Please refer to the supplementary materials for implementation details and additional editing results.
+
+\iffalse
+, where we corrupt the input to the same diffusion timestep $t$ when we perform spectral noise expansion (approximately half the number of steps along the default schedule) and resume denoising. We find that SDEdit fails to modify texture and style, whereas our method succeeds. Please refer to the supplementary materials for more results.
+\fi

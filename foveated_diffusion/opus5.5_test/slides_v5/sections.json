@@ -1,0 +1,542 @@
+[
+  {
+    "scene": "S01_TokenCost",
+    "index": 0,
+    "name": "image_grid",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0000_image_grid.mp4",
+    "duration_s": 2.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0000_image_grid_last.png",
+    "description": "Dog image with 16×16 patch grid lines"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 1,
+    "name": "patch_tokens",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0001_patch_tokens.mp4",
+    "duration_s": 3.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0001_patch_tokens_last.png",
+    "description": "Image replaced by 256 colored patch tokens"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 2,
+    "name": "face_vs_door",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0002_face_vs_door.mp4",
+    "duration_s": 1.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0002_face_vs_door_last.png",
+    "description": "Face token (amber) and door token (purple) boxed with legend"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 3,
+    "name": "all_tokens_256",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0003_all_tokens_256.mp4",
+    "duration_s": 2.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0003_all_tokens_256_last.png",
+    "description": "All tokens recolored blue; label: 16×16 = 256 tokens"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 4,
+    "name": "attention_matrix",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0004_attention_matrix.mp4",
+    "duration_s": 1.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0004_attention_matrix_last.png",
+    "description": "UNUSED cost beat: attention matrix, 65,536 query–key pairs"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 5,
+    "name": "attention_row_scan",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0005_attention_row_scan.mp4",
+    "duration_s": 5.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0005_attention_row_scan_last.png",
+    "description": "UNUSED cost beat: query token and its attention row highlighted"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 6,
+    "name": "attention_n_squared",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0006_attention_n_squared.mp4",
+    "duration_s": 1.4,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0006_attention_n_squared_last.png",
+    "description": "UNUSED cost beat: small square, N tokens / N² pairs"
+  },
+  {
+    "scene": "S01_TokenCost",
+    "index": 7,
+    "name": "attention_2x_resolution",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S01_TokenCost_0007_attention_2x_resolution.mp4",
+    "duration_s": 1.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S01_TokenCost_0007_attention_2x_resolution_last.png",
+    "description": "UNUSED cost beat: 2× resolution square, 4N tokens / 16N² pairs"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 0,
+    "name": "acuity_curve",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0000_acuity_curve.mp4",
+    "duration_s": 3.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0000_acuity_curve_last.png",
+    "description": "Visual acuity vs eccentricity curve with fovea band"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 1,
+    "name": "gaze_dot",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0001_gaze_dot.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0001_gaze_dot_last.png",
+    "description": "Acuity plot plus farmer photo with red gaze dot"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 2,
+    "name": "periphery_blur",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0002_periphery_blur.mp4",
+    "duration_s": 3.4,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0002_periphery_blur_last.png",
+    "description": "Farmer photo blurred away from gaze, dashed fovea circle"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 3,
+    "name": "gaze_moves",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0003_gaze_moves.mp4",
+    "duration_s": 1.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0003_gaze_moves_last.png",
+    "description": "Gaze dot moved to hat brim; sharp region follows"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 4,
+    "name": "foveated_rendering",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0004_foveated_rendering.mp4",
+    "duration_s": 4.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0004_foveated_rendering_last.png",
+    "description": "Foveated rendering equation with five-image visual equation"
+  },
+  {
+    "scene": "S02_Vision",
+    "index": 5,
+    "name": "question",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S02_Vision_0005_question.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S02_Vision_0005_question_last.png",
+    "description": "Question card: can a diffusion model spend tokens this way?"
+  },
+  {
+    "scene": "S03_Tokenization",
+    "index": 0,
+    "name": "full_grid",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S03_Tokenization_0000_full_grid.mp4",
+    "duration_s": 1.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S03_Tokenization_0000_full_grid_last.png",
+    "description": "Full 16×16 grid of blue high-res tokens"
+  },
+  {
+    "scene": "S03_Tokenization",
+    "index": 1,
+    "name": "mask",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S03_Tokenization_0001_mask.mp4",
+    "duration_s": 2.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S03_Tokenization_0001_mask_last.png",
+    "description": "Mask M panel; periphery dimmed, fovea outlined"
+  },
+  {
+    "scene": "S03_Tokenization",
+    "index": 2,
+    "name": "merge_periphery",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S03_Tokenization_0002_merge_periphery.mp4",
+    "duration_s": 5.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S03_Tokenization_0002_merge_periphery_last.png",
+    "description": "Periphery merged into green low-res tokens, fovea stays blue"
+  },
+  {
+    "scene": "S03_Tokenization",
+    "index": 3,
+    "name": "token_count",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S03_Tokenization_0003_token_count.mp4",
+    "duration_s": 3.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S03_Tokenization_0003_token_count_last.png",
+    "description": "Token count: m = 48, 52 low-res, L = 100, 39%"
+  },
+  {
+    "scene": "S03_Tokenization",
+    "index": 4,
+    "name": "sequence_100",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S03_Tokenization_0004_sequence_100.mp4",
+    "duration_s": 3.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S03_Tokenization_0004_sequence_100_last.png",
+    "description": "Flattened row: one sequence of L = 100 tokens"
+  },
+  {
+    "scene": "S04_RoPE",
+    "index": 0,
+    "name": "uniform_rope",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S04_RoPE_0000_uniform_rope.mp4",
+    "duration_s": 3.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S04_RoPE_0000_uniform_rope_last.png",
+    "description": "Uniform token row 0–7 with rotating RoPE dials"
+  },
+  {
+    "scene": "S04_RoPE",
+    "index": 1,
+    "name": "mixed_grid_question",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S04_RoPE_0001_mixed_grid_question.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S04_RoPE_0001_mixed_grid_question_last.png",
+    "description": "Tokens 4–7 merged into two green tokens; dials show ?"
+  },
+  {
+    "scene": "S04_RoPE",
+    "index": 2,
+    "name": "hr_query",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S04_RoPE_0002_hr_query.mp4",
+    "duration_s": 2.0,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S04_RoPE_0002_hr_query_last.png",
+    "description": "High-res query row: low-res keys at indices 4, 6"
+  },
+  {
+    "scene": "S04_RoPE",
+    "index": 3,
+    "name": "lr_query",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S04_RoPE_0003_lr_query.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S04_RoPE_0003_lr_query_last.png",
+    "description": "Low-res query row: re-indexed 0, 1, 2, 3"
+  },
+  {
+    "scene": "S04_RoPE",
+    "index": 4,
+    "name": "regions",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S04_RoPE_0004_regions.mp4",
+    "duration_s": 0.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S04_RoPE_0004_regions_last.png",
+    "description": "High-res and low-res region brackets under the rows"
+  },
+  {
+    "scene": "S05_Naive",
+    "index": 0,
+    "name": "full_highres",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S05_Naive_0000_full_highres.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S05_Naive_0000_full_highres_last.png",
+    "description": "Full high-res row: horse, guitar, farmer"
+  },
+  {
+    "scene": "S05_Naive",
+    "index": 1,
+    "name": "naive_fails",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S05_Naive_0001_naive_fails.mp4",
+    "duration_s": 2.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S05_Naive_0001_naive_fails_last.png",
+    "description": "Naïve mixed-res row with red failure labels"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 0,
+    "name": "image_x",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0000_image_x.mp4",
+    "duration_s": 0.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0000_image_x_last.png",
+    "description": "Training image x (lion)"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 1,
+    "name": "downsample",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0001_downsample.mp4",
+    "duration_s": 1.2,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0001_downsample_last.png",
+    "description": "Bicubic downsampled copy Down(x) below x"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 2,
+    "name": "encode",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0002_encode.mp4",
+    "duration_s": 2.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0002_encode_last.png",
+    "description": "VAE encoders produce z_high (16×16) and z_low (8×8)"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 3,
+    "name": "mask_merge",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0003_mask_merge.mp4",
+    "duration_s": 4.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0003_mask_merge_last.png",
+    "description": "Mask M merges both into foveated token grid z_fov"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 4,
+    "name": "flow_matching",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0004_flow_matching.mp4",
+    "duration_s": 6.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0004_flow_matching_last.png",
+    "description": "Flow-matching equation, z_fov tokens at t = 0.55 slider"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 5,
+    "name": "dit_velocity",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0005_dit_velocity.mp4",
+    "duration_s": 2.2,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0005_dit_velocity_last.png",
+    "description": "DiT+LoRA box maps noisy tokens to velocity v_θ"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 6,
+    "name": "loss_lora",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0006_loss_lora.mp4",
+    "duration_s": 1.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0006_loss_lora_last.png",
+    "description": "Flow-matching loss equation below the DiT pipeline"
+  },
+  {
+    "scene": "S06_Training",
+    "index": 7,
+    "name": "training_details",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S06_Training_0007_training_details.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S06_Training_0007_training_details_last.png",
+    "description": "Training details table: models, data, LoRA, masks"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 0,
+    "name": "noise",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0000_noise.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0000_noise_last.png",
+    "description": "Foveated noise tokens z_1 ∼ N(0, I)"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 1,
+    "name": "denoise",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0001_denoise.mp4",
+    "duration_s": 5.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0001_denoise_last.png",
+    "description": "DiT+LoRA loop; tokens denoised to clean z_0"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 2,
+    "name": "split",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0002_split.mp4",
+    "duration_s": 2.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0002_split_last.png",
+    "description": "z_0 split into z_high and z_low grids"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 3,
+    "name": "decode",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0003_decode.mp4",
+    "duration_s": 1.8,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0003_decode_last.png",
+    "description": "VAE decoders produce sharp fovea x_high and low-res x_low"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 4,
+    "name": "blend",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0004_blend.mp4",
+    "duration_s": 3.85,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0004_blend_last.png",
+    "description": "Blend equation with five-image visual equation (lion)"
+  },
+  {
+    "scene": "S07_Generation",
+    "index": 5,
+    "name": "hero_output",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S07_Generation_0005_hero_output.mp4",
+    "duration_s": 3.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S07_Generation_0005_hero_output_last.png",
+    "description": "Large lion output, fovea outline, 48 + 52 = 100 tokens"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 0,
+    "name": "mask_variations",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0000_mask_variations.mp4",
+    "duration_s": 3.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0000_mask_variations_last.png",
+    "description": "Fig. 9 grid: position, size, disjoint masks, naïve vs ours"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 1,
+    "name": "saliency",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0001_saliency.mp4",
+    "duration_s": 2.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0001_saliency_last.png",
+    "description": "Random-mask vs saliency-guided flower columns"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 2,
+    "name": "applications",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0002_applications.mp4",
+    "duration_s": 1.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0002_applications_last.png",
+    "description": "Saliency columns plus four application examples"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 3,
+    "name": "spline_path",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0003_spline_path.mp4",
+    "duration_s": 3.6,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0003_spline_path_last.png",
+    "description": "Video frame box with cubic-spline gaze path, control points"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 4,
+    "name": "fovea_travels",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0004_fovea_travels.mp4",
+    "duration_s": 5.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0004_fovea_travels_last.png",
+    "description": "White fovea circle back at start of spline path"
+  },
+  {
+    "scene": "S08_Masks",
+    "index": 5,
+    "name": "fox_video",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S08_Masks_0005_fox_video.mp4",
+    "duration_s": 1.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S08_Masks_0005_fox_video_last.png",
+    "description": "Spline diagram plus five generated fox video frames"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 0,
+    "name": "speedup_plot",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0000_speedup_plot.mp4",
+    "duration_s": 3.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0000_speedup_plot_last.png",
+    "description": "Speedup vs token ratio: image 2.2×, video 4.2×"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 1,
+    "name": "quality_table",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0001_quality_table.mp4",
+    "duration_s": 2.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0001_quality_table_last.png",
+    "description": "Speedup plot plus HPSv2.1 quality table"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 2,
+    "name": "qualitative",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0002_qualitative.mp4",
+    "duration_s": 3.5,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0002_qualitative_last.png",
+    "description": "Qualitative grid: full, naïve, ours for four subjects"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 3,
+    "name": "user_study_protocol",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0003_user_study_protocol.mp4",
+    "duration_s": 2.85,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0003_user_study_protocol_last.png",
+    "description": "User-study protocol strip: fixate, image A, image B, choose"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 4,
+    "name": "user_study_bars",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0004_user_study_bars.mp4",
+    "duration_s": 3.2,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0004_user_study_bars_last.png",
+    "description": "Protocol plus preference bars 47.3%, 87.4%, 90.8%, 50% line"
+  },
+  {
+    "scene": "S09_Results",
+    "index": 5,
+    "name": "video_results",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S09_Results_0005_video_results.mp4",
+    "duration_s": 4.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S09_Results_0005_video_results_last.png",
+    "description": "Fox video rows full/naïve/ours, VBench scores, 3.5× faster"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 0,
+    "name": "seams",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0000_seams.mp4",
+    "duration_s": 2.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0000_seams_last.png",
+    "description": "Seam artifact crops with cause and fix text"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 1,
+    "name": "three_levels",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0001_three_levels.mp4",
+    "duration_s": 2.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0001_three_levels_last.png",
+    "description": "Three-level foveated token grid (1×, ½×, ¼×)"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 2,
+    "name": "gaze_following",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0002_gaze_following.mp4",
+    "duration_s": 5.7,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0002_gaze_following_last.png",
+    "description": "Three-level grid plus gaze-following token field with red dot"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 3,
+    "name": "summary_1",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0003_summary_1.mp4",
+    "duration_s": 1.1,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0003_summary_1_last.png",
+    "description": "Summary title with idea 1: spend tokens by eccentricity"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 4,
+    "name": "summary_2",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0004_summary_2.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0004_summary_2_last.png",
+    "description": "Summary ideas 1–2: LoRA post-training targets"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 5,
+    "name": "summary_3",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0005_summary_3.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0005_summary_3_last.png",
+    "description": "Summary ideas 1–3: phase-aligned RoPE"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 6,
+    "name": "summary_speedups",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0006_summary_speedups.mp4",
+    "duration_s": 0.3,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0006_summary_speedups_last.png",
+    "description": "Summary plus ≈2× images, ≈4× video, indistinguishable"
+  },
+  {
+    "scene": "S10_Outlook",
+    "index": 7,
+    "name": "end_card",
+    "file": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/media/videos/animation_foveated_diffusion_v5/1080p60/sections/S10_Outlook_0007_end_card.mp4",
+    "duration_s": 0.9,
+    "last_frame": "/home/brianchc/project_animations/foveated_diffusion/opus5.5_test/slides_v5/qa/S10_Outlook_0007_end_card_last.png",
+    "description": "End card: title, arXiv link, authors"
+  }
+]

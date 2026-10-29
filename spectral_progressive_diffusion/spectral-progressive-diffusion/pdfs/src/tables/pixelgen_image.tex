@@ -1,0 +1,27 @@
+
+\begin{table*}[t!]
+    \centering
+    \caption{\textbf{Quantitative comparisons on pixel-space image generation.} The number in parentheses next to PixelGen indicates the total number of inference steps. $\uparrow / \downarrow$ denotes that a higher / lower metric is favourable. Speedup is calculated relative to the 25-step PixelGen baseline wall-clock runtime on a single H100 GPU. \textcolor{blue}{\textbf{T}} and \textcolor{red}{\textbf{S}} denote temporal and spatial acceleration, respectively.}
+    \label{tab:pixelgen-main}
+    \resizebox{\textwidth}{!}{
+    \begin{scriptsize}
+    \begin{tabular}{cccccccccc}
+         \toprule
+        \multirow{2}{*}{Method} & \multirow{2}{*}{Accel.} & \multirow{2}{*}{Latency (s) $\downarrow$} & \multirow{2}{*}{Speedup (s) $\uparrow$} & \multirow{2}{*}{TFLOPs $\downarrow$} & Overall & \multicolumn{2}{c}{Image quality} & \multicolumn{2}{c}{Text alignment} \\
+        \cmidrule(lr){6-10}
+        & & & & & ImageReward $\uparrow$ & CLIP-IQA $\uparrow$ & NIQE $\downarrow$ & T2I-Comp. $\uparrow$ & GenEval $\uparrow$  \\
+        \midrule
+        PixelGen (25 steps) & - & 0.48 & 1.00$\times$ & 65.36 & 0.921 & 0.734 & 5.95 & 0.574 & 0.794 \\
+        \cmidrule(lr){1-10}
+        PixelGen (13 steps) & \textcolor{blue}{\textbf{T}} & \textbf{0.25} & \textbf{1.92$\times$} & \underline{34.16} & \underline{0.886} & \underline{0.726} & \underline{5.89} & \underline{0.571} & \underline{0.781} \\
+        \textbf{Ours (TF, $\delta=0.01$, $S = 2$)}     & \textcolor{red}{\textbf{S}}       & \underline{0.30} & \underline{1.60$\times$} & \textbf{33.72} & 0.799 & 0.718 & 6.10 & 0.568 & \textbf{0.782} \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S = 2$)}   & \textcolor{red}{\textbf{S}}       & 0.31 & 1.55$\times$ & \textbf{33.72} & \textbf{0.913} & \textbf{0.728} & \textbf{5.87} & \textbf{0.580} & 0.776 \\
+        \cmidrule(lr){1-10}
+        PixelGen (8 steps) & \textcolor{blue}{\textbf{T}} & \textbf{0.16} & \textbf{3.00$\times$} & \underline{21.16} & \underline{0.858} & \underline{0.715} & \textbf{5.79} & \underline{0.572} & 0.756 \\
+        \textbf{Ours (TF, $\delta=0.01$, $S = 2$)}     & \textcolor{red}{\textbf{S}}       & \underline{0.21} & \underline{2.29$\times$} & \textbf{20.75} & 0.779 & 0.713 & 6.02 & 0.567 & \underline{0.765} \\
+        \textbf{Ours (LoRA, $\delta=0.01$, $S = 2$)}   & \textcolor{red}{\textbf{S}}       & 0.22 & 2.18$\times$ & \textbf{20.75} & \textbf{0.908} & \textbf{0.724} & \underline{5.85} & \textbf{0.577} & \textbf{0.770} \\
+        \bottomrule
+    \end{tabular}
+    \end{scriptsize}
+    }
+\end{table*}

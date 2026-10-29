@@ -1,0 +1,25 @@
+\section{Additional Details on Power Spectrum Measurement}
+\label{sec:power_spec}
+To remain consistent with the zero-mean Gaussian modelling assumption in Sec.~\ref{sec:method:schedule:signal}, we center each data sample before measuring the radially averaged power spectrum of the VAE latent space of FLUX.1-dev~\citep{black2024flux} and Z-Image~\citep{zimage} for image generation, and the VAE latent space of WAN 2.1~\citep{wan} for video generation.
+We fit the power-law model $P_\omega \approx A \cdot |\omega|^{-\beta}$ and report the fitted $A$ and $\beta$ values for image latents, video latents, and image pixels in Table~\ref{tab:power-spec-fit}.
+These fitted values instantiate the per-frequency signal power $P_\omega$ in the activation-time and transition-time formulas in Sec.~\ref{sec:method:schedule:signal}, which we use to compute the $\delta$-optimal resolution schedule for each model family.
+
+For image latents, we run the FLUX.1-dev VAE on 100K images from the Aesthetics-Train-V2~\citep{zhang2025diffusion4k} dataset, center-cropped and resized to $1024^2$ resolution. We then average power over channels and radial frequency bins before fitting the spectrum. For video latents, we use the same procedure with the WAN 2.1 VAE on 10K videos from the VChitect-T2V-Dataverse~\citep{fan2025vchitect} dataset, averaging over channels, latent frames, and radial frequency bins to estimate the spatial power spectrum. We further measure the pixel-space power spectrum on images from the Aesthetics-Train-V2 dataset, center-cropped and resized to $512^2$, the native resolution supported by the PixelGen model.
+
+\begin{table}[h!]
+  \centering
+  \small
+  \caption{\textbf{Power-law fits to measured power spectra.} We fit $P_\omega \approx A \cdot |\omega|^{-\beta}$ on centered samples for image latents, video latents, and image pixels.}
+  \label{tab:power-spec-fit}
+  \resizebox{\linewidth}{!}{
+  \begin{tabular}{lcccc}
+    \toprule
+    Spectrum & $\beta$ & $A$ & $R^2$ & Samples \\
+    \midrule
+    FLUX.1-dev (Z-Image) latent & 1.9155 & 203.62 & 0.978 & 100K images \\
+    WAN latent & 2.4227 & 219.48 & 0.999 & 10K videos \\
+    Pixel $512^2$ & 2.4493 & 3745.46 & 1.000 & 100K images \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}

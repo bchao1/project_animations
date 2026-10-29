@@ -1,0 +1,34 @@
+\renewcommand{\arraystretch}{1.0}
+\setlength{\aboverulesep}{0.2ex}
+\begin{table*}[!t]
+  \centering
+  \scriptsize
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} l ccccccc @{}}
+    \toprule
+    \multirow{2}{*}{Method} & \multirow{2}{*}{\makecell{Speedup (s) $\uparrow$}} & \multirow{2}{*}{\makecell{TFLOPs $\downarrow$}} & Overall & \multicolumn{2}{c}{Image quality} & \multicolumn{2}{c}{Text alignment} \\
+    \cmidrule(lr){4-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+     & & & ImageReward $\uparrow$ & CLIP-IQA $\uparrow$ & NIQE $\downarrow$ & T2I-Comp. $\uparrow$ & GenEval $\uparrow$ \\
+    \midrule
+    FLUX (50 steps)             & 1.00$\times$              & 2991.01              & \textbf{1.095}    & 0.707             & 6.75             & \textbf{0.634}    & \textbf{0.698} \\
+    RALU~\citep{ralu}     & \underline{1.58}$\times$              & \textbf{1749.94}  & 1.028             & \underline{0.712} & \textbf{6.07}    & 0.613                 & 0.648     \\
+    \textbf{Ours ($S=2$)} & \textbf{1.66}$\times$  & \underline{1755.22}              & \underline{1.049} & \textbf{0.719}    & \underline{6.43}             & \underline{0.617} & \underline{0.654}     \\
+    % \textbf{Ours ($S=3$)} & \textbf{1.73}$\times$     & \textbf{1.79}$\times$     & 1.015             & 0.711             & \underline{6.33} & 0.593             & 0.640     \\
+    \midrule[0.3pt]
+    FLUX (10 steps) & 4.84$\times$ & 610.02 & 0.981 & 0.679 & 6.93 & 0.618 & 0.647 \\
+    Bottleneck~\citep{bottleneck} & 4.67$\times$              & 571.23              & 0.889          & 0.661             & 9.16          & 0.620             & \textbf{0.687}    \\
+    RALU~\citep{ralu}             & 4.98$\times$              & 540.47              & 1.022          & \underline{0.700} & \textbf{6.43} & \textbf{0.626}    & 0.652             \\
+    \textbf{Ours ($S=2$)}         & \underline{5.77}$\times$  & \underline{500.34}  & \textbf{1.059} & 0.696             & 6.69          & \underline{0.624} & \underline{0.655} \\
+    \textbf{Ours ($S=3$)}         & \textbf{6.09}$\times$     & \textbf{469.15}     & \underline{1.042} & \textbf{0.701} & \underline{6.53} & 0.623          & 0.637             \\
+    \midrule[0.3pt]
+    FLUX (7 steps) & 6.62$\times$ & 431.45 & 0.920 & 0.660 & 8.25 & 0.594 & 0.583 \\
+    Bottleneck~\citep{bottleneck} & 6.64$\times$              & 431.52              & 0.792          & 0.631             & 8.71          & 0.605             & \underline{0.672} \\
+    RALU~\citep{ralu}             & 6.69$\times$              & \underline{426.01}  & 0.999          & 0.681             & 6.87          & \textbf{0.633}    & \textbf{0.682}    \\
+    \textbf{Ours ($S=2$)}         & \underline{6.78}$\times$  & 427.03              & \textbf{1.039} & \underline{0.689} & \underline{6.78} & 0.620          & 0.667             \\
+    \textbf{Ours ($S=3$)}         & \textbf{7.09}$\times$     & \textbf{406.24}     & \underline{1.015} & \textbf{0.694} & \textbf{5.99} & \underline{0.627} & 0.637             \\
+    \bottomrule
+  \end{tabular*}
+  \vspace{-2pt} 
+  \caption{\textbf{Training-free quantitative comparisons on FLUX.1-dev~\citep{black2024flux}.} Image resolution is $1024^2$ and baseline rows are copied from Table 1 in RALU~\citep{ralu}. We group results based on $1\times, 5\times, 7\times$ speedup settings where progressive resolution approaches are applied in combination with reducing denoising steps. Our method improves the speed--quality tradeoff across all speedup settings compared to baseline approaches. Further evaluation details and comparisons are shown in Appendix Sec.~\ref{subsec:image_latent}.}
+  % replicating RALU's~\citep{ralu} Table~1 protocol; we keep only spatial-acceleration baselines.
+  \label{tab:flux-main}
+\end{table*}

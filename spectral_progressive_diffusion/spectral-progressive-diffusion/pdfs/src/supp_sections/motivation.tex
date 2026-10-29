@@ -1,0 +1,14 @@
+\section{Empirical Validation of the Per-frequency Activation Criterion}
+\label{sec:motivation}
+
+We empirically validate Proposition 1 with a simple \textit{spectral noise passthrough} experiment.
+While maintaining full-resolution processing at all denoising steps, for each frequency $\omega \in \Omega$, if the current timestep $t$ is before its activation time $t_\omega$ (i.e., $t > t_\omega$), we replace that frequency component with $t \cdot T_\Phi(\boldsymbol{\epsilon})^{(\omega)}$, where $\boldsymbol{\epsilon} \sim \mathcal{N}(0, I)$ is the initial noise at $t = 1$. We use the Discrete Cosine Transform (DCT) as $T_\Phi$ in this experiment and sweep over multiple $\delta$ values. As described in Sec.~\ref{sec:method:schedule:signal}, a larger $\delta$ corresponds to transitioning to the high-resolution stage later in denoising with more speedup, while a smaller $\delta$ indicates transitioning to high-resolution earlier in denoising with less speedup.
+
+From Fig. \ref{fig:spectral-passthrough}, we observe that at smaller $\delta \in [0.0001, 0.001]$, there is almost no observable difference compared to native full-resolution generation. As $\delta$ increases, we see a clear transition to blurry and lower-quality images around $\delta=0.05$, and larger values further degrade generation quality. This finding provides empirical support for the spectral autoregression property of diffusion models and Proposition 1, which serves as the foundation of our Spectral Progressive Diffusion framework and the $\delta$-optimal resolution schedule. It also implies that the Gaussian modelling assumption in Proposition 1 serves as a reasonable approximation for subsequent analytical resolution schedule derivations.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{supp_figures/spectral_passthrough.pdf}
+    \caption{\textbf{Spectral noise passthrough experiment.} At smaller $\delta \in [0.0001, 0.001]$, there is almost no observable difference compared to native full-resolution generation. As larger $\delta$ values cause high-frequency replacement to persist later in the denoising trajectory, we observe increasingly blurry and distorted results (i.e., ghosting artifacts and ``CHOOLBUS'' instead of ``SCHOOLBUS''). }
+    \label{fig:spectral-passthrough}
+\end{figure}

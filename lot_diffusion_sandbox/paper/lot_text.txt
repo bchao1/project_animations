@@ -1,0 +1,3527 @@
+=== PAGE 1 ===
+LEVEL-OF-TOKEN DIFFUSION
+Anonymous authors
+Paper under double-blind review
+Level-of-Token Generation
+Applications
+Level-of-Token layout (2.16× fewer tokens)
+Generation (2.5× speedup)
+Image Generation
+Video Generation
+Depth Map
+2.00× fewer tokens · 1.58× speedup
+Bounding Boxes
+2.39× fewer tokens · 1.78× speedup
+Semantic
+Masks
+1.79× fewer tokens · 2.21× speedup
+3D Assets
+1.49× fewer tokens · 1.75× speedup
+Bounding Box
+1.50× fewer tokens · 1.76× speedup
+Figure 1: Level-of-Token (LoT) Diffusion allocates compute using a spatial token layout that spec-
+iﬁes the spatially varying level of detail for efﬁcient image and video generation. Derived from
+diverse spatial priors, token layouts guide detail allocation with speedups tied to the token budget.
+ABSTRACT
+Image and video diffusion models allocate equal computation to every region,
+even when the intended scene calls for varying levels of detail. The spatial dis-
+tribution of detail can often be anticipated before generation, indicating where
+computation can be reduced. We introduce Level-of-Token (LoT) Diffusion, a
+framework that turns this knowledge into an explicit multiresolution token lay-
+out (Level-of-Token layout) for adaptive and efﬁcient generation. Tokens repre-
+sent rectangular patches of varying sizes and shapes, allocating ﬁner tokens where
+detail is needed and coarser tokens elsewhere. We adapt pretrained diffusion trans-
+formers to LoT layouts through a patch-wise asymmetric ﬂow parametrization and
+embeddings for multiresolution tokens, preserving full-resolution ﬂow prediction
+at every denoising step while processing only a reduced token sequence. LoT Dif-
+fusion enables layout-adaptive generation while preserving pretrained generative
+priors. We demonstrate LoT with layouts derived from semantic masks, bounding
+boxes, texture variance, and depth-of-ﬁeld cues, as well as agentic plans. Across
+image and video generation, LoT offers favorable quality–efﬁciency tradeoffs,
+with signiﬁcant speedups determined by the layout’s token budget.
+1
+
+=== PAGE 2 ===
+1
+INTRODUCTION
+Image and video generative models produce remarkably high-quality content, yet generating high-
+resolution images and long videos remains computationally expensive. Much of this cost comes
+from diffusion transformers (Peebles & Xie, 2023) processing long sequences of spatial tokens
+through attention and linear layers at every denoising step. Reducing this cost begins with rec-
+ognizing that not all regions require the same level of detail: intricate textures, faces, and text re-
+quire ﬁne detail, while clear skies, blurred backgrounds, and ﬂat surfaces can be synthesized more
+coarsely. Pretrained models nevertheless allocate equal computation to all regions. Allocating re-
+sources according to the detail needed is well established in level-of-detail rendering (Clark, 1976),
+variable-rate shading (Vaidyanathan et al., 2014), and image compression (Shapiro, 1993). Whereas
+rendering and compression operate on existing scene or image content, generation can begin with
+a speciﬁed distribution of detail before the ﬁnal pixels are available. Notably, such knowledge can
+come from the structure, description, or plan of the intended scene, which generative models in-
+creasingly support through richer prompting and explicit layout speciﬁcation (OpenAI, 2026; Reve
+AI, 2026; Ideogram, 2026a). These observations motivate using prior knowledge of where detail
+matters to determine how to allocate compute for generation.
+Ideally, a generative model would use this prior knowledge both to adapt where ﬁne detail is con-
+centrated and to reduce computation. Spatial conditioning methods (Zhang et al., 2023; Mou et al.,
+2024; Tan et al., 2025; Zhang et al., 2025a; Yang et al., 2023) guide generated content using spatial
+inputs, but retain full-resolution processing and often introduce additional computational cost. Ef-
+ﬁciency methods exploit redundancy through either reusing intermediate computations (Liu et al.,
+2025a; Zou et al., 2024) or token reduction (Bolya & Hoffman, 2023; Lu et al., 2025; Xiao et al.,
+2026; Jeong et al., 2026; Kim et al., 2026; Wu et al., 2026; Chao et al., 2026), but do not utilize this
+adaptivity as a control mechanism. Our goal is to use prior knowledge to control where ﬁne detail is
+concentrated and allocate computation accordingly, enabling both adaptive and efﬁcient generation.
+In this paper, we introduce Level-of-Token (LoT) Diffusion, in which an image or video is synthesized
+from a content-adaptive, multiresolution token layout (Level-of-Token Layout). Each token repre-
+sents a rectangular spatial patch with variable extent, speciﬁed by its height and width, allowing
+important regions to be ﬁnely tokenized while less important ones are tokenized coarsely. Realizing
+this on pretrained diffusion transformers requires adapting models trained on uniform grids to het-
+erogeneous token layouts. To this end, we develop a formulation that preserves full-resolution ﬂow
+prediction at every denoising step while the transformer processes only a reduced token sequence.
+We achieve this through a patch-wise asymmetric ﬂow parameterization (Chen et al., 2026), together
+with adaptations to token embeddings and positional encoding that account for various patch extents.
+Fine-tuning pretrained models within our simple framework enables efﬁcient generation that adapts
+to the speciﬁed layout while leveraging their generative priors.
+We demonstrate LoT across diverse layout sources, including semantic masks, bounding boxes, tex-
+ture variance, and depth-of-ﬁeld cues, as well as agentic plans. Generation speedup depends on the
+token budget speciﬁed by the layout, reaching up to 2.04× for images and 3.53× for videos on av-
+erage relative to the full-resolution pretrained models. Across the evaluated budgets, LoT offers fa-
+vorable tradeoffs between generation quality and efﬁciency compared with existing token-reduction
+methods. Qualitative results further show how generated content adapts to the speciﬁed token lay-
+out. More results are in the Supplementary Website at https://iclr-submission7014.
+github.io/supplementary/.
+To summarize, our main contributions are:
+• We introduce Level-of-Token Diffusion, a framework for efﬁcient image and video genera-
+tion with token layouts that adaptively vary patch size and shape across an image or video.
+• We adapt pretrained DiTs through patch-wise asymmetric ﬂow and embeddings for mul-
+tiresolution tokens, enabling full-resolution ﬂow prediction at every step from a reduced
+token sequence.
+• We demonstrate favorable quality and efﬁciency tradeoffs across image and video genera-
+tion, using layouts derived from scene cues and agentic plans.
+2
+
+=== PAGE 3 ===
+2
+RELATED WORK
+Methods for efﬁcient generation.
+A large body of work improves the efﬁciency of diffusion
+models along several axes. Along the spatial axis, token merging and pruning techniques iden-
+tify redundant tokens and merge or discard them based on predeﬁned heuristics or learned criteria
+(Bolya & Hoffman, 2023; Kim et al., 2024; Lu et al., 2025; Haurum et al., 2024; Wu et al., 2025;
+Lee et al., 2025; Fang et al., 2025), while sparse attention mechanisms exploit sparse patterns in
+the attention maps and use block-wise computation to reduce the quadratic cost of self-attention (Li
+et al., 2025; Xia et al., 2025; Zhan et al., 2025; Katharopoulos et al., 2020; Wang et al., 2020; Choro-
+manski et al., 2020; Beltagy et al., 2020). Along the timestep axis, feature caching methods reuse
+intermediate features across denoising steps to avoid redundant computation (Liu et al., 2025a; Zou
+et al., 2024; Liu et al., 2025b; Ma et al., 2024), whereas distillation and sampler-based approaches
+reduce the number of denoising steps themselves, either by training a student to approximate a pre-
+trained teacher (Yin et al., 2024b;a; 2025; Luo et al., 2023; Wang et al., 2024; Salimans & Ho,
+2022) or by deriving faster solvers and consistency-based samplers (Song et al., 2020; 2023). Other
+progressive-upsampling methods grow the spatial resolution over the course of generation to save
+computation in early stages (Jeong et al., 2026; Xiao et al., 2026). However, these methods treat
+spatial regions equally, operating along denoising-trajectory or attention-level axes independent of
+how details are spatially distributed, and thus leave the prior knowledge of where content requires
+computation unexploited.
+Content-adaptive tokenization is an orthogonal and complementary axis that exploits exactly this
+prior, accelerating generation by allocating compute based on the content. However, existing ap-
+proaches address only part of the problem: some are spatially adaptive but with no or limited user
+control (Chao et al., 2026; Haridas et al., 2026; Zhao et al., 2025b; Zamﬁr et al., 2026; Zhao et al.,
+2025a), others adapt the token budget without redistributing it across space (Yan et al., 2025; Bach-
+mann et al., 2025; Ye et al., 2025; Shen et al., 2025; Duggal et al., 2024; Haji-Ali et al., 2026), and
+still others achieve spatial adaptivity but require training from scratch and are incompatible with
+pretrained diffusion models (Zhang et al., 2025c; Jia et al., 2025; Aasan et al., 2026). In contrast,
+our method is spatially adaptive and compatible with various pretrained models, redistributing to-
+kens non-uniformly according to an intended layout while additionally exposing user control over
+the allocation. Most importantly, our method greatly accelerates image and video generation while
+remaining compatible with the other efﬁciency techniques above.
+Layout control for diffusion models.
+A large body of work augments diffusion models with
+explicit control over object placement and scene composition. Prior conditioning-based methods
+attach trainable modules onto a frozen backbone, injecting spatial signals such as depth, segmenta-
+tion masks, or bounding boxes, so that users can dictate where content appears (Zhang et al., 2023;
+Mou et al., 2024). More recently, another line of work makes layout a direct input to the model
+rather than a separate branch, encoding it into tokens that enter the denoising sequence (Tan et al.,
+2025; Xiao et al., 2025; Zhang et al., 2025a) or expressing it as structured text in the prompt itself
+(Yang et al., 2023). Most strikingly, the strongest deployed systems have made layout their primary
+interface: Ideogram 4.0 is trained exclusively on structured JSON captions carrying a description
+and a bounding box per element (Ideogram, 2026b), and Reve 2 derives a hierarchical layout from
+the input text prompt before rendering from it (Reve AI, 2026). However, in all these methods the
+layout merely decides what appears where, never how much compute is allocated to it. A region the
+layout identiﬁes as empty sky is still generated on the same dense token grid as detailed typography.
+In contrast, our method uses this prior knowledge of where detail matters to allocate computation
+spatially, enabling content-adaptive generation with fewer tokens. Semantic masks and depth-of-
+ﬁeld cues identify regions that can be generated more coarsely, allowing LoT to reduce computation
+there while preserving ﬁner tokenization where detail is needed.
+3
+PRELIMINARIES
+We deﬁne level-of-token layouts and review ﬂow-based image and video generation. We denote the
+full-resolution latent grid by x ∈RH0×W0×D′, where D′ is the channel dimension. The concepts
+naturally extend to videos by adding a temporal axis.
+3
+
+=== PAGE 4 ===
+3.1
+LEVEL-OF-TOKEN LAYOUT
+Existing image and video generative models represent visual content as sequences of latent tokens.
+A pretrained DiT uses a ﬁxed size (ph, pw) to rearrange x into a uniform token layout:
+xU = Patchify(x) ∈RH×W ×D,
+H = H0/ph,
+W = W0/pw,
+D = phpwD′
+(1)
+where Patchify ﬂattens each non-overlapping ph × pw latent patch into a D-dimensional token.
+Motivated by level-of-detail geometry, variable-rate shading, and adaptive image and video repre-
+sentations (Clark, 1976; Vaidyanathan et al., 2014; Shapiro, 1993; Ye et al., 2025), which allocate
+more budget to regions that are visually important or contain high-frequency textures, we gener-
+alize uniform token layouts to level-of-token (LoT) layouts. Formally, a LoT layout allows the
+patch’s shape to vary spatially based on a partition P = {R1, . . . , RL} of the uniform token grid
+[0, H) × [0, W) into L disjoint axis-aligned tokens:
+Ri = [ui, ui + eh,i) × [vi, vi + ew,i),
+0 ≤ui < ui + eh,i ≤H,
+0 ≤vi < vi + ew,i ≤W,
+(2)
+where Ri’s are pair-wise disjoint and cover the H × W token grid. We denote the i-th token’s
+extent as ei = (eh,i, ew,i) and deﬁne Dei := eh,iew,iD. Furthermore, let x(i) ∈RDei denote the
+concatenation of all uniform tokens within region Ri and let ¯xRi ∈RD denote the single token in
+the LoT layout representing the spatial region of this patch. We will discuss the mapping between
+x(i) and ¯xRi in Sec. 4.1.
+pi
+Ri
+eh,i
+ew,i
+Uniform token layout
+Level-of-token layout
+· · ·
+xU
+¯xP
+Figure 2: Token layout notation.
+The partition induces the level-of-token sequence ¯xP =
+(¯xR1, . . . , ¯xRL) ∈RL×D (see Fig. 2). We refer to its
+i-th token’s top-left coordinate as pi = (ui, vi).
+The
+same notation extends to videos by adding a temporal
+axis where a latent grid of size T0 × H0 × W0 is patchi-
+ﬁed into a T × H × W token grid, with T = T0/pt and
+D = ptphpwD′. Throughout the paper we refer to token
+compression relative to the pretrained DiT as HW/L for
+images and THW/L for videos.
+3.2
+FLOW-BASED IMAGE AND VIDEO GENERATION
+Flow matching.
+Flow matching deﬁnes a probability path between the data distribution and a
+standard Gaussian noise distribution. This path couples a data sample x0 ∈RH0×W0×D′ with a
+noise sample x1 := ε ∼N(0, I) using the time schedules αt = 1 −t and σt = t for t ∈[0, 1].
+The state and velocity remain on this full-resolution latent grid. We deﬁne the probability path and
+its velocity for any t ∈[0, 1] as
+xt = αtx0 + σtε,
+u = ε −x0 = xt −x0
+σt
+.
+(3)
+The ﬂow model vθ(xt, t, c) is trained to predict the ﬂow velocity u given xt, time step t, and
+optional text conditioning c, by optimizing the following loss:
+Lﬂow(θ) = Et,x0,x1,c
+h
+
+vθ(xt, t, c) −u
+
+
+2
+2
+i
+.
+(4)
+After training, generation solves the ODE dxt
+dt = vθ with x1 = ε ∼N(0, I) from t = 1 to 0.
+Asymmetric ﬂow matching.
+Recently, asymmetric ﬂow matching (AsymFlow) (Chen et al.,
+2026) proposes to ﬁne-tune pretrained image latent ﬂow matching models by adopting an asym-
+metric parameterization where the model learns to predict the ﬂow velocity from low-rank noise to
+full-rank data uA = P ε−x where P = AAT ∈RD×D, A ∈RD×d, D ≥d is a ﬁtted orthonormal
+projector. The full-rank velocity can be recovered by
+u = P uA + (I −P )xt + uA
+σt
+.
+(5)
+AsymFlow generates images directly in pixel space at a computational cost similar to that of the
+original latent ﬂow models. Inspired by this, Level-of-Token generates a full-resolution latent grid
+from a level-of-token layout, enabling efﬁcient, content-aware generation.
+4
+
+=== PAGE 5 ===
+Embed (t, c, s(ei))
+Patchify
+A⊤
+ei
+DiT
+Block
+h(4,2)
+h(1,1)
+h(2,2)
+Full-rank velocity
+gφ
+× N
+t, c
+bu(i) = Pei bu(i)
+A
++ (I −Pei) x(i)
+t
++ bu(i)
+A
+σt
+xt
+¯xt,P
+hi
+ˆu(i)
+A
+Figure 3: Level-of-Token Diffusion pipeline. LoT Diffusion maps a full-resolution token grid
+xt to a sequence of reduced tokens speciﬁed by the LoT layout. The DiT blocks process these
+tokens conditioned on token shapes s, timestep t, and text c. Extent-dependent heads hei restore the
+asymmetric velocity ˆu, which is converted into the full-rank velocity for ﬂow-matching training.
+Diffusion Transformers (DiT) and RoPE.
+Under a uniform token layout in Eq. 1, Diffusion
+Transformers (DiT) (Peebles & Xie, 2023) embed the HW tokens of xt into the hidden dimension
+dmodel and process them with transformer blocks. The output head predicts full-resolution veloc-
+ities, which are rearranged into a full-resolution velocity ﬁeld of size H0 × W0 × D′. Because
+self-attention is permutation equivariant, models such as FLUX.2 and Wan encode each token’s spa-
+tial position pi = (i1, . . . , id) on the uniform token grid using multi-axis RoPE (Su et al., 2024).
+For query and key vectors qi, ki ∈Rdh, where dh is the attention-head dimension, RoPE splits the
+channels across the d spatial axes and applies
+eqi = Raxial(pi)qi,
+eki = Raxial(pi)ki,
+Raxial(pi) =
+d
+M
+a=1
+R(a)(ia).
+(6)
+where R(a)(ia) denotes the standard RoPE rotation (Su et al., 2024) applied to the channel block
+assigned to spatial axis a. Usually, RoPE assigns a spatial position to each token and does not encode
+the size of its spatial support. A DiT operating on a level-of-token layout must therefore place all
+tokens in a consistent coordinate system and further encode their extents separately.
+4
+METHOD
+Given a LoT layout deﬁned by P = {R1, . . . , RL}, our goal is to reduce the number of tokens
+processed by the DiT while remaining compatible with pretrained models. Speciﬁcally, we use
+patch-wise asymmetric ﬂow matching (Sec. 4.1) and introduce Level-of-Token DiT (Sec. 4.2) that
+minimally modiﬁes the DiT architecture to handle LoT layouts. We present our method for image
+generation, with a natural extension to video through per-frame LoT layouts. Fig. 3 shows our
+overall pipeline.
+4.1
+FLOW MATCHING WITH LEVEL-OF-TOKENS
+A LoT layout reduces the DiT sequence length from HW to L, but adapting a pretrained latent
+diffusion model to this reduced sequence presents two challenges. First, the pretrained VAE decoder
+requires a full-resolution latent grid of size H0 ×W0 ×D′. Second, the pretrained DiT predicts ﬂow
+on the same sequence it receives, so directly applying it to the reduced sequence would only produce
+L token-level ﬂow predictions, rather than the full-resolution ﬂow needed for denoising.
+Patch-wise asymmetric ﬂow.
+Inspired by AsymFlow (Chen et al., 2026), we use compressed LoT
+tokens to predict a dense asymmetric velocity ﬁeld. For each extent e = (eh, ew), we ﬁt a semi-
+orthonormal basis Ae ∈RDe×D using orthogonal Procrustes (Sch¨onemann, 1966) between aligned
+dense patches and extent-matched multi-scale VAE tokens (see Sec. A.2 for ﬁtting details). Given
+the noisy latent grid xt and a LoT layout P, we project each region’s patch onto its corresponding
+basis and assemble the resulting token sequence:
+¯xt,Ri = A⊤
+eix(i)
+t
+∈RD,
+¯xt,P =
+ ¯xt,R1, . . . , ¯xt,RL
+
+∈RL×D.
+(7)
+5
+
+=== PAGE 6 ===
+Bounding box
+Generation
+1.73× compression · ≈1.54× speedup
+1.62× compression · ≈1.47× speedup
+Semantic mask
+Generation
+2.18× compression · ≈1.81× speedup
+2.88× compression · ≈2.18× speedup
+Texture variance
+Generation
+1.36× compression · ≈1.28× speedup
+2.00× compression · ≈1.71× speedup
+Depth
+Generation
+3.11× compression · ≈2.29× speedup
+2.00× compression · ≈1.71× speedup
+LoT layout
+LoT layout
+LoT layout
+LoT layout
+Figure 4: Image generation with different layouts. We generate images using arbitrary LoT
+layouts derived from signals that indicate spatial importance, including bounding boxes, seman-
+tic masks, texture variance, or depth maps, allocating ﬁner tokens to regions that require detail.
+Thus, the DiT input dimension is the same as in the pretrained model, while its sequence length is
+determined by P. For each region Ri with extent ei, we further deﬁne Pei = AeiA⊤
+ei to be the
+extent’s projector. Then the dense asymmetric velocity target for Ri becomes
+u(i)
+A = Peiε(i) −x(i)
+0 .
+(8)
+Given a prediction bu(i)
+A , we recover a full-rank velocity for the patch as
+bu(i) = Pei bu(i)
+A + (I −Pei)x(i)
+t
++ bu(i)
+A
+σt
+.
+(9)
+In practice, we clamp the denominator to max(σt, 10−6) for numerical stability. For t > 0, Eq. 9
+recovers the dense ﬂow ε −x0 when the asymmetric target is predicted exactly. We convert the
+recovered velocity into a clean-data estimate and train using the loss in Eq. 17.
+Extent-dependent output heads.
+A token of extent e must predict an asymmetric velocity for all
+ehew tokens in its patch. We therefore use one linear output head per supported extent e,
+he : Rdmodel →RDe,
+bu(i)
+A = hei(hi) = Wehi,
+We ∈RDe×dmodel,
+(10)
+where dmodel is the DiT’s hidden dimension.
+We apply Eq. 9 patch-wise to obtain a full-
+resolution velocity ﬁeld, i.e., u ∈RH0×W0×D′. Furthermore, we initialize each output head as
+We = AeWout, where Wout ∈RD×dmodel is the pretrained output head.
+Extent-dependent data scaling.
+When ﬁtting Ae, we also estimate a scalar se by matching pro-
+jected and reference token root-mean-square norms. AsymFlow (Chen et al., 2026) compensates
+for this scale mismatch through input/output rescaling and timestep calibration. However, apply-
+ing that calibration per extent would introduce heterogeneous per-token timesteps, departing from
+the pretrained DiT’s shared-timestep conditioning. Therefore, we instead calibrate at the data level,
+namely we divide each clean dense patch by se before adding noise and undo the scaling before
+VAE decoding. Fitting and scaling details are provided in Sec. A.2 of the supplementary material.
+4.2
+LEVEL-OF-TOKEN DIT
+The projected tokens in Eq. 7 allows us to reuse the DiT’s pretrained weights. We further introduce
+extent-dependent input heads and initialize each by composing the pretrained input projection with
+A⊤
+e . To inform the DiT of the Level-of-Token layout, we introduce patch-shape conditioning and
+ﬁnest-grid-aligned RoPE to encode each LoT token’s spatial extent and location, respectively.
+Patch-shape conditioning.
+To represent a token with extent ei = (eh,i, ew,i), we encode its per-
+axis size, area, and aspect ratio as
+s(ei) =
+ log2 eh,i, log2 ew,i, log2(eh,iew,i), log2(eh,i/ew,i)
+
+.
+(11)
+6
+
+=== PAGE 7 ===
+Generation
+Generation
+Generation
+Bounding
+box
+Table / workspace
+Robot arm + gripper + object of interest
+1.50× compression · 1.60× speedup
+Semantic
+mask
+Road; Sidewalk / buildings
+Lane / crosswalk; Vehicles / people; Traffic controls; Road obstacles
+2.00× compression · 2.32× speedup
+Texture
+variance
+Texture variance · low
+high
+1.94× compression · 2.24× speedup
+Depth
+Depth · far
+near
+1.61× compression · 1.78× speedup
+LoT layout
+LoT layout
+LoT layout
+Figure 5: Video generation with different layouts. Our model generates video under arbitrary
+LoT layouts derived from bounding box, semantic mask, texture variance, or depth input, allocating
+tokens where an application needs detail and reducing them elsewhere, such as sky and road surface
+in autonomous driving and ﬂat untextured surfaces in real-time gaming.
+A zero-initialized MLP maps these features to the DiT hidden dimension and is added to the input
+token embedding:
+h0
+i = Win,eix(i)
+t
++ gϕ(s(ei)) .
+(12)
+Finest-grid-aligned RoPE.
+We retain the pretrained DiT’s axial RoPE and index each token at its
+patch center on the uniform token grid
+ci =
+
+ui + eh,i −1
+2
+, vi + ew,i −1
+2
+
+,
+(13)
+where (ui, vi) is the top-left coordinate of the i-th token. We use ci in Eq. 6 for both queries and
+keys, while the shape embedding conveys patch extent. This parameter-free RoPE change sup-
+ports standard dense attention across all resolutions. For unit patches, ci = (ui, vi), recovering the
+pretrained positional encoding. Unlike multi-scale RoPE variants such as Wu et al. (2026); Jeong
+et al. (2026); Chao et al. (2026) that require query-dependent position maps, our simple approach is
+query-independent and applies unchanged to every supported extent.
+5
+RESULTS
+Experimental Setup. For image generation, we ﬁne-tune FLUX.2-klein-base-4B (Black Forest Labs,
+2025) on Aesthetic-Train-V2 (Zhang et al., 2025b) at 1024 × 1024, following (Chao et al., 2026),
+with a random 95%/5% split for training and held-out evaluation. We also ﬁne-tune the 9B variant
+using the separate training setup described in Sec. A.4. Image results use 4B unless otherwise noted.
+For video generation, we ﬁne-tune Wan2.1-T2V-14B (Team Wan et al., 2025) on a selected 100k-
+example subset of Vchitect-T2V-Dataverse (Fan et al., 2025), using 81-frame clips at 720P. We
+reserve an additional 200 text-video pairs for held-out evaluation.
+LoT-Flux supports extents (eh, ew) with eh, ew ∈{1, 2, 4, 8}, while LoT-Wan uses (1, eh, ew) with
+eh, ew ∈{1, 2, 4}. Models used for layout-controlled generation are trained on mixed-source lay-
+outs derived from semantic masks, object bounding boxes, reference-image texture variance, and
+depth maps. We adapt the pretrained transformer projections with LoRA (Hu et al., 2021) and fully
+ﬁne-tune the extent-dependent input and output heads and patch-size embeddings. See the supple-
+mentary material for detailed training recipes: Sec. A.4 for images and Sec. A.10 for videos.
+7
+
+=== PAGE 8 ===
+Method
+Compression
+Speed
+IR ↑
+HPSv2.1 ↑
+HPSv3 ↑
+FID ↓
+pFID ↓
+TOPIQ ↑
+MUSIQ ↑
+Full Res. FLUX2 4B
+1.000×
+1.001×
+0.9518
+0.2808
+10.4299
+16.748
+20.884
+0.5852
+69.783
+ToMe-SD
+1.893×
+1.538×
+0.1757
+0.2182
+5.3569
+25.757
+30.502
+0.4888
+58.991
+DDiT
+1.340×
+0.8850
+0.2613
+9.0052
+19.671
+23.739
+0.5593
+66.233
+Foveated Diffusion
+1.040×
+0.8280
+0.2615
+9.0092
+14.944
+18.595
+0.5822
+67.494
+Ours (LoT-Flux2 4B)
+1.560×
+0.8833
+0.2728
+10.1211
+13.361
+16.393
+0.6080
+69.691
+ToMe-SD
+2.406×
+1.793×
+-0.2547
+0.1946
+2.9150
+34.321
+41.187
+0.4488
+53.558
+DDiT
+1.521×
+0.7865
+0.2512
+8.0549
+24.150
+32.311
+0.5444
+64.612
+Foveated Diffusion
+1.100×
+0.7737
+0.2543
+8.2674
+15.702
+21.456
+0.5433
+65.109
+Ours (LoT-Flux2 4B)
+1.818×
+0.8513
+0.2672
+9.7533
+13.308
+17.046
+0.5978
+69.420
+ToMe-SD
+2.935×
+2.003×
+-0.6029
+0.1781
+0.9253
+43.528
+50.116
+0.4203
+49.119
+DDiT
+1.321×
+0.7156
+0.2447
+7.4075
+28.156
+38.974
+0.5341
+63.435
+Foveated Diffusion
+1.180×
+0.7582
+0.2507
+7.8433
+16.124
+23.645
+0.5097
+63.105
+Ours (LoT-Flux2 4B)
+2.040×
+0.8326
+0.2639
+9.5522
+13.345
+17.822
+0.5873
+68.760
+Table 1: Image generation baseline comparisons. Our method achieves superior performance on
+most generation metrics across different token budgets, while remaining faster than the baselines.
+Method
+Compression
+Speed ↑
+Aesthetic ↑
+Imaging ↑
+Dynamic ↑
+Background ↑
+Subject ↑
+Motion ↑
+Full Res. Wan2.1 14B
+1×
+1.000×
+0.5518
+0.6465
+0.8900
+0.9332
+0.9254
+0.9899
+ToMe-SD
+2×
+2.223×
+0.3497
+0.4925
+0.9000
+0.9017
+0.8235
+0.9594
+Foveated Diffusion
+2.153×
+0.5258
+0.5598
+0.9650
+0.9252
+0.8800
+0.9844
+Ours (LoT-Wan2.1 14B)
+2.262×
+0.5324
+0.6120
+0.9650
+0.9242
+0.8775
+0.9836
+ToMe-SD
+2.5×
+2.802×
+0.2930
+0.4477
+0.9300
+0.9122
+0.8071
+0.9555
+Foveated Diffusion
+2.746×
+0.5153
+0.5263
+0.9550
+0.9236
+0.8776
+0.9839
+Ours (LoT-Wan2.1 14B)
+2.909×
+0.5204
+0.5851
+0.9650
+0.9232
+0.8729
+0.9832
+ToMe-SD
+3×
+3.305×
+0.2704
+0.4208
+0.9800
+0.9189
+0.8031
+0.9526
+Foveated Diffusion
+3.276×
+0.5080
+0.4952
+0.9550
+0.9234
+0.8761
+0.9839
+Ours (LoT-Wan2.1 14B)
+3.530×
+0.5104
+0.5650
+0.9500
+0.9232
+0.8687
+0.9829
+Table 2: Video generation quantitative comparisons. Our model obtains the best Aesthetic and
+Imaging scores compared with baselines and achieves the most speedup under the same budgets.
+5.1
+LAYOUT-ADAPTIVE IMAGE AND VIDEO GENERATION
+LoT-Flux2-9B
+LoT Layout
+Hilbert Curve (2.2 ×)
+Bounding Box (1.94 ×)
+Full Res. Flux2-9B
+Figure 6: Layout-adaptive image generation.
+Figures 4 and 5 show image and video generation
+with token layouts derived from bounding boxes,
+semantic masks, texture variance, and depth maps.
+Across these sources, LoT generates content that
+adapts to the token allocation, retaining intri-
+cate details in ﬁner-token regions while favoring
+smoother or defocused content in coarser-token
+regions.
+Fig. 6 further illustrates this behavior
+with user-speciﬁed layouts using LoT-Flux2-9B.
+For additional layout adaptive results see supple-
+mentary website and Sec. A.9.
+5.2
+RUNTIME AND QUALITY ANALYSIS OF IMAGE AND VIDEO GENERATION
+We compare LoT with ToMe-SD (Bolya & Hoffman, 2023), DDiT (Kim et al., 2026), and Foveated
+Diffusion (Chao et al., 2026) for images, and with ToMe-SD and Foveated Diffusion for videos, us-
+ing LoT-Flux2-4B and LoT-Wan2.1-14B ﬁne-tuned exclusively on texture-variance-derived layouts
+and evaluating each method at matched token budgets. Speedups are measured relative to the cor-
+responding full-resolution model and cover generation given a supplied layout, including diffusion
+sampling and VAE decoding and excluding layout construction and model loading. Comparison
+setups, metrics, and baseline details are in Sections A.5 and A.11 of the supplementary.
+For images, we assess predicted human preference using ImageReward (Xu et al., 2023),
+HPSv2.1 (Wu et al., 2023), and HPSv3 (Ma et al., 2025); content ﬁdelity using FID and pFID; and
+image quality using TOPIQ (Chen et al., 2024) and MUSIQ (Ke et al., 2021). In Tab. 1, LoT-Flux2-
+4B achieves 1.32–2.04× speedup and leads the baselines on most of the metrics across all token
+compression rates. For videos, Tab. 2 reports six VBench scores on 200 held-out prompts. LoT-
+Wan2.1-14B achieves 1.58–3.53× speedup and the highest aesthetic and imaging quality among the
+compressed methods at every budget, while remaining competitive on the other evaluated metrics.
+8
+
+=== PAGE 9 ===
+Full Res. FLUX2 4B
+1.00× speedup
+ToMe-SD
+2.10× speedup
+DDiT
+Foveated Diffusion
+Ours (LoT Flux2 4B)
+2.29× speedup
+(b) Video generation · Budget: 50,134 tokens
+Full res. Wan2.1 14B · 1.00× speedup
+ToMe-SD · 1.60× speedup
+Foveated Diffusion · 1.59× speedup
+Ours (LoT-Wan2.1 14B) · 1.62× speedup
+(a) Image generation · Budget: 1,269 tokens
+1.90× speedup
+1.63× speedup
+Figure 7: Qualitative baseline comparisons for (a) image and (b) video generation with the same
+token budget. ToMe-SD and DDiT lead to noisy low-res. regions. Foveated Diffusion results in dis-
+tortions near mixed-res. token boundaries. We preserve visual detail while accelerating generation.
+Qualitative image and video comparisons appear in Figures 7(a) and 7(b), respectively. See the
+supplementary website for additional side-by-side comparisons.
+5.3
+ABLATION STUDY
+Variant
+HPSv3 ↑
+FID ↓
+MUSIQ ↑
+Direct HR prediction
+7.0595
+26.487
+63.346
+Binary grid
+8.1955
+20.603
+66.443
+No size embedding
+10.0284
+14.584
+69.433
+Ours
+10.3477
+13.800
+70.410
+Table 3: Ablation study.
+Tab. 3 compares three variants of our framework
+design choices at a matched token budget: remov-
+ing patch-size conditioning (No size embedding),
+replacing patch-wise asymmetric ﬂow recovery
+with a vanilla ﬂow parameterization (Direct HR
+prediction), and restricting token extents to 1 × 1
+and 2 × 2 similar to previous works (Chao et al.,
+2026) (Binary grid). The full model performs best on all metrics except ImageReward, with partic-
+ularly large gains over direct HR prediction and binary grids. Implementation details and additional
+qualitative and quantitative results are provided in Sec. A.13 of the supplementary material.
+6
+CONCLUSION
+We introduced Level-of-Token Diffusion, a framework that uses level-of-detail information to guide
+efﬁcient multiresolution image and video generation. By adapting pretrained diffusion models to
+variable token layouts, LoT connects control over detail with computational savings. Across di-
+verse layout sources, our results demonstrate generation that adapts to the speciﬁed layout, with
+substantial speedups and favorable quality–efﬁciency tradeoffs over token-reduction baselines. We
+note that scenes requiring ﬁne structures or textures throughout offer limited opportunities for token
+reduction, and aggressive compression can degrade their ﬁdelity. LoT is therefore most advanta-
+geous when detail requirements vary spatially, allowing computation to be reduced selectively. See
+Sec. A.14 for a more detailed discussion.
+Looking ahead, LoT suggests a closer connection between planning and efﬁcient generation. Our
+demonstrations with agentic plans for images and videos provide an initial step, turning planned
+spatial importance into an explicit computational allocation. Level-of-Token layouts could serve as
+an editable intermediate representation, allowing multimodal systems and users to reﬁne a visual
+plan and its computational budget. Extending this interaction to video could support faster iterations
+between planning and synthesis in robotics and interactive simulation, where low generation latency
+is essential for responsive interaction. More broadly, LoT offers a step toward generative systems
+that use their understanding of the intended content to decide where computation is needed.
+9
+
+=== PAGE 10 ===
+AI USE STATEMENT
+We used generative AI tools to assist with implementing and debugging methods. We also used
+these tools for manuscript editing and making visualization code. The authors take responsibility
+for the ﬁnal text, claims, code, and experimental results.
+ETHICS STATEMENT
+LoT builds on pretrained image and video generation models and inherits their underlying biases
+and potential societal risks, including stereotypical representations and the generation of mislead-
+ing or harmful content. Our changes to token allocation do not explicitly address these risks, and
+ﬁne-tuning may alter the models’ behavior. Reducing the computational cost of generation can
+broaden access to creative tools and research, but can also lower the cost of producing deceptive
+media at scale. Potential misuse includes impersonation and non-consensual imagery, with associ-
+ated privacy and intellectual-property concerns. Responsible deployment should therefore include
+appropriate content safeguards, disclosure of synthetic content, respect for consent and applicable
+usage restrictions, and application-speciﬁc bias and safety evaluation. Our quality and efﬁciency
+evaluations do not establish the safety or fairness of downstream deployments.
+REPRODUCIBILITY STATEMENT
+Sec. 4 describes the method. Training settings are provided in Sec. A.4, A.5, A.10, and A.11 spec-
+ify the comparison setups, baselines, inference parameters, and metrics, while Sec. A.13 details
+the ablation variants and additional results. We will release code and model weights upon paper
+acceptance.
+REFERENCES
+Marius Aasan, Martine Hjelkrem Tan, Nico Catalano, Changkyu Choi, and Ad´ın Ram´ırez Rivera.
+Differentiable hierarchical visual tokenization. Advances in Neural Information Processing Sys-
+tems, 38:87605–87634, 2026.
+Roman Bachmann, Jesse Allardice, David Mizrahi, Enrico Fini, O˘guzhan Fatih Kar, Elmira Amir-
+loo, Alaaeldin El-Nouby, Amir Zamir, and Afshin Dehghan. Flextok: Resampling images into
+1d token sequences of ﬂexible length. In Forty-second International Conference on Machine
+Learning, 2025.
+Iz Beltagy, Matthew E Peters, and Arman Cohan. Longformer: The long-document transformer.
+arXiv preprint arXiv:2004.05150, 2020.
+Black Forest Labs. FLUX.2: Frontier Visual Intelligence. https://bfl.ai/blog/flux-2,
+2025.
+Daniel Bolya and Judy Hoffman. Token merging for fast stable diffusion. In 2023 IEEE/CVF
+conference on computer vision and pattern recognition workshops (CVPRW), pp. 4599–4603.
+IEEE, 2023.
+Nicolas Carion, Laura Gustafson, Yuan-Ting Hu, Shoubhik Debnath, Ronghang Hu, Didac Suris,
+Chaitanya Ryali, Kalyan Vasudev Alwala, Haitham Khedr, Andrew Huang, Jie Lei, Tengyu
+Ma, Baishan Guo, Arpit Kalla, Markus Marks, Joseph Greer, Meng Wang, Peize Sun, Roman
+R¨adle, Triantafyllos Afouras, Effrosyni Mavroudi, Katherine Xu, Tsung-Han Wu, Yu Zhou, Lil-
+iane Momeni, Rishi Hazra, Shuangrui Ding, Sagar Vaze, Francois Porcher, Feng Li, Siyuan
+Li, Aishwarya Kamath, Ho Kei Cheng, Piotr Doll´ar, Nikhila Ravi, Kate Saenko, Pengchuan
+Zhang, and Christoph Feichtenhofer.
+Sam 3: Segment anything with concepts, 2025.
+URL
+https://arxiv.org/abs/2511.16719.
+Brian Chao, Lior Yariv, Howard Xiao, and Gordon Wetzstein. Foveated diffusion: Efﬁcient spatially
+adaptive image and video generation. arXiv preprint arXiv:2603.23491, 2026.
+10
+
+=== PAGE 11 ===
+Chaofeng Chen, Jiadi Mo, Jingwen Hou, Haoning Wu, Liang Liao, Wenxiu Sun, Qiong Yan, and
+Weisi Lin. Topiq: A top-down approach from semantics to distortions for image quality assess-
+ment. IEEE Transactions on Image Processing, 33:2404–2418, 2024.
+Hansheng Chen, Jan Ackermann, Minseo Kim, Gordon Wetzstein, and Leonidas Guibas. Asym-
+metric ﬂow models. arXiv preprint arXiv:2605.12964, 2026.
+Krzysztof Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, Andreea Gane, Tamas
+Sarlos, Peter Hawkins, Jared Davis, Afroz Mohiuddin, Lukasz Kaiser, et al. Rethinking attention
+with performers. arXiv preprint arXiv:2009.14794, 2020.
+James H. Clark. Hierarchical geometric models for visible-surface algorithms. In Proceedings of the
+3rd Annual Conference on Computer Graphics and Interactive Techniques, SIGGRAPH ’76, pp.
+267, New York, NY, USA, 1976. Association for Computing Machinery. ISBN 9781450373531.
+doi: 10.1145/563274.563323. URL https://doi.org/10.1145/563274.563323.
+Shivam Duggal, Phillip Isola, Antonio Torralba, and William T Freeman. Adaptive length image
+tokenization via recurrent allocation. arXiv preprint arXiv:2411.02393, 2024.
+Weichen Fan, Chenyang Si, Junhao Song, Zhenyu Yang, Yinan He, Long Zhuo, Ziqi Huang, Ziyue
+Dong, Jingwen He, Dongwei Pan, et al. Vchitect-2.0: Parallel transformer for scaling up video
+diffusion models. arXiv preprint arXiv:2501.08453, 2025.
+Haipeng Fang, Sheng Tang, Juan Cao, Enshuo Zhang, Fan Tang, and Tong-Yee Lee. Attend to not at-
+tended: Structure-then-detail token merging for post-training dit acceleration. In 2025 IEEE/CVF
+Conference on Computer Vision and Pattern Recognition (CVPR), pp. 18083–18092. IEEE, 2025.
+Moayed Haji-Ali, Willi Menapace, Ivan Skorokhodov, Dogyun Park, Anil Kag, Michael
+Vasilkovsky, Sergey Tulyakov, Vicente Ordonez, and Aliaksandr Siarohin. One model, many
+budgets: Elastic latent interfaces for diffusion transformers. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition, pp. 4558–4568, 2026.
+Akash Haridas, Utkarsh Saxena, Parsa AshraﬁFashi, Mehdi Rezagholizadeh, Vikram Appia, and
+Emad Barsoum. Dc-dit: Adaptive compute and elastic inference for visual generation via dynamic
+chunking. arXiv preprint arXiv:2603.06351, 2026.
+Joakim Bruslund Haurum, Sergio Escalera, Graham W Taylor, and Thomas B Moeslund. Agglom-
+erative token clustering. In European Conference on Computer Vision, pp. 200–218. Springer,
+2024.
+Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter.
+Gans trained by a two time-scale update rule converge to a local nash equilibrium. Advances in
+neural information processing systems, 30, 2017.
+Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang,
+and Weizhu Chen.
+Lora: Low-rank adaptation of large language models.
+arXiv preprint
+arXiv:2106.09685, 2021.
+Ziqi Huang, Yinan He, Jiashuo Yu, Fan Zhang, Chenyang Si, Yuming Jiang, Yuanhan Zhang, Tianx-
+ing Wu, Qingyang Jin, Nattapol Chanpaisit, et al. Vbench: Comprehensive benchmark suite
+for video generative models. In 2024 IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR), pp. 21807–21818. IEEE, 2024.
+Ideogram.
+Ideogram 4 Prompting Guide.
+https://github.com/ideogram-oss/
+ideogram4/blob/main/docs/prompting.md, 2026a. Accessed: 2026-09-12.
+Ideogram. Ideogram 4.0. https://ideogram.ai/models/4.0, 2026b. Released June 3,
+2026. Accessed: 2026-09-15.
+Wongi Jeong, Kyungryeol Lee, Hoigi Seo, and Se Young Chun. Training-free mixed-resolution la-
+tent upsampling for spatially accelerated diffusion transformers. In Proceedings of the IEEE/CVF
+Conference on Computer Vision and Pattern Recognition, pp. 18673–18682, 2026.
+11
+
+=== PAGE 12 ===
+Weinan Jia, Mengqi Huang, Nan Chen, Lei Zhang, and Zhendong Mao. D 2 it: Dynamic diffusion
+transformer for accurate image generation. In 2025 IEEE/CVF Conference on Computer Vision
+and Pattern Recognition (CVPR), pp. 12860–12870. IEEE, 2025.
+Tero Karras, Miika Aittala, Jaakko Lehtinen, Janne Hellsten, Timo Aila, and Samuli Laine. Analyz-
+ing and improving the training dynamics of diffusion models. In 2024 IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR), pp. 24174–24184. IEEE, 2024.
+Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Franc¸ois Fleuret. Transformers are
+rnns: Fast autoregressive transformers with linear attention. In International conference on ma-
+chine learning, pp. 5156–5165. PMLR, 2020.
+Junjie Ke, Qifei Wang, Yilin Wang, Peyman Milanfar, and Feng Yang. Musiq: Multi-scale image
+quality transformer. In 2021 IEEE/CVF International Conference on Computer Vision (ICCV),
+pp. 5128–5137. IEEE, 2021.
+Dahye Kim, Deepti Ghadiyaram, and Raghudeep Gadde.
+Ddit: Dynamic patch scheduling for
+efﬁcient diffusion transformers. arXiv preprint arXiv:2602.16968, 2026.
+Minchul Kim, Shangqian Gao, Yen-Chang Hsu, Yilin Shen, and Hongxia Jin. Token fusion: Bridg-
+ing the gap between token pruning and token merging. In 2024 IEEE/CVF Winter Conference on
+Applications of Computer Vision (WACV), pp. 1372–1381. IEEE, 2024.
+Orest Kupyn, Hirokatsu Kataoka, and Christian Rupprecht. S3od: towards generalizable salient
+object detection with synthetic data. In International Conference on Learning Representations,
+volume 2026, pp. 145157–145179, 2026.
+Min-Jeong Lee, Hee-Dong Kim, and Seong-Whan Lee. Local representative token guided merging
+for text-to-image generation.
+In 2025 IEEE International Conference on Systems, Man, and
+Cybernetics (SMC), pp. 966–971. IEEE, 2025.
+Xingyang Li, Muyang Li, Tianle Cai, Haocheng Xi, Shuo Yang, Yujun Lin, Lvmin Zhang, Songlin
+Yang, Jinbo Hu, Kelly Peng, Maneesh Agrawala, Ion Stoica, Kurt Keutzer, and Song Han. Radial
+attention: o(n log n) sparse attention with energy decay for long video generation. In Advances
+in Neural Information Processing Systems (NeurIPS), 2025.
+Haotong Lin, Sili Chen, Jun Hao Liew, Donny Y. Chen, Zhenyu Li, Guang Shi, Jiashi Feng, and
+Bingyi Kang. Depth anything 3: Recovering the visual space from any views. arXiv preprint
+arXiv:2511.10647, 2025.
+Feng Liu, Shiwei Zhang, Xiaofeng Wang, Yujie Wei, Haonan Qiu, Yuzhong Zhao, Yingya Zhang,
+Qixiang Ye, and Fang Wan. Timestep embedding tells: It’s time to cache for video diffusion
+model. In 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp.
+7353–7363. IEEE, 2025a.
+Jiacheng Liu, Peiliang Cai, Qinming Zhou, Yuqi Lin, Deyang Kong, Benhao Huang, Yupei Pan,
+Haowen Xu, Chang Zou, Junshu Tang, et al. Freqca: Accelerating diffusion models via frequency-
+aware caching. arXiv preprint arXiv:2510.08669, 2025b.
+Wenbo Lu, Shaoyi Zheng, Yuxuan Xia, and Shengjie Wang. Toma: Token merge with attention for
+diffusion models. arXiv preprint arXiv:2509.10918, 2025.
+Simian Luo, Yiqin Tan, Longbo Huang, Jian Li, and Hang Zhao. Latent consistency models: Synthe-
+sizing high-resolution images with few-step inference. arXiv preprint arXiv:2310.04378, 2023.
+Xinyin Ma, Gongfan Fang, and Xinchao Wang. Deepcache: Accelerating diffusion models for
+free. In 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp.
+15762–15772. IEEE, 2024.
+Yuhang Ma, Xiaoshi Wu, Keqiang Sun, and Hongsheng Li. Hpsv3: Towards wide-spectrum human
+preference score. In 2025 IEEE/CVF International Conference on Computer Vision (ICCV), pp.
+15086–15095. IEEE, 2025.
+12
+
+=== PAGE 13 ===
+MiniMax. MiniMax H3: An open model breaking the boundaries between tasks and modalities,
+2026. URL https://www.minimax.io/blog/minimax-h3. Ofﬁcial model announce-
+ment, July 31, 2026.
+Chong Mou, Xintao Wang, Liangbin Xie, Yanze Wu, Jian Zhang, Zhongang Qi, and Ying Shan. T2i-
+adapter: learning adapters to dig out more controllable ability for text-to-image diffusion models.
+In Proceedings of the Thirty-Eighth AAAI Conference on Artiﬁcial Intelligence and Thirty-Sixth
+Conference on Innovative Applications of Artiﬁcial Intelligence and Fourteenth Symposium on
+Educational Advances in Artiﬁcial Intelligence, AAAI’24/IAAI’24/EAAI’24. AAAI Press, 2024.
+ISBN 978-1-57735-887-9. doi: 10.1609/aaai.v38i5.28226. URL https://doi.org/10.
+1609/aaai.v38i5.28226.
+OpenAI.
+Introducing
+ChatGPT
+Images
+2.0.
+https://openai.com/index/
+introducing-chatgpt-images-2-0/, 2026.
+Released April 21, 2026. Accessed:
+2026-09-15.
+William Peebles and Saining Xie. Scalable diffusion models with transformers. In 2023 IEEE/CVF
+International Conference on Computer Vision (ICCV), pp. 4172–4182. IEEE, 2023.
+Reve
+AI.
+Introducing
+Reve
+2.0.
+https://blog.reve.com/posts/
+announcing-reve-2.0/, 2026. Released June 3, 2026. Accessed: 2026-06-18.
+Tim Salimans and Jonathan Ho. Progressive distillation for fast sampling of diffusion models. In
+International Conference on Learning Representations (ICLR), 2022.
+Peter H. Sch¨onemann. A generalized solution of the orthogonal procrustes problem. Psychometrika,
+31(1):1–10, 1966. doi: 10.1007/BF02289451.
+Jerome M. Shapiro. Embedded image coding using zerotrees of wavelet coefﬁcients. IEEE Trans-
+actions on Signal Processing, 41(12):3445–3462, 1993.
+Junhong Shen, Kushal Tirumala, Michihiro Yasunaga, Ishan Misra, Luke Zettlemoyer, Lili Yu, and
+Chunting Zhou. CAT: Content-adaptive image tokenization. arXiv preprint arXiv:2501.03120,
+2025.
+Jiaming Song, Chenlin Meng, and Stefano Ermon. Denoising diffusion implicit models. arXiv
+preprint arXiv:2010.02502, 2020.
+Yang Song, Prafulla Dhariwal, Mark Chen, and Ilya Sutskever. Consistency models. In International
+Conference on Machine Learning (ICML), 2023.
+Jianlin Su, Murtadha Ahmed, Yu Lu, Shengfeng Pan, Wen Bo, and Yunfeng Liu. Roformer: En-
+hanced transformer with rotary position embedding. Neurocomput., 568(C), February 2024. ISSN
+0925-2312. doi: 10.1016/j.neucom.2023.127063. URL https://doi.org/10.1016/j.
+neucom.2023.127063.
+Zhenxiong Tan, Songhua Liu, Xingyi Yang, Qiaochu Xue, and Xinchao Wang. Ominicontrol: Mini-
+mal and universal control for diffusion transformer. In 2025 IEEE/CVF International Conference
+on Computer Vision (ICCV), pp. 14940–14950. IEEE, 2025.
+Team Wan, Ang Wang, Baole Ai, Bin Wen, Chaojie Mao, Chen-Wei Xie, Di Chen, Feiwu Yu,
+Haiming Zhao, Jianxiao Yang, et al.
+Wan: Open and advanced large-scale video generative
+models. arXiv preprint arXiv:2503.20314, 2025.
+K. Vaidyanathan, M. Salvi, R. Toth, T. Foley, T. Akenine-M¨oller, J. Nilsson, J. Munkberg, J. Hassel-
+gren, M. Sugihara, P. Clarberg, T. Janczak, and A. Lefohn. Coarse pixel shading. In Proceedings
+of High Performance Graphics, HPG ’14, pp. 9–18, Goslar, DEU, 2014. Eurographics Associa-
+tion.
+Neal Wadhwa, Rahul Garg, David E. Jacobs, Bryan E. Feldman, Nori Kanazawa, Robert Carroll,
+Yair Movshovitz-Attias, Jonathan T. Barron, Yael Pritch, and Marc Levoy. Synthetic depth-of-
+ﬁeld with a single-camera mobile phone. ACM Transactions on Graphics, 37(4), 2018. doi:
+10.1145/3197517.3201329.
+13
+
+=== PAGE 14 ===
+Fu-Yun Wang, Zhaoyang Huang, Alexander W. Bergman, Dazhong Shen, Peng Gao, Michael
+Lingelbach, Keqiang Sun, Weikang Bian, Guanglu Song, Yu Liu, Xiaogang Wang, and Hong-
+sheng Li. Phased consistency models. In Advances in Neural Information Processing Systems
+(NeurIPS), 2024.
+Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma. Linformer: Self-attention
+with linear complexity. arXiv preprint arXiv:2006.04768, 2020.
+Haoyu Wu, Jingyi Xu, Hieu Le, and Dimitris Samaras. Importance-based token merging for efﬁcient
+image and video generation. In 2025 IEEE/CVF International Conference on Computer Vision
+(ICCV), pp. 4983–4995. IEEE, 2025.
+Haoyu Wu, Jingyi Xu, Qiaomu Miao, Dimitris Samaras, and Hieu Le.
+Phase-aligned rope for
+mixed-resolution diffusion transformer. In European Conference on Computer Vision, pp. 272–
+293. Springer, 2026.
+Xiaoshi Wu, Yiming Hao, Keqiang Sun, Yixiong Chen, Feng Zhu, Rui Zhao, and Hongsheng Li.
+Human preference score v2: A solid benchmark for evaluating human preferences of text-to-
+image synthesis. arXiv preprint arXiv:2306.09341, 2023.
+Yifei Xia, Suhan Ling, Fangcheng Fu, Yujie Wang, Huixia Li, Xuefeng Xiao, and Bin Cui. Training-
+free and adaptive sparse attention for efﬁcient long video generation.
+In Proceedings of the
+IEEE/CVF International Conference on Computer Vision (ICCV), 2025.
+Howard Xiao, Brian Chao, Lior Yariv, and Gordon Wetzstein. Spectral progressive diffusion for
+efﬁcient image and video generation. arXiv preprint arXiv:2605.18736, 2026. URL https:
+//arxiv.org/abs/2605.18736.
+Shitao Xiao, Yueze Wang, Junjie Zhou, Huaying Yuan, Xingrun Xing, Ruiran Yan, Chaofan Li,
+Shuting Wang, Tiejun Huang, and Zheng Liu. Omnigen: Uniﬁed image generation. In 2025
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 13294–13304.
+IEEE, 2025.
+Jiazheng Xu, Xiao Liu, Yuchen Wu, Yuxuan Tong, Qinkai Li, Ming Ding, Jie Tang, and Yuxiao
+Dong. Imagereward: learning and evaluating human preferences for text-to-image generation. In
+Proceedings of the 37th International Conference on Neural Information Processing Systems, pp.
+15903–15935, 2023.
+Wilson Yan, Volodymyr Mnih, Aleksandra Faust, Matei Zaharia, Pieter Abbeel, and Hao Liu. Elas-
+tictok: Adaptive tokenization for image and video. In International Conference on Learning
+Representations, volume 2025, pp. 38036–38056, 2025.
+Lei Yang, Dmitry Zhdan, Emmett Kilgariff, Eric B. Lum, Yubo Zhang, Matthew Johnson, and
+Henrik Rydg˚ard. Visually lossless content and motion adaptive shading in games. Proc. ACM
+Comput. Graph. Interact. Tech., 2(1), June 2019. doi: 10.1145/3320287. URL https://doi.
+org/10.1145/3320287.
+Yang Yang, Siming Zheng, Jinwei Chen, Boxi Wu, Xiaofei He, Deng Cai, Bo Li, and Peng-Tao
+Jiang.
+Any-to-bokeh: One-step video bokeh via multi-plane image guided diffusion.
+arXiv
+preprint arXiv:2505.21593v1, 2025. URL https://arxiv.org/abs/2505.21593v1.
+Zhengyuan Yang, Jianfeng Wang, Zhe Gan, Linjie Li, Kevin Lin, Chenfei Wu, Nan Duan, Zicheng
+Liu, Ce Liu, Michael Zeng, and Lijuan Wang. Reco: Region-controlled text-to-image genera-
+tion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition
+(CVPR), pp. 14246–14255, June 2023.
+Haotian Ye, Qiyuan He, Jiaqi Han, Puheng Li, Jiaojiao Fan, Zekun Hao, Fitsum Reda, Yogesh
+Balaji, Huayu Chen, Sheng Liu, Angela Yao, James Zou, Stefano Ermon, Haoxiang Wang, and
+Ming-Yu Liu. InfoTok: Adaptive discrete video tokenizer via information-theoretic compression.
+arXiv preprint arXiv:2512.16975, 2025.
+Tianwei Yin, Micha¨el Gharbi, Taesung Park, Richard Zhang, Eli Shechtman, Fr´edo Durand, and
+William T. Freeman. Improved distribution matching distillation for fast image synthesis. In
+Advances in Neural Information Processing Systems (NeurIPS), 2024a.
+14
+
+=== PAGE 15 ===
+Tianwei Yin, Micha¨el Gharbi, Richard Zhang, Eli Shechtman, Fredo Durand, William T Freeman,
+and Taesung Park. One-step diffusion with distribution matching distillation. In 2024 IEEE/CVF
+Conference on Computer Vision and Pattern Recognition (CVPR), pp. 6613–6623. IEEE, 2024b.
+Tianwei Yin, Qiang Zhang, Richard Zhang, William T Freeman, Fredo Durand, Eli Shechtman,
+and Xun Huang. From slow bidirectional to fast autoregressive video diffusion models. In 2025
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 22963–22974.
+IEEE, 2025.
+Eduard Zamﬁr, Christian Reisswig, Zongwei Wu, Yongqin Xian, and Radu Timofte. Elastic token
+compression for pixel-space diffusion transformers, 2026. URL https://arxiv.org/abs/
+2608.29281.
+Chenlu Zhan, Wen Li, Chuyu Shen, Jun Zhang, Suhui Wu, and Hao Zhang. Bidirectional sparse
+attention for faster video diffusion training. arXiv preprint arXiv:2509.01085, 2025.
+Hui Zhang, Dexiang Hong, Yitong Wang, Jie Shao, Xinglong Wu, Zuxuan Wu, and Yu-Gang Jiang.
+Creatilayout: Siamese multimodal diffusion transformer for creative layout-to-image generation.
+In 2025 IEEE/CVF International Conference on Computer Vision (ICCV), pp. 18487–18497.
+IEEE, 2025a.
+Jinjin Zhang, Qiuyu Huang, Junjie Liu, Xiefan Guo, and Di Huang. Diffusion-4k: Ultra-high-
+resolution image synthesis with latent diffusion models. In IEEE/CVF Conference on Computer
+Vision and Pattern Recognition (CVPR), 2025b.
+Lvmin Zhang, Anyi Rao, and Maneesh Agrawala.
+Adding conditional control to text-to-image
+diffusion models. In Proceedings of the IEEE/CVF International Conference on Computer Vision
+(ICCV), pp. 3836–3847, 2023.
+Zhengqiang Zhang, Rongyuan Wu, Lingchen Sun, and Lei Zhang. GPSToken: Gaussian parame-
+terized spatially-adaptive tokenization for image representation and generation. In Advances in
+Neural Information Processing Systems (NeurIPS), 2025c.
+Wangbo Zhao, Yizeng Han, Jiasheng Tang, Kai Wang, Hao Luo, Yibing Song, Gao Huang, Fan
+Wang, and Yang You. DyDiT++: Diffusion transformers with timestep and spatial dynamics for
+efﬁcient visual generation. arXiv preprint arXiv:2504.06803, 2025a.
+Wangbo Zhao, Yizeng Han, Jiasheng Tang, Kai Wang, Yibing Song, Gao Huang, Fan Wang, and
+Yang You. Dynamic diffusion transformer. In International Conference on Learning Representa-
+tions, volume 2025, pp. 65520–65552, 2025b.
+Chang Zou, Xuyang Liu, Ting Liu, Siteng Huang, and Linfeng Zhang.
+Accelerating diffusion
+transformers with token-wise feature caching. arXiv preprint arXiv:2410.05317, 2024.
+A
+APPENDIX
+Unless otherwise speciﬁed, image-generation results in the main paper and this appendix use LoT-
+FLUX.2-4B and the corresponding 4B baselines. Figure 6 uses LoT-FLUX.2 9B. Additional LoT-
+FLUX.2 9B results are provided on the supplementary website.
+CONTENTS
+A.1
+Supplementary Evaluation Material
+. . . . . . . . . . . . . . . . . . . . . . . . .
+16
+A.2
+Extent-dependent Subspace Fitting and Data Scaling
+. . . . . . . . . . . . . . . .
+16
+A.3
+Deriving Token Layouts from Different Sources . . . . . . . . . . . . . . . . . . .
+17
+A.4
+Image Generation Training Details . . . . . . . . . . . . . . . . . . . . . . . . . .
+18
+A.5
+Image Generation Baseline Comparison Details . . . . . . . . . . . . . . . . . . .
+19
+A.6
+Additional Image Generation Baseline Comparison Qualitative Results . . . . . . .
+19
+15
+
+=== PAGE 16 ===
+A.7
+Additional Quantitative Comparison: Token Budget and Image Quality
+. . . . . .
+22
+A.8
+Additional Layout-Adaptive Image Generation Results . . . . . . . . . . . . . . .
+28
+A.9
+Layout Controllability Compared with Dense Generation . . . . . . . . . . . . . .
+33
+A.10 Video Generation Training Details . . . . . . . . . . . . . . . . . . . . . . . . . .
+36
+A.11 Video Generation Baseline Comparison Details . . . . . . . . . . . . . . . . . . .
+36
+A.12 Additional Video Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+36
+A.13 Additional Ablation Study Results . . . . . . . . . . . . . . . . . . . . . . . . . .
+37
+A.14 Limitations
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+39
+A.1
+SUPPLEMENTARY EVALUATION MATERIAL
+We encourage readers to view the accompanying website alongside the paper and PDF appendix
+to assess layout-dependent generation and temporal behavior beyond static ﬁgures.
+It presents
+recorded manual and agent-assisted image-layout workﬂows (website Section 2), typography and
+curve-based layouts with full-resolution FLUX.2 comparisons (Section 4.4), temporal-layout work-
+ﬂows and animated 3D-scene demonstrations (Section 1), and synchronized video baseline com-
+parisons (Section 5). It also provides further layout-adaptive image and video results (Sections 4
+and 3, respectively) and image baseline comparisons (Section 6), with token overlays for inspecting
+the relationship between allocation and generated content. The recordings show how layouts are
+constructed and used, while full video playback enables inspection of motion and temporal artifacts
+that isolated frames cannot reveal. Website: https://iclr-submission7014.github.
+io/supplementary/.
+A.2
+EXTENT-DEPENDENT SUBSPACE FITTING AND DATA SCALING
+For each extent e = (eh, ew), we collect aligned pairs (x, ¯z) ∼De. For both image and video
+models, we ﬁt the Procrustes bases and associated scales on a randomly sampled subset of the re-
+spective training split. Here, x ∈RDe is a vectorized dense patch, and ¯z ∈RD is the corresponding
+token from an extent-matched multi-scale VAE encoding after the pretrained model’s ﬁxed patchi-
+ﬁcation. Thus, D denotes the patchiﬁed token dimension, and extents are measured on the uniform
+token lattice, as in Sec. 3.1. Following AsymFlow (Chen et al., 2026), we ﬁt a semi-orthonormal lift
+Ae ∈RDe×D with orthogonal Procrustes:
+A⋆
+e = arg min
+A⊤A=ID
+E(x,¯z)∼De
+h
+∥x −A¯z∥2
+2
+i
+.
+(14)
+The ﬁtted lift deﬁnes the extent-speciﬁc projector Pe = AeA⊤
+e .
+Projection alone does not preserve the pretrained token magnitude. We therefore ﬁt a scalar data
+scale for each extent by matching projected-token norms:
+se =
+ 
+E(x,¯z)∼De
+
+∥A⊤
+e x∥2
+2
+
+E(x,¯z)∼De [∥¯z∥2
+2]
+!1/2
+.
+(15)
+Consequently, A⊤
+e x/se and ¯z have the same root-mean-square norm. Given a partition P, we
+broadcast the corresponding scale over every dense site in each patch and apply the patch-wise
+asymmetric ﬂow of Sec. 4.1 in the scaled data space:
+sP(q) = sei
+for q ∈Ri,
+y0(q) = x0(q)
+sP(q),
+yt = αty0 + σtε.
+(16)
+We use Eq. 8 and 9 with (x0, xt) replaced by (y0, yt). The model predicts asymmetric velocity,
+from which we recover the dense velocity bu and form the clean-data estimate by0 = yt −σtbu. We
+train this velocity parameterization using a clean-data loss with clamped noise-level weighting:
+L = E
+"
+∥by0 −y0∥2
+2
+max(σt, 0.05)2
+#
+.
+(17)
+16
+
+=== PAGE 17 ===
+At inference time, we integrate the ﬂow in y-space and map the result back to the pretrained latent
+space as bx0(q) = sP(q)by0(q). The multi-scale VAE tokens are used only to ﬁt Ae and se; both
+remain ﬁxed during training and inference.
+Comparison with timestep calibration.
+For a single global scale s, AsymFlow (Chen et al.,
+2026) retains the ﬂow in the original data coordinates and compensates for the scale mismatch
+through input/output rescaling and a calibrated internal timestep. A patch-wise extension to our
+extent-dependent scales would use
+ke(t) =
+1
+se(1 −t) + t,
+τe(t) = t ke(t).
+(18)
+Token i would then use input factor kei(t) and internal timestep τei(t). When scales differ, these
+internal timesteps generally differ within a sample, departing from the pretrained DiT’s shared-
+timestep conditioning. We do not use this extent-dependent timestep calibration. Instead, we scale
+the clean data before adding standard Gaussian noise as in Eq. 16. All tokens then use the same ﬂow
+timestep t, and the orthonormal projections preserve standard Gaussian projected noise, avoiding
+this additional conditioning mismatch.
+A.3
+DERIVING TOKEN LAYOUTS FROM DIFFERENT SOURCES
+We describe how we derive level-of-token layouts from semantic masks and bounding boxes, texture
+variance (VRS), depth maps, and custom detail maps. The same spatial allocation rules apply to
+images and video frames.
+Semantic masks and bounding boxes.
+During training, we sample up to three regions deﬁned
+by semantic masks or bounding boxes. Masks can also come from S3OD (Kupyn et al., 2026),
+using the same token-allocation procedure. Each selected region Mk is assigned a token level ℓk ∈
+{0, 1, 2, 3}, corresponding to a spatial token extent bk = 23−ℓk in each axis. Thus, levels 0, 1, 2, 3
+correspond to 8×8, 4×4, 2×2, and 1×1 tokens, respectively. We also assign the background a level
+ℓbg and sample ℓk > ℓbg, so selected regions receive ﬁner tokens. The resulting spatial assignment
+is
+ℓ(q) = max({ℓbg} ∪{ℓk : q ∈Mk}) ,
+b(q) = 23−ℓ(q).
+(19)
+This assigns a token level throughout each region and the background, with the ﬁner level taking
+precedence where selected regions overlap. We use the resulting extent map to construct the level-
+of-token layout.
+Texture variance (Variable-Rate Shading).
+We adapt the content-adaptive VRS rule of Yang
+et al. (2019) to select token extents using directional luminance variation. Candidate regions are
+coarsened along directions whose estimated error falls below the tolerance
+τ(R) = s
+ ER[I] + a
+
+,
+(20)
+where I is reference luminance. The sensitivity s and ambient term a control the overall detail of
+the token layout: larger values permit coarser tokens, while smaller values preserve ﬁner detail.
+For threshold-based VRS training, we independently sample s ∈[0.01, 0.1] and a ∈[0.01, 1.0]
+uniformly. For quantitative evaluation, reference luminance comes from held-out reference images
+for image comparisons and prompt-generated reference videos for video comparisons, as detailed in
+Sec. A.5 and A.11.
+Depth maps and depth of ﬁeld.
+Following the circle-of-confusion model used in computational
+bokeh rendering (Wadhwa et al., 2018; Yang et al., 2025), we convert a positive depth map d(q) and
+focal depth df into a blur-radius ﬁeld
+r(q) = K
+d(q)−1 −d−1
+f
+ .
+(21)
+The focal depth is the median depth of a selected subject region. We calibrate K for the reference
+depth map and selected focal plane as
+K =
+rtarget
+percentile95
+d(q)−1 −d−1
+f
+
+,
+(22)
+17
+
+=== PAGE 18 ===
+where the percentile is computed over the reference pixels and rtarget sets the desired blur strength.
+The ﬁrst equation gives a small blur radius r(q) when a pixel’s depth is close to the focal depth df,
+and a larger radius as its inverse depth differs from the focal plane. The second equation scales these
+radii so their 95th percentile equals rtarget. We then use this radius map to choose token sizes: small
+radii require ﬁne tokens, while larger radii permit coarser tokens. A region is merged only when
+its smallest blur radius supports the larger token size. Thus, even a small in-focus part prevents a
+region from being coarsened, preserving detail around the subject and its boundaries. Increasing
+rtarget increases K and the blur radii, allowing coarser layouts.
+Custom detail maps.
+Users can specify where to allocate computation by painting a spatial detail
+map, without requiring a reference image or an automatically extracted mask. An agent can also
+construct this map programmatically from a text description. In our image-generation interface, each
+pixel is assigned the score of its nearest brush color: black, orange, yellow, and white correspond
+to detail scores 0, 0.3, 0.6, and 1, respectively. The canvas initially uses yellow to provide medium
+detail throughout the image. We area-average the scores onto the ﬁnest token lattice, optionally
+apply Gaussian smoothing, and multiply by a user-controlled gain before clipping to [0, 1]. This
+gives a detail ﬁeld D(q), where larger values request ﬁner tokens.
+We convert D into a valid, lattice-aligned quadtree tiling. Starting from 8 × 8 blocks, a block R of
+extent b ∈{8, 4, 2} is split into four children whenever
+max
+q∈R D(q) ≥tb,
+t8 ≤t4 ≤t2.
+(23)
+Recursion stops when the test fails or a 1×1 token is reached. The maximum is taken after projection
+onto the token lattice, so a high-detail cell prevents its containing block from remaining coarse. The
+thresholds, smoothing, and gain let the user adjust the resulting token count without requiring an
+exact token budget or VRS-based reﬁnement. The model receives the resulting token layout and
+text prompt, not the painted RGB map as an additional appearance condition. Section 1 of the
+supplementary website demonstrates both manual painting and agent-created custom detail maps.
+A.4
+IMAGE GENERATION TRAINING DETAILS
+We ﬁne-tune FLUX.2-klein-base-4B (Black Forest Labs, 2025) with its standard latent normaliza-
+tion, keeping the pretrained text encoder and VAE frozen.
+Training data and source mixture.
+We train on Aesthetic-Train-V2 (Zhang et al., 2025b), using
+aspect-preserving resizing and 1024 × 1024 center crops, with a random 95%/5% split for training
+and held-out evaluation. For each training image, we derive its tokenization layout from segmenta-
+tion masks, bounding boxes from SAM3 (Carion et al., 2025), image-luminance variation (texture
+variance), and depth maps (Lin et al., 2025).
+Training setup.
+We fully ﬁne-tune the per-extent input/output heads, patch-size MLP, and ﬁnal
+adaptive normalization. We apply LoRA (Hu et al., 2021) with rank r = 256 and dropout 0.05 to
+the image and context query/key/value and output projections in the dual-stream blocks; image and
+context feed-forward linear in and linear out layers; the fused to qkv mlp proj inputs
+and single-stream attention to out projections; and the timestep embedder. All other pretrained
+parameters remain frozen.
+We train for 50,000 steps using AdamW with a total batch size of 32, learning rate 10−4, (β1, β2) =
+(0.9, 0.999), and ϵ = 10−8. Weight decay of 0.01 is applied only to the LoRA adapters. We train the
+asymmetric-velocity predictor with the clean-data loss in Eq. 17, using the scaled space of Eq. 16.
+The weight 1/ max(σt, 0.05)2 is bounded near zero noise. We use power-function EMA (Karras
+et al., 2024) with γ = 7 for evaluation.
+9B model.
+We also ﬁne-tune FLUX.2-klein-base-9B (Black Forest Labs, 2025). We use three
+million images from the LAION-3M dataset used by Asymmetric Flow Models (Chen et al., 2026)
+for the semantic-mask, bounding-box, saliency, and VRS branches, and bokeh-rendered images
+from Aesthetic-Train-V2 (Zhang et al., 2025b) for the depth-of-ﬁeld branch. The ﬁve branches are
+sampled with equal probability. We train on 32 NVIDIA H100 GPUs across four nodes with a
+18
+
+=== PAGE 19 ===
+1000
+1001
+1002
+1003
+1004
+1005
+1006
+1007
+1008
+1009
+1010
+1011
+1012
+1013
+1014
+1015
+1016
+1017
+1018
+1019
+1020
+1021
+1022
+1023
+1024
+1025
+total batch size of 256, and use the 24,500-step EMA checkpoint for the qualitative results on the
+supplementary website.
+A.5
+IMAGE GENERATION BASELINE COMPARISON DETAILS
+Inference parameters.
+For all baselines, we generate with 30 sampling steps, classiﬁer-free guid-
+ance scale 4, and orthogonal guidance strength 1. We evaluate on all 5,261 prompts in the held-out
+split. For each prompt, we derive the VRS layout from its corresponding held-out reference im-
+age. This is a layout-conditioned comparison: the layout provides reference-derived spatial detail
+allocation beyond the text prompt, but the reference RGB image is not an input to the generator.
+Training Details.
+For a fair comparison, we extend DDiT (Kim et al., 2026) and Foveated Diffu-
+sion (Chao et al., 2026) to support token levels with spatial extents up to 8×8. For these comparisons,
+we train ours, DDiT, and Foveated Diffusion for 20,000 steps each exclusively on VRS-derived grids
+using the same settings: rank-256 LoRA with dropout 0.05 on attention, feed-forward, and timestep
+projection layers, AdamW with learning rate 10−4 and weight decay 0.01, and a global batch size
+of 16. We evaluate the 20,000-step power-function EMA checkpoint with γ = 7.
+We also ﬁne-tune a full-resolution FLUX.2-klein-base-4B control on the same training split as our
+VRS-only quantitative model, using the same LoRA target layers, rank 256, dropout 0.05, AdamW
+learning rate 10−4, weight decay 0.01, global batch size 16, and 20,000 training steps.
+Metric details.
+We evaluate overall generation quality, content ﬁdelity, image quality, and efﬁ-
+ciency. For overall generation quality, ImageReward (IR) (Xu et al., 2023), HPSv2.1 (Wu et al.,
+2023), and HPSv3 (Ma et al., 2025) are learned predictors of human preference for prompt–image
+pairs, capturing prompt alignment and visual appeal. Higher scores are better.
+For content ﬁdelity, Fr´echet Inception Distance (FID) (Heusel et al., 2017) compares the feature
+distributions of generated images and held-out reference images. Patch FID (pFID) applies the same
+comparison to one native-resolution 299×299 center crop per image, emphasizing local appearance.
+For image quality, TOPIQ (Chen et al., 2024) combines semantic information with local distortion
+cues, while MUSIQ (Ke et al., 2021) assesses perceptual quality using multi-scale image represen-
+tations. Both are used without a reference image or text prompt; higher scores are better.
+For efﬁciency, runtime measures the CUDA-synchronized generation call, including prompt encod-
+ing, diffusion sampling, and VAE decoding, on an H100 per image; it excludes grid preprocessing,
+image saving, and model loading. We retain the original pretrained full-resolution FLUX.2 4B tim-
+ing reference of 5.7783 seconds per image for the reported speedups. The ﬁne-tuned dense control
+takes 5.7726 seconds per image (steady-state mean), corresponding to 1.001× speed relative to that
+reference.
+A.6
+ADDITIONAL IMAGE GENERATION BASELINE COMPARISON QUALITATIVE RESULTS
+We show additional image generation baseline comparison qualitative results in Fig. 8 and 9. More
+qualitative image baseline comparisons are available in Section 3 (Image Generation Qualitative
+Baseline Comparisons) of the supplementary website.
+19
+
+=== PAGE 20 ===
+1026
+1027
+1028
+1029
+1030
+1031
+1032
+1033
+1034
+1035
+1036
+1037
+1038
+1039
+1040
+1041
+1042
+1043
+1044
+1045
+1046
+1047
+1048
+1049
+1050
+1051
+1052
+1053
+1054
+1055
+1056
+1057
+1058
+1059
+1060
+1061
+1062
+1063
+1064
+1065
+1066
+1067
+1068
+1069
+1070
+1071
+1072
+1073
+1074
+1075
+1076
+1077
+1078
+1079
+Full resolution
+ToMe-SD
+DDiT
+Foveated Diffusion
+Ours
+LoT layout
+1,958 tokens
+1,914 tokens
+1,576 tokens
+768 tokens
+1,334 tokens
+1,241 tokens
+1,558 tokens
+942 tokens
+961 tokens
+Figure 8: Additional Qualitative Image Generation Baseline Comparison Results.
+20
+
+=== PAGE 21 ===
+1080
+1081
+1082
+1083
+1084
+1085
+1086
+1087
+1088
+1089
+1090
+1091
+1092
+1093
+1094
+1095
+1096
+1097
+1098
+1099
+1100
+1101
+1102
+1103
+1104
+1105
+1106
+1107
+1108
+1109
+1110
+1111
+1112
+1113
+1114
+1115
+1116
+1117
+1118
+1119
+1120
+1121
+1122
+1123
+1124
+1125
+1126
+1127
+1128
+1129
+1130
+1131
+1132
+1133
+Full resolution
+ToMe-SD
+DDiT
+Foveated Diffusion
+Ours
+LoT layout
+1,494 tokens
+1,083 tokens
+1,270 tokens
+1,487 tokens
+1,315 tokens
+929 tokens
+765 tokens
+1,338 tokens
+1,038 tokens
+Figure 9: Additional Qualitative Image Generation Baseline Comparison Results.
+21
+
+=== PAGE 22 ===
+1134
+1135
+1136
+1137
+1138
+1139
+1140
+1141
+1142
+1143
+1144
+1145
+1146
+1147
+1148
+1149
+1150
+1151
+1152
+1153
+1154
+1155
+1156
+1157
+1158
+1159
+1160
+1161
+1162
+1163
+1164
+1165
+1166
+1167
+1168
+1169
+1170
+1171
+1172
+1173
+1174
+1175
+1176
+1177
+1178
+1179
+1180
+1181
+1182
+1183
+1184
+1185
+1186
+1187
+A.7
+ADDITIONAL QUANTITATIVE COMPARISON: TOKEN BUDGET AND IMAGE QUALITY
+We provide an additional comparison between LoT-FLUX.2-4B and pretrained FLUX.2 4B at
+matched per-image token budgets, using all 5,261 held-out test prompts. We denote the pretrained
+baseline as FLUX.2 (token matched): for each prompt, it uses a uniform square token grid whose
+token count is as close as possible to that of our content-adaptive grid. It generates at the correspond-
+ing lower resolution and is bicubically upsampled to 1024 × 1024 for evaluation. LoT-FLUX.2-4B
+instead generates directly at 1024 × 1024 using spatially varying token extents.
+Fig. 14(a) compares FID and pFID against the held-out reference images, together with the image-
+quality metrics MUSIQ and TOPIQ, averaged over the test images at each threshold. Overall, LoT-
+FLUX.2-4B achieves lower FID and pFID and higher image-quality scores than FLUX.2 (token
+matched). This advantage is consistent with our adaptive allocation of ﬁner tokens to detailed re-
+gions while retaining full-resolution output. In contrast, the pretrained baseline reduces resolution
+uniformly, and subsequent upsampling cannot recover ﬁne details lost during low-resolution gener-
+ation. Fig. 14(b) provides qualitative comparisons, with each token-matched output displayed at its
+generation scale relative to our 1024 × 1024 output.
+Figures 10–13 show how generation changes as the target token budget B varies for the same prompt.
+We guide token allocation using semantic masks in Figures 10 and 11, and texture variance in
+Figures 12 and 13. Lower budgets use larger tokens over more of the image, retaining recognizable
+subjects and scene structure while simplifying ﬁne textures. Higher budgets support ﬁner spatial
+detail, such as foliage, fur, and architectural features. These results illustrate a controllable trade-off
+between computational budget and visual detail within the same model.
+22
+
+=== PAGE 23 ===
+1188
+1189
+1190
+1191
+1192
+1193
+1194
+1195
+1196
+1197
+1198
+1199
+1200
+1201
+1202
+1203
+1204
+1205
+1206
+1207
+1208
+1209
+1210
+1211
+1212
+1213
+1214
+1215
+1216
+1217
+1218
+1219
+1220
+1221
+1222
+1223
+1224
+1225
+1226
+1227
+1228
+1229
+1230
+1231
+1232
+1233
+1234
+1235
+1236
+1237
+1238
+1239
+1240
+1241
+Reference
+B = 1024
+B = 1792
+B = 2560
+B = 3328
+B = 4096
+A young spotted deer stands alert in a sunlit grassy clearing, gazing toward the camera, wildlife documentary photography. Dappled morning light filters through the surrounding trees onto its glistening coat. Shot on an 85mm lens at f/2.8, the subject framed slightly off-center with
+layered woodland depth behind, calm and quietly attentive atmosphere. 
+Snow-dusted mountains with rocky cliffs rise behind lush green meadows dotted with grazing cows, landscape photography. Rolling hills and scattered trees fill the middle distance under a blue sky with white clouds. Bright directional daylight separates each layer, 35mm lens at
+f/8, layered foreground-to-summit composition, serene alpine mood. 
+A grand historical building with a prominent dome, tall columns and decorative sculptures rises above a wide plaza, architectural photography. Lighted bollards line the smooth walkway and traffic leaves streaks of light across the foreground. Warm floodlight picks out the
+stonework against a twilight sky, 35mm lens at f/8 on a tripod, frontal long-exposure composition, stately evening mood. 
+Steep mountains rise sharply, patched with golden grass and lingering snow, landscape photography. A waterfall spills down the rocky slopes into calm water that mirrors the cloudy sky, with a stony shoreline running along the edge. Soft broken light picks out the falling water,
+35mm lens at f/8, layered composition from shore to summit, serene elemental mood. 
+Figure 10: Mask-guided Image Generation with Varying Token Budget.
+23
+
+=== PAGE 24 ===
+1242
+1243
+1244
+1245
+1246
+1247
+1248
+1249
+1250
+1251
+1252
+1253
+1254
+1255
+1256
+1257
+1258
+1259
+1260
+1261
+1262
+1263
+1264
+1265
+1266
+1267
+1268
+1269
+1270
+1271
+1272
+1273
+1274
+1275
+1276
+1277
+1278
+1279
+1280
+1281
+1282
+1283
+1284
+1285
+1286
+1287
+1288
+1289
+1290
+1291
+1292
+1293
+1294
+1295
+Reference
+B = 1024
+B = 1792
+B = 2560
+B = 3328
+B = 4096
+A neoclassical building with a prominent dome, intricate sculptures and tall columns stands in full sunlight, architectural photography. A French flag flies from the dome and a vintage street lamp rises nearby. Direct sunlight carves the relief and casts soft shadows from the lamp,
+50mm lens at f/8, upward frontal composition with the lamp anchoring the foreground, bright civic mood. 
+Snow-covered mountain peaks rise against a deep blue sky, rocky ridges and steep slopes catching the light, landscape photography. Dark evergreen trees stand silhouetted in the foreground. Hard high-altitude sunlight separates the bright snow from the shadowed rock, 70mm
+lens at f/8, layered composition from the trees to the summits, crisp alpine mood. 
+A rocky stream flows through rugged terrain flanked by dry grass and sparse shrubs, landscape photography. Steep hills rise on both sides with a few buildings higher up the slope and tall mountains looming beyond under blue sky and white clouds. High midday sunlight hardens
+the shadows across the rock. 28mm lens at f/8, leading-line composition following the water, expansive open mood. 
+A white sports car with sculpted curves sits parked on smooth pavement among trees in autumn foliage, automotive photography. Black alloy wheels with red accents and a broad front grille mark its low profile. Soft afternoon light shimmers in the window reflections, 35mm lens at
+f/4, low three-quarter angle with the trees layered behind, serene seasonal mood. 
+Figure 11: Mask-guided Image Generation with Varying Token Budget.
+24
+
+=== PAGE 25 ===
+1296
+1297
+1298
+1299
+1300
+1301
+1302
+1303
+1304
+1305
+1306
+1307
+1308
+1309
+1310
+1311
+1312
+1313
+1314
+1315
+1316
+1317
+1318
+1319
+1320
+1321
+1322
+1323
+1324
+1325
+1326
+1327
+1328
+1329
+1330
+1331
+1332
+1333
+1334
+1335
+1336
+1337
+1338
+1339
+1340
+1341
+1342
+1343
+1344
+1345
+1346
+1347
+1348
+1349
+Reference
+B = 1024
+B = 1792
+B = 2560
+B = 3328
+B = 4096
+Snow-capped mountains rise behind rolling green hills, landscape photography. Cloudy skies diffuse the daylight across the ridges and valley floor. 70mm lens at f/8, layered foreground-to-summit composition compressing the depth, expansive and still atmosphere. 
+Leafy trees frame the left foreground of a silhouetted Toronto skyline with the CN Tower rising at its center, cityscape photography. Stars come out as twilight turns to night and the water below reflects the skyline in subtle ripples, a few ducks drifting through. Long-exposure dusk
+light holds both sky and reflection, 50mm lens at f/8 on a tripod, layered composition from the trees to the towers, calm nightfall mood. 
+A rocky stream flows through rugged terrain flanked by dry grass and sparse shrubs, landscape photography. Steep hills rise on both sides with a few buildings higher up the slope and tall mountains looming beyond under blue sky and white clouds. High midday sunlight hardens
+the shadows across the rock. 28mm lens at f/8, leading-line composition following the water, expansive open mood. 
+Steep mountains rise sharply, patched with golden grass and lingering snow, landscape photography. A waterfall spills down the rocky slopes into calm water that mirrors the cloudy sky, with a stony shoreline running along the edge. Soft broken light picks out the falling water,
+35mm lens at f/8, layered composition from shore to summit, serene elemental mood. 
+Figure 12: VRS-guided Image Generation with Varying Token Budget – Part 1.
+25
+
+=== PAGE 26 ===
+1350
+1351
+1352
+1353
+1354
+1355
+1356
+1357
+1358
+1359
+1360
+1361
+1362
+1363
+1364
+1365
+1366
+1367
+1368
+1369
+1370
+1371
+1372
+1373
+1374
+1375
+1376
+1377
+1378
+1379
+1380
+1381
+1382
+1383
+1384
+1385
+1386
+1387
+1388
+1389
+1390
+1391
+1392
+1393
+1394
+1395
+1396
+1397
+1398
+1399
+1400
+1401
+1402
+1403
+Reference
+B = 1024
+B = 1792
+B = 2560
+B = 3328
+B = 4096
+Snow-covered mountain peaks rise against a deep blue sky, rocky ridges and steep slopes catching the light, landscape photography. Dark evergreen trees stand silhouetted in the foreground. Hard high-altitude sunlight separates the bright snow from the shadowed rock, 70mm
+lens at f/8, layered composition from the trees to the summits, crisp alpine mood. 
+Rolling green hills meet deep blue ocean where rocky cliffs rise sharply from the water, landscape photography. Distant mountains close the view under a clear sky with scattered clouds, and a calm inlet mirrors the shore. Bright directional daylight models each headland, 35mm
+lens at f/8, layered composition along the coastline, expansive coastal mood. 
+A seagull soars above calm blue water framed by rugged mountains under a clear sky, landscape photography. The bird holds the upper third of the frame as the ridges recede behind. Bright midday sunlight sparkles across the surface, 200mm lens at f/5.6, layered composition
+compressing the bird against the far mountains, open airy mood. 
+A pink tulip with smooth petals slightly ruffled at the edges stands against a dark background, macro nature photography. Its base shifts to a soft peach hue. A single soft light from the side sculpts the petal curves while other tulips blur faintly behind, 100mm macro lens at f/2.8,
+centered vertical composition, graceful still mood. 
+Figure 13: VRS-guided Image Generation with Varying Token Budget – Part 2
+26
+
+=== PAGE 27 ===
+1404
+1405
+1406
+1407
+1408
+1409
+1410
+1411
+1412
+1413
+1414
+1415
+1416
+1417
+1418
+1419
+1420
+1421
+1422
+1423
+1424
+1425
+1426
+1427
+1428
+1429
+1430
+1431
+1432
+1433
+1434
+1435
+1436
+1437
+1438
+1439
+1440
+1441
+1442
+1443
+1444
+1445
+1446
+1447
+1448
+1449
+1450
+1451
+1452
+1453
+1454
+1455
+1456
+1457
+(a) Image quality at matched token budgets
+1
+2
+3
+4
+5
+6
+7
+8
+14
+16
+18
+20
+Score
+FID ↓
+1
+2
+3
+4
+5
+6
+7
+8
+20
+25
+30
+Score
+pFID ↓
+1
+2
+3
+4
+5
+6
+7
+8
+55
+60
+65
+70
+Score
+MUSIQ ↑
+1
+2
+3
+4
+5
+6
+7
+8
+0.40
+0.45
+0.50
+0.55
+0.60
+Score
+TOPIQ
+ ↑
+Compression ratio (4,096 / actual tokens)
+Ours
+FLUX.2 (token matched)
+(b) Qualitative comparisons at relative generation resolution
+FLUX2 (token matched)
+Ours (LoT-Flux2 4B)
+592×592 · 1,369 tokens
+1024×1024 · 1,404 tokens
+640×640 · 1,600 tokens
+1024×1024 · 1,573 tokens
+528×528 · 1,089 tokens
+1024×1024 · 1,119 tokens
+576×576 · 1,296 tokens
+1024×1024 · 1,269 tokens
+592×592 · 1,369 tokens
+1024×1024 · 1,345 tokens
+FLUX2 (token matched)
+Ours (LoT-Flux2 4B)
+480×480 · 900 tokens
+1024×1024 · 916 tokens
+624×624 · 1,521 tokens
+1024×1024 · 1,552 tokens
+512×512 · 1,024 tokens
+1024×1024 · 1,054 tokens
+624×624 · 1,521 tokens
+1024×1024 · 1,493 tokens
+528×528 · 1,089 tokens
+1024×1024 · 1,112 tokens
+Hatched area: unused display canvas (not generated content).
+Figure 14: Image Quality at Matched Token Budgets. (a) Quantitative comparison. (b) Ten
+qualitative pairs, with token-matched outputs shown at their relative generation resolution. Hatched
+areas are display padding, not generated content.
+27
+
+=== PAGE 28 ===
+1458
+1459
+1460
+1461
+1462
+1463
+1464
+1465
+1466
+1467
+1468
+1469
+1470
+1471
+1472
+1473
+1474
+1475
+1476
+1477
+1478
+1479
+1480
+1481
+1482
+1483
+1484
+1485
+1486
+1487
+1488
+1489
+1490
+1491
+1492
+1493
+1494
+1495
+1496
+1497
+1498
+1499
+1500
+1501
+1502
+1503
+1504
+1505
+1506
+1507
+1508
+1509
+1510
+1511
+A.8
+ADDITIONAL LAYOUT-ADAPTIVE IMAGE GENERATION RESULTS
+Figures 15–18 show additional image generation examples generated by LoT-FLUX.2-4B using LoT
+layouts derived from different sources. Bounding boxes and semantic masks concentrate ﬁne tokens
+in selected regions, where the model places salient subjects and detailed structures. Texture-variance
+layouts support spatially varying detail, while depth-derived layouts favor sharp content near the
+focal region and smoother, defocused surroundings. More layout-adaptive image generation results
+from LoT-FLUX.2-4B and 9B are available in Section 2 of the supplementary website.
+28
+
+=== PAGE 29 ===
+1512
+1513
+1514
+1515
+1516
+1517
+1518
+1519
+1520
+1521
+1522
+1523
+1524
+1525
+1526
+1527
+1528
+1529
+1530
+1531
+1532
+1533
+1534
+1535
+1536
+1537
+1538
+1539
+1540
+1541
+1542
+1543
+1544
+1545
+1546
+1547
+1548
+1549
+1550
+1551
+1552
+1553
+1554
+1555
+1556
+1557
+1558
+1559
+1560
+1561
+1562
+1563
+1564
+1565
+Bounding box
+1×1
+2×2
+A brown and white cow with a fluffy forelock stands in a green field and looks toward the camera, wildlife documentary photography. Blurred
+cows and distant mountains fill the background. Soft overcast light brings out the texture of its coat, 200mm lens at f/2.8, close framing on
+the head and shoulders, gentle curious mood.
+1×1
+2×2
+A blue steel bridge with intricate truss supports frames a backdrop of urban buildings, architectural photography. The nearest building
+carries orange and brown tones with balconies and tall windows while a light-colored structure stands adjacent. Even daylight brings out the
+rivets and render, 50mm lens at f/8, composition looking through the trusses at the buildings, structured urban mood.
+1×1
+2×2
+A deer with many-pointed antlers stands beside a large oak tree, partly screened by its trunk, wildlife photography. Open grassland
+stretches around it and blurred trees fade into mist behind. Soft diffused morning light drifts through the haze, 200mm lens at f/2.8, the tree
+framing the deer off-center, still watchful mood.
+1×1
+2×2
+A grand historical building with a prominent dome, tall columns and decorative sculptures rises above a wide plaza, architectural
+photography. Lighted bollards line the smooth walkway and traffic leaves streaks of light across the foreground. Warm floodlight picks out
+the stonework against a twilight sky, 35mm lens at f/8 on a tripod, frontal long-exposure composition, stately evening mood.
+1×1
+2×2
+A young spotted deer stands alert in a sunlit grassy clearing, gazing toward the camera, wildlife documentary photography. Dappled
+morning light filters through the surrounding trees onto its glistening coat. Shot on an 85mm lens at f/2.8, the subject framed slightly
+off-center with layered woodland depth behind, calm and quietly attentive atmosphere.
+1×1
+2×2
+A large stone building in gothic style rises behind manicured bushes, a prominent tower topped by a cross above the central entrance,
+architectural photography. Steps lead up between tall windows and a sign marks a centennial celebration. Flat overcast light evens the
+masonry, 35mm lens at f/8, frontal composition centered on the tower, somber institutional mood.
+1×1
+2×2
+Tokyo Tower stands illuminated in red, blue and golden light against a dark night sky, cityscape photography. Trees frame the lower edge of
+the view in silhouette. Long-exposure night light picks out the lattice steelwork, 50mm lens at f/4 on a tripod, upward vertical composition,
+quiet electric mood.
+1×1
+2×2
+A modernist church tower with pointed spires rises against a cloudy sky, architectural photography. A bronze statue of a Viking figure stands
+on a stone pedestal at its base. Diffuse daylight models the concrete and the weathered bronze, 35mm lens at f/8, upward vertical
+composition with the statue anchoring the foreground, stark northern mood.
+1×1
+2×2
+Jagged mountain peaks rise sharply under a cloudy sky, landscape photography. A second ridge falls away behind the first in muted earthy
+tones. Soft broken light picks out one band of rock face against darker slopes, 200mm lens at f/8, layered telephoto composition
+compressing the ridges, austere elemental mood.
+1×1
+2×2
+A light-colored chair with a mesh backrest stands beside a pale wooden table, interior photography. Large green leaves from a nearby plant
+throw shadows across the seat and floor. Sunlight filters through the glass window behind, 35mm lens at f/2.8, three-quarter composition
+with the plant framing the chair, calm airy mood.
+1×1
+2×2
+Two tall palm trees with bright green fronds bend slightly toward a pastel sky of pink and blue, landscape photography. A small white moon
+hangs behind them. Soft dusk light glows through the fronds, 85mm lens at f/4, vertical composition with both trunks rising through the
+frame, calm tropical mood.
+1×1
+2×2
+Two modern curved skyscrapers reach toward a clear blue sky, sleek lines and broad glass windows marking their facades, architectural
+photography. One rises with a pronounced curvature past the other. Hard direct sunlight glances off the glazing, 24mm lens at f/8, upward
+composition stacking both towers against the sky, bold contemporary mood.
+1×1
+2×2
+A gray plate heaped with fresh blackberries sits beside a small bowl of honey and a wooden dipper, food photography. A patterned cloth and
+loose berries scatter across a rustic wooden table. Soft window light from the left brings out the drupelets and the honey's viscosity, 50mm
+lens at f/4, overhead three-quarter composition, abundant rustic mood.
+1×1
+2×2
+Snow-capped mountains rise behind a still lake ringed with dense evergreen trees, landscape photography. A second ridge fades into misty
+fog beyond. Cool dawn light tints the peaks and their reflection under a cloudy sky, 35mm lens at f/11 on a tripod, symmetrical composition
+split by the waterline, hushed early-morning mood.
+1×1
+2×2
+A pink flower with delicate petals and a central cluster of yellow stamens opens against a white background, macro nature photography. A
+small orange petal floats nearby. Bright even studio light keeps every petal edge crisp, 100mm macro lens at f/8, centered composition
+filling the frame, clean botanical mood.
+1×1
+2×2
+The Milky Way arcs above towering dark jagged mountain peaks, astrophotography. The valley below sits in deep shadow against the
+silhouetted cliffs. Long-exposure starlight is the only illumination, 24mm lens at f/2.8 on a tripod, vertical composition with the ridge line low
+in the frame, vast silent mood.
+Figure 15: Bounding-box–controlled Generation Results
+29
+
+=== PAGE 30 ===
+1566
+1567
+1568
+1569
+1570
+1571
+1572
+1573
+1574
+1575
+1576
+1577
+1578
+1579
+1580
+1581
+1582
+1583
+1584
+1585
+1586
+1587
+1588
+1589
+1590
+1591
+1592
+1593
+1594
+1595
+1596
+1597
+1598
+1599
+1600
+1601
+1602
+1603
+1604
+1605
+1606
+1607
+1608
+1609
+1610
+1611
+1612
+1613
+1614
+1615
+1616
+1617
+1618
+1619
+Semantic mask
+1×1
+2×2
+A young spotted deer stands alert in a sunlit grassy clearing, gazing toward the camera, wildlife documentary photography. Dappled
+morning light filters through the surrounding trees onto its glistening coat. Shot on an 85mm lens at f/2.8, the subject framed slightly
+off-center with layered woodland depth behind, calm and quietly attentive atmosphere.
+1×1
+2×2
+A long straight road runs toward distant hazy mountains, landscape photography. Lush greenery and wildflowers line both shoulders past
+yellow road markers. Soft low sunlight of early morning diffuses across the whole valley, 35mm lens at f/8, one-point leading-line
+composition down the center of the road, open expectant mood.
+1×1
+2×2
+A white horse with a flowing mane grazes on green grass while a larger black horse with a shaggy mane feeds just behind it, wildlife
+photography. Soft diffused daylight brings out both coats. Grass and gravel paths blur away in the distance, 135mm lens at f/2.8, the white
+horse framed left with the black horse layered behind, tranquil pastoral mood.
+1×1
+2×2
+A brown and white cow with a fluffy forelock stands in a green field and looks toward the camera, wildlife documentary photography. Blurred
+cows and distant mountains fill the background. Soft overcast light brings out the texture of its coat, 200mm lens at f/2.8, close framing on
+the head and shoulders, gentle curious mood.
+1×1
+2×2
+Snow-covered mountain peaks rise against a deep blue sky, rocky ridges and steep slopes catching the light, landscape photography. Dark
+evergreen trees stand silhouetted in the foreground. Hard high-altitude sunlight separates the bright snow from the shadowed rock, 70mm
+lens at f/8, layered composition from the trees to the summits, crisp alpine mood.
+1×1
+2×2
+A modernist church tower with pointed spires rises against a cloudy sky, architectural photography. A bronze statue of a Viking figure stands
+on a stone pedestal at its base. Diffuse daylight models the concrete and the weathered bronze, 35mm lens at f/8, upward vertical
+composition with the statue anchoring the foreground, stark northern mood.
+1×1
+2×2
+A white BMW M4 sits parked on an asphalt road, its low front profile, kidney grille and black alloy wheels catching the light, automotive
+photography. A second car sits far behind under a cloudy sky. Flat overcast daylight keeps the white bodywork evenly modelled, 35mm lens
+at f/4, low three-quarter angle, cool restrained mood.
+1×1
+2×2
+A stained Starbucks coffee cup stands on a marble table beside a pair of sunglasses, product photography. A second cup and hints of
+greenery blur far behind. Soft daylight grazes the marble veining and the paper cup's creases, 85mm lens at f/2, tight three-quarter
+composition with the cup dominant, everyday cafe mood.
+1×1
+2×2
+A full glass mug of dark beer with a creamy foam head sits on a polished metal bar top, drink photography. The metal reflects the glass and
+the deep brown body of the beer. Warm bar light rims the foam while the room behind falls into defocus, 85mm lens at f/2, tight vertical
+composition, inviting evening mood.
+1×1
+2×2
+A red Peugeot rests among fallen leaves in a forest clearing, automotive photography. Autumn foliage crowds the surrounding trees and
+leaves scatter across the hood. Warm light filters through the branches onto the paintwork, 50mm lens at f/2.8, three-quarter composition
+with layered woodland depth behind, mellow seasonal atmosphere.
+1×1
+2×2
+A pair of glossy ibis wade through lush grass, wildlife documentary photography. The nearer bird shows dark iridescent plumage and a long
+curved beak while the second stands partly hidden behind it. Soft morning light brings out the metallic sheen of the feathers, 400mm lens
+at f/5.6, tight framing with the second bird in gentle defocus, patient watchful mood.
+1×1
+2×2
+A grand historical building with a prominent dome, tall columns and decorative sculptures rises above a wide plaza, architectural
+photography. Lighted bollards line the smooth walkway and traffic leaves streaks of light across the foreground. Warm floodlight picks out
+the stonework against a twilight sky, 35mm lens at f/8 on a tripod, frontal long-exposure composition, stately evening mood.
+1×1
+2×2
+A dark blue glass bottle with a dropper and a label reading 'Daily Grind' and 'Locke' stands on a workbench, product photography. Wood
+shavings, a pipe, a leather wallet and a saw surround it. Warm side light rakes across the glass and the tool steel, 100mm macro lens at f/4,
+tight three-quarter composition with the bottle dominant, rustic workshop mood.
+1×1
+2×2
+Jagged mountain peaks rise sharply under a cloudy sky, landscape photography. A second ridge falls away behind the first in muted earthy
+tones. Soft broken light picks out one band of rock face against darker slopes, 200mm lens at f/8, layered telephoto composition
+compressing the ridges, austere elemental mood.
+1×1
+2×2
+A bottle of dark syrup labeled 'Jarabe de Carao' stands on a sheet of brown paper, product photography. Two sprigs of purple flowers rest
+beside it against a light pink background. Soft diffused studio light reveals the glass and the paper texture, 100mm macro lens at f/5.6,
+centered vertical composition with generous space around the bottle, clean botanical mood.
+1×1
+2×2
+Snow-capped mountains rise behind rolling green hills, landscape photography. Cloudy skies diffuse the daylight across the ridges and
+valley floor. 70mm lens at f/8, layered foreground-to-summit composition compressing the depth, expansive and still atmosphere.
+Figure 16: Semantic-mask–controlled Generation Results
+30
+
+=== PAGE 31 ===
+1620
+1621
+1622
+1623
+1624
+1625
+1626
+1627
+1628
+1629
+1630
+1631
+1632
+1633
+1634
+1635
+1636
+1637
+1638
+1639
+1640
+1641
+1642
+1643
+1644
+1645
+1646
+1647
+1648
+1649
+1650
+1651
+1652
+1653
+1654
+1655
+1656
+1657
+1658
+1659
+1660
+1661
+1662
+1663
+1664
+1665
+1666
+1667
+1668
+1669
+1670
+1671
+1672
+1673
+Texture variance (VRS)
+A layered cake dusted with cocoa powder and topped with red currants sits on a blue plate, food photography. Two halved kumquats, a mint
+sprig and a drizzle of sauce garnish the dish. Soft window light from the left grazes the crumb and fruit, 100mm macro lens at f/4, overhead
+three-quarter composition, elegant appetizing mood.
+Snow-capped mountains rise behind rolling green hills, landscape photography. Cloudy skies diffuse the daylight across the ridges and
+valley floor. 70mm lens at f/8, layered foreground-to-summit composition compressing the depth, expansive and still atmosphere.
+A stone tower with a square base, crenellated top and large arched openings rises above a railing, black and white architectural
+photography. Buildings and hills spread out below under a clear sky. Hard directional sunlight emphasizes the rough masonry, 50mm lens at
+f/8, upward composition with the tower filling the frame, historic weathered mood.
+Leafy trees frame the left foreground of a silhouetted Toronto skyline with the CN Tower rising at its center, cityscape photography. Stars
+come out as twilight turns to night and the water below reflects the skyline in subtle ripples, a few ducks drifting through. Long-exposure
+dusk light holds both sky and reflection, 50mm lens at f/8 on a tripod, layered composition from the trees to the towers, calm nightfall
+mood.
+A white sports car with sculpted curves sits parked on smooth pavement among trees in autumn foliage, automotive photography. Black
+alloy wheels with red accents and a broad front grille mark its low profile. Soft afternoon light shimmers in the window reflections, 35mm
+lens at f/4, low three-quarter angle with the trees layered behind, serene seasonal mood.
+A large tree stands beside a calm pond in a lush green landscape, landscape photography. Red and green foliage borders the foreground
+while rolling hills stretch away under a cloudy sky. Soft overcast light keeps every layer evenly detailed, 35mm lens at f/8, layered
+composition from the foliage to the far hills, restful pastoral mood.
+Snow-dusted mountains with rocky cliffs rise behind lush green meadows dotted with grazing cows, landscape photography. Rolling hills and
+scattered trees fill the middle distance under a blue sky with white clouds. Bright directional daylight separates each layer, 35mm lens at
+f/8, layered foreground-to-summit composition, serene alpine mood.
+A brown and white cow with a fluffy forelock stands in a green field and looks toward the camera, wildlife documentary photography. Blurred
+cows and distant mountains fill the background. Soft overcast light brings out the texture of its coat, 200mm lens at f/2.8, close framing on
+the head and shoulders, gentle curious mood.
+A light-colored chair with a mesh backrest stands beside a pale wooden table, interior photography. Large green leaves from a nearby plant
+throw shadows across the seat and floor. Sunlight filters through the glass window behind, 35mm lens at f/2.8, three-quarter composition
+with the plant framing the chair, calm airy mood.
+A yellow two-story house with a red roof stands in a snowy landscape, architectural photography. Leafless trees frame the scene on both
+sides and water lies beyond under a clear blue sky. Cold bright winter sunlight picks out the roof and the dry grass through the snow, 35mm
+lens at f/8, symmetrical composition framed by the trees, crisp still mood.
+A rustic wooden house with a sloped roof stands in a green valley, landscape photography. Lush vegetation surrounds it while towering
+mountains with rocky, partly green peaks rise behind. Clear daylight separates the layers of the valley, 35mm lens at f/8,
+foreground-to-mountain layered composition, serene natural atmosphere.
+The Milky Way arcs above towering dark jagged mountain peaks, astrophotography. The valley below sits in deep shadow against the
+silhouetted cliffs. Long-exposure starlight is the only illumination, 24mm lens at f/2.8 on a tripod, vertical composition with the ridge line low
+in the frame, vast silent mood.
+A young spotted deer stands alert in a sunlit grassy clearing, gazing toward the camera, wildlife documentary photography. Dappled
+morning light filters through the surrounding trees onto its glistening coat. Shot on an 85mm lens at f/2.8, the subject framed slightly
+off-center with layered woodland depth behind, calm and quietly attentive atmosphere.
+A lighthouse stands silhouetted with its lantern glowing against a sunset sky of orange and blue, coastal landscape photography. A tall ship
+rides the calm water behind it. Warm low backlight rims the tower and the rigging, 85mm lens at f/5.6, vertical composition with the
+lighthouse right of center, tranquil evening mood.
+A golden eagle perches on a weathered tree branch, gazing forward with intense yellow eyes, wildlife documentary photography. Its brown
+and golden plumage catches soft directional light that picks out the sharp beak and heavy shoulders. Blurred greenery falls away behind,
+400mm lens at f/4, tight framing on the head and branch, watchful predatory mood.
+Rolling green hills meet deep blue ocean where rocky cliffs rise sharply from the water, landscape photography. Distant mountains close the
+view under a clear sky with scattered clouds, and a calm inlet mirrors the shore. Bright directional daylight models each headland, 35mm
+lens at f/8, layered composition along the coastline, expansive coastal mood.
+Figure 17: Texture-variance–controlled Generation Results
+31
+
+=== PAGE 32 ===
+1674
+1675
+1676
+1677
+1678
+1679
+1680
+1681
+1682
+1683
+1684
+1685
+1686
+1687
+1688
+1689
+1690
+1691
+1692
+1693
+1694
+1695
+1696
+1697
+1698
+1699
+1700
+1701
+1702
+1703
+1704
+1705
+1706
+1707
+1708
+1709
+1710
+1711
+1712
+1713
+1714
+1715
+1716
+1717
+1718
+1719
+1720
+1721
+1722
+1723
+1724
+1725
+1726
+1727
+Depth
+Building is the primary subject on the focal plane in tack-sharp focus. A blue sports car with an aggressive front grille sits parked on cracked
+asphalt, automotive photography. Abandoned buildings stand behind, half hidden by tall grass. Low morning light rakes across the hood and
+the broken pavement, 35mm lens at f/4, low three-quarter angle with the derelict buildings layered behind, desolate cinematic mood.
+Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with
+realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography
+Cake is the primary subject on the focal plane in tack-sharp focus. A layered cake dusted with cocoa powder and topped with red currants
+sits on a blue plate, food photography. Two halved kumquats, a mint sprig and a drizzle of sauce garnish the dish. Soft window light from the
+left grazes the crumb and fruit, 100mm macro lens at f/4, overhead three-quarter composition, elegant appetizing mood. Compose the
+scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic falloff,
+natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through an
+Mountain is the primary subject on the focal plane in tack-sharp focus. Snow-capped mountains rise behind rolling green hills, landscape
+photography. Cloudy skies diffuse the daylight across the ridges and valley floor. 70mm lens at f/8, layered foreground-to-summit
+composition compressing the depth, expansive and still atmosphere. Compose the scene so the focused region is visually dominant, with
+clear foreground and background layers. Use soft directional light with realistic falloff, natural color, and faithful material texture at the focal
+plane. Render it as photorealistic shallow-depth-of-field photography through an 85mm lens at f/2, with natural circular bokeh and smooth
+Bird is the primary subject on the focal plane in tack-sharp focus. Two flamingos wade through green water, one bending to feed and the
+other standing tall and looking around, wildlife documentary photography. Bright pink feathers contrast with lush green grass behind, and
+colored bands mark their legs. Soft overcast light keeps the pink saturated, 300mm lens at f/4, framed with ripples leading between the two
+birds, calm observed mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers.
+Use soft directional light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic
+Mountain is the primary subject on the focal plane in tack-sharp focus. A long straight road runs toward distant hazy mountains, landscape
+photography. Lush greenery and wildflowers line both shoulders past yellow road markers. Soft low sunlight of early morning diffuses across
+the whole valley, 35mm lens at f/8, one-point leading-line composition down the center of the road, open expectant mood. Compose the
+scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic falloff,
+natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through an
+Deer is the primary subject on the focal plane in tack-sharp focus. A deer with many-pointed antlers stands beside a large oak tree, partly
+screened by its trunk, wildlife photography. Open grassland stretches around it and blurred trees fade into mist behind. Soft diffused
+morning light drifts through the haze, 200mm lens at f/2.8, the tree framing the deer off-center, still watchful mood. Compose the scene so
+the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic falloff, natural
+color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through an 85mm lens
+Tree is the primary subject on the focal plane in tack-sharp focus. A large tree stands beside a calm pond in a lush green landscape,
+landscape photography. Red and green foliage borders the foreground while rolling hills stretch away under a cloudy sky. Soft overcast light
+keeps every layer evenly detailed, 35mm lens at f/8, layered composition from the foliage to the far hills, restful pastoral mood. Compose
+the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic
+falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through
+Mountain is the primary subject on the focal plane in tack-sharp focus. Snow-dusted mountains with rocky cliffs rise behind lush green
+meadows dotted with grazing cows, landscape photography. Rolling hills and scattered trees fill the middle distance under a blue sky with
+white clouds. Bright directional daylight separates each layer, 35mm lens at f/8, layered foreground-to-summit composition, serene alpine
+mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional
+light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field
+Horse is the primary subject on the focal plane in tack-sharp focus. A white horse with a flowing mane grazes on green grass while a larger
+black horse with a shaggy mane feeds just behind it, wildlife photography. Soft diffused daylight brings out both coats. Grass and gravel
+paths blur away in the distance, 135mm lens at f/2.8, the white horse framed left with the black horse layered behind, tranquil pastoral
+mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional
+light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field
+Fruit is the primary subject on the focal plane in tack-sharp focus. A whole yellow melon sits beside a cut wedge revealing vivid orange
+flesh, product photography. Green leaves spread below as a contrasting backdrop. Soft diffused daylight reveals the rind texture and the
+wet cut surface, 100mm macro lens at f/5.6, tight horizontal composition with the wedge angled toward the camera, fresh clean mood.
+Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with
+realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography
+Mountain is the primary subject on the focal plane in tack-sharp focus. A rocky stream flows through rugged terrain flanked by dry grass and
+sparse shrubs, landscape photography. Steep hills rise on both sides with a few buildings higher up the slope and tall mountains looming
+beyond under blue sky and white clouds. High midday sunlight hardens the shadows across the rock. 28mm lens at f/8, leading-line
+composition following the water, expansive open mood. Compose the scene so the focused region is visually dominant, with clear
+foreground and background layers. Use soft directional light with realistic falloff, natural color, and faithful material texture at the focal
+Ship is the primary subject on the focal plane in tack-sharp focus. A lighthouse stands silhouetted with its lantern glowing against a sunset
+sky of orange and blue, coastal landscape photography. A tall ship rides the calm water behind it. Warm low backlight rims the tower and
+the rigging, 85mm lens at f/5.6, vertical composition with the lighthouse right of center, tranquil evening mood. Compose the scene so the
+focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic falloff, natural
+color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through an 85mm lens
+Mountain is the primary subject on the focal plane in tack-sharp focus. Steep mountains rise sharply, patched with golden grass and
+lingering snow, landscape photography. A waterfall spills down the rocky slopes into calm water that mirrors the cloudy sky, with a stony
+shoreline running along the edge. Soft broken light picks out the falling water, 35mm lens at f/8, layered composition from shore to summit,
+serene elemental mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use
+soft directional light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic
+Mountain is the primary subject on the focal plane in tack-sharp focus. Rolling green hills meet deep blue ocean where rocky cliffs rise
+sharply from the water, landscape photography. Distant mountains close the view under a clear sky with scattered clouds, and a calm inlet
+mirrors the shore. Bright directional daylight models each headland, 35mm lens at f/8, layered composition along the coastline, expansive
+coastal mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft
+directional light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic
+Building is the primary subject on the focal plane in tack-sharp focus. A large stone building in gothic style rises behind manicured bushes, a
+prominent tower topped by a cross above the central entrance, architectural photography. Steps lead up between tall windows and a sign
+marks a centennial celebration. Flat overcast light evens the masonry, 35mm lens at f/8, frontal composition centered on the tower, somber
+institutional mood. Compose the scene so the focused region is visually dominant, with clear foreground and background layers. Use soft
+directional light with realistic falloff, natural color, and faithful material texture at the focal plane. Render it as photorealistic
+Mountain is the primary subject on the focal plane in tack-sharp focus. Steep mountains surround a tranquil fjord, green slopes turning to
+autumn color, landscape photography. A waterfall cascades down one cliff face. Beams of sunlight break through a partly cloudy sky onto
+the far ridge, 35mm lens at f/8, layered composition from the near water to the summits, expansive still atmosphere. Compose the scene so
+the focused region is visually dominant, with clear foreground and background layers. Use soft directional light with realistic falloff, natural
+color, and faithful material texture at the focal plane. Render it as photorealistic shallow-depth-of-field photography through an 85mm lens
+Figure 18: Depth-of-ﬁeld–controlled Generation Results
+32
+
+=== PAGE 33 ===
+1728
+1729
+1730
+1731
+1732
+1733
+1734
+1735
+1736
+1737
+1738
+1739
+1740
+1741
+1742
+1743
+1744
+1745
+1746
+1747
+1748
+1749
+1750
+1751
+1752
+1753
+1754
+1755
+1756
+1757
+1758
+1759
+1760
+1761
+1762
+1763
+1764
+1765
+1766
+1767
+1768
+1769
+1770
+1771
+1772
+1773
+1774
+1775
+1776
+1777
+1778
+1779
+1780
+1781
+A.9
+LAYOUT CONTROLLABILITY COMPARED WITH DENSE GENERATION
+We evaluate whether changing the token layout changes where the generated subject appears, com-
+paring the mixed-source LoT-FLUX.2-4B and 9B models with their corresponding pretrained full-
+resolution FLUX.2 models.
+Experimental setup.
+We select 2,096 prompts from COCO-10k that describe one main subject
+and have an unambiguous corresponding COCO bounding box. For each prompt, we construct two
+layouts: one using the reference box and one randomly translating it while preserving its size. We
+allocate 1×1 tokens inside the box and 2×2 tokens outside; the paired layouts have identical token
+counts. Both model sizes use the same prompts, layouts, and seeds. LoT generates both images with
+the same prompt and initial noise, changing only the layout. Dense FLUX.2 uses the same prompt
+and initial noise but receives no layout; its single output is evaluated against both target regions.
+This comparison measures the additional spatial adaptability afforded by the token layout, rather
+than comparing two layout-conditioned models.
+Metrics and results.
+We use SAM3 (Carion et al., 2025) with the subject name, without providing
+the target box, and retain the highest-conﬁdence subject mask above a conﬁdence threshold of 0.5.
+Subject detection is the percentage of images with a detected subject. Target-region coverage is the
+fraction of the detected subject mask lying inside the target box, |M ∩R|/|M|, with zero assigned
+when no subject is detected. Tab. 4 shows higher coverage for LoT under both layouts, with overall
+gains of 15.79 and 21.89 percentage points for 4B and 9B, respectively. Subject detection is slightly
+lower for LoT at 4B and comparable at 9B. Thus, subjects more often occupy the ﬁne-token region
+when generation can adapt to the supplied layout.
+Figures 19 and 20 provide selected qualitative comparisons. With the prompt, initial noise, and
+token count ﬁxed, relocating the ﬁne-token region changes the spatial placement of the subject in
+LoT’s outputs; the dense result is shown alongside for reference.
+Target-region coverage
+Method
+Subject detection
+Original
+Relocated
+Overall
+FLUX.2 4B (full res.)
+98.57
+53.52
+37.24
+45.38
+LoT-FLUX.2-4B
+98.12
+68.84
+53.50
+61.17
+FLUX.2 9B (full res.)
+98.95
+52.98
+36.90
+44.94
+LoT-FLUX.2 9B
+99.07
+74.74
+58.92
+66.83
+Table 4: Layout Controllability Compared with Dense Generation. All values are percentages
+(higher is better).
+33
+
+=== PAGE 34 ===
+1782
+1783
+1784
+1785
+1786
+1787
+1788
+1789
+1790
+1791
+1792
+1793
+1794
+1795
+1796
+1797
+1798
+1799
+1800
+1801
+1802
+1803
+1804
+1805
+1806
+1807
+1808
+1809
+1810
+1811
+1812
+1813
+1814
+1815
+1816
+1817
+1818
+1819
+1820
+1821
+1822
+1823
+1824
+1825
+1826
+1827
+1828
+1829
+1830
+1831
+1832
+1833
+1834
+1835
+Grid A
+Ours A
+Grid B
+Ours B
+FLUX.2 9B
+(pretrained)
+(a) fire hydrant | 1,636 tokens | 2.50x
+(b) stop sign | 1,552 tokens | 2.64x
+(c) bird | 1,222 tokens | 3.35x
+(d) train | 1,699 tokens | 2.41x
+(e) stop sign | 1,213 tokens | 3.38x
+(f) truck | 1,294 tokens | 3.17x
+(g) truck | 2,524 tokens | 1.62x
+(h) cat | 1,492 tokens | 2.75x
+(i) cat | 1,519 tokens | 2.70x
+A: original layout     B: relocated layout     Yellow box: 1x1-token region     Gray: 2x2 tokens
+Figure 19: Layout Controllability: LoT-FLUX.2 9B and Dense FLUX.2 9B. Selected compar-
+isons (1/2): original grid (A), ours (A), relocated grid (B), ours (B), and pretrained FLUX.2 9B.
+Each row shares the prompt and initial noise; A and B also share the token budget. Yellow boxes
+mark the 1 × 1-token regions in the layouts. Dense FLUX.2 receives no layout.
+34
+
+=== PAGE 35 ===
+1836
+1837
+1838
+1839
+1840
+1841
+1842
+1843
+1844
+1845
+1846
+1847
+1848
+1849
+1850
+1851
+1852
+1853
+1854
+1855
+1856
+1857
+1858
+1859
+1860
+1861
+1862
+1863
+1864
+1865
+1866
+1867
+1868
+1869
+1870
+1871
+1872
+1873
+1874
+1875
+1876
+1877
+1878
+1879
+1880
+1881
+1882
+1883
+1884
+1885
+1886
+1887
+1888
+1889
+Grid A
+Ours A
+Grid B
+Ours B
+FLUX.2 9B
+(pretrained)
+(j) elephant | 2,104 tokens | 1.95x
+(k) boat | 1,654 tokens | 2.48x
+(l) elephant | 2,680 tokens | 1.53x
+(m) person | 1,882 tokens | 2.18x
+(n) person | 1,591 tokens | 2.57x
+(o) bear | 1,738 tokens | 2.36x
+(p) dog | 1,318 tokens | 3.11x
+(q) person | 1,384 tokens | 2.96x
+(r) person | 1,672 tokens | 2.45x
+A: original layout     B: relocated layout     Yellow box: 1x1-token region     Gray: 2x2 tokens
+Figure 20: Layout Controllability: LoT-FLUX.2 9B and Dense FLUX.2 9B. Selected compar-
+isons (2/2), following the same arrangement and protocol as Figure 19.
+35
+
+=== PAGE 36 ===
+1890
+1891
+1892
+1893
+1894
+1895
+1896
+1897
+1898
+1899
+1900
+1901
+1902
+1903
+1904
+1905
+1906
+1907
+1908
+1909
+1910
+1911
+1912
+1913
+1914
+1915
+1916
+1917
+1918
+1919
+1920
+1921
+1922
+1923
+1924
+1925
+1926
+1927
+1928
+1929
+1930
+1931
+1932
+1933
+1934
+1935
+1936
+1937
+1938
+1939
+1940
+1941
+1942
+1943
+A.10
+VIDEO GENERATION TRAINING DETAILS
+We ﬁne-tune Wan2.1-T2V-14B (Team Wan et al., 2025) with its native latent normalization and
+frozen UMT5-XXL text encoder and VAE.
+Training data and source mixture.
+We use 81-frame clips from Vchitect-T2V-Dataverse (Fan
+et al., 2025). The layout mixture comprises semantic masks or bounding boxes (50%, split equally),
+VRS layouts (25%), and DoF layouts (25%). All training clips use 1280 × 720 resolution. Grids
+retain et = 1 and eh, ew ∈{1, 2, 4}, with at most 3,072 tokens per latent time slice to avoid out-of-
+memory errors.
+Training setup.
+We reuse the LoRA rank/dropout, AdamW coefﬁcients, adapter learning rate and
+weight decay, clamped clean-data loss, and EMA schedule from Section A.4. Wan-speciﬁc LoRA
+targets are the query/key/value/output projections in self- and cross-attention, the feed-forward lin-
+ear layers, and the timestep embedding/projection layers. We fully ﬁne-tune the per-extent input
+embeddings, output heads, and patch-size MLP at 10−5, and the ﬁnal output normalization and
+modulation at 10−4. These fully ﬁne-tuned groups have zero weight decay. We train for 4,000 steps
+with a total batch size of 32 videos, using FSDP2, gradient checkpointing, and gradient-norm clip-
+ping at 200. Unlike the image model’s length-dependent dynamic shift, video training uses a ﬁxed
+noise-schedule shift factor of 5, shared by all tokens within each clip.
+A.11
+VIDEO GENERATION BASELINE COMPARISON DETAILS
+Inference parameters.
+For all baselines, we generate with 50 sampling steps, classiﬁer-free guid-
+ance scale 4, orthogonal guidance strength 1, and a noise-schedule shift factor of 5. We evaluate
+on 200 held-out DataVerse test prompts, generating 81-frame videos at 1280 × 720 and 15 fps. We
+use the test prompts to generate reference videos with MiniMax-H3 (MiniMax, 2026) and derive
+the evaluation VRS layouts from these generated videos, rather than the original held-out clips. The
+original clips were mostly static, so we use generated references to evaluate temporally varying token
+allocations. Only the derived layouts, not the reference RGB videos, are supplied to the evaluated
+models. At each token budget, ours, Foveated Diffusion, and ToMe-SD use the same VRS-derived
+grids, prompts, and seeds.
+Training Details.
+We adapt Foveated Diffusion (Chao et al., 2026) to Wan2.1 14B and the same
+VRS-derived token layouts as ours, with spatial extents up to 4 × 4. We evaluate our VRS-only
+model and Foveated Diffusion at their 1,000-step checkpoints.
+ToMe-SD (Bolya & Hoffman,
+2023) requires no training: we adapt token merging to pretrained Wan2.1 14B by mean-merging
+tokens within each VRS leaf for self-attention, cross-attention, and MLP computation, then copy-
+unmerging the outputs before adding them to the full-resolution residual stream. Reported Full Res.
+Wan2.1 14B is ﬁne-tuned using the same training budget and parameters on the same dataset for
+fairness.
+Metric details.
+We evaluate six VBench (Huang et al., 2024) dimensions using its custom-video
+evaluation on our held-out prompts. For image quality, aesthetic quality measures visual appeal,
+while imaging quality assesses perceptual degradation such as blur and noise. For temporal consis-
+tency, subject consistency measures the stability of subject appearance across frames, while back-
+ground consistency measures the stability of the scene background. For motion, motion smoothness
+measures the continuity of movement, while dynamic degree measures the prevalence of substantial
+motion. Higher quality, consistency, and smoothness scores are better; a higher dynamic degree
+indicates more motion, not necessarily more realistic motion.
+For efﬁciency, runtime is the mean H100 generation time per video that includes both denoising and
+VAE decoding, similar to the image generation case.
+A.12
+ADDITIONAL VIDEO RESULTS
+Section 4 of the supplementary website demonstrates custom video layout control: users paint a
+static background detail map and keyframed detail maps to specify where ﬁne and coarse tokens are
+allocated as subjects move.
+36
+
+=== PAGE 37 ===
+1944
+1945
+1946
+1947
+1948
+1949
+1950
+1951
+1952
+1953
+1954
+1955
+1956
+1957
+1958
+1959
+1960
+1961
+1962
+1963
+1964
+1965
+1966
+1967
+1968
+1969
+1970
+1971
+1972
+1973
+1974
+1975
+1976
+1977
+1978
+1979
+1980
+1981
+1982
+1983
+1984
+1985
+1986
+1987
+1988
+1989
+1990
+1991
+1992
+1993
+1994
+1995
+1996
+1997
+Method
+Compression
+Time (s) ↓
+Speed ↑
+IR ↑
+HPSv2.1 ↑
+HPSv3 ↑
+FID ↓
+pFID ↓
+TOPIQ ↑
+MUSIQ ↑
+Ours w/o size embedding
+1.523×
+4.372
+1.322×
+0.9294
+0.2717
+10.0284
+14.584
+17.472
+0.6030
+69.433
+Ours w/ direct HR prediction
+1.523×
+4.264
+1.355×
+0.6301
+0.2601
+7.0595
+26.487
+36.072
+0.5134
+63.346
+Ours w/ binary grid
+1.518×
+4.167
+1.387×
+0.7472
+0.2520
+8.1955
+20.603
+25.073
+0.5517
+66.443
+Ours
+1.523×
+4.366
+1.323×
+0.9105
+0.2764
+10.3477
+13.800
+17.019
+0.6170
+70.410
+Ours w/o size embedding
+1.893×
+3.718
+1.554×
+0.9008
+0.2665
+9.7299
+13.934
+17.320
+0.5888
+68.563
+Ours w/ direct HR prediction
+1.893×
+3.609
+1.601×
+0.4335
+0.2503
+5.3532
+37.414
+55.443
+0.4581
+59.576
+Ours w/ binary grid
+1.879×
+3.501
+1.651×
+0.7086
+0.2478
+7.8377
+21.638
+27.603
+0.5180
+64.668
+Ours
+1.893×
+3.704
+1.560×
+0.8833
+0.2728
+10.1211
+13.361
+16.393
+0.6080
+69.691
+Ours w/o size embedding
+2.406×
+3.137
+1.842×
+0.8337
+0.2590
+9.1663
+14.378
+18.822
+0.5758
+67.968
+Ours w/ direct HR prediction
+2.406×
+3.071
+1.882×
+0.1066
+0.2351
+2.8754
+54.762
+89.686
+0.3876
+54.603
+Ours w/ binary grid
+2.336×
+2.958
+1.953×
+0.6952
+0.2464
+7.6611
+23.111
+31.550
+0.4871
+63.340
+Ours
+2.406×
+3.178
+1.818×
+0.8513
+0.2672
+9.7533
+13.308
+17.046
+0.5978
+69.420
+Ours w/o size embedding
+2.935×
+2.789
+2.071×
+0.8042
+0.2543
+8.7670
+14.933
+20.497
+0.5636
+67.277
+Ours w/ direct HR prediction
+2.935×
+2.704
+2.137×
+-0.0843
+0.2268
+1.3967
+68.508
+111.952
+0.3497
+51.809
+Ours w/ binary grid
+2.774×
+2.634
+2.194×
+0.6793
+0.2460
+7.5753
+24.004
+34.786
+0.4674
+62.508
+Ours
+2.935×
+2.832
+2.040×
+0.8326
+0.2639
+9.5522
+13.345
+17.822
+0.5873
+68.760
+Table 5: Ablation Study Across Different Token Budgets.
+Additional qualitative video generation results are available in Section 5 of the supplementary web-
+site: Section 5.1 shows depth-of-ﬁeld layouts, Section 5.2 shows mask-based layouts (semantic
+masks and bounding boxes), and Section 5.3 shows texture-variance layouts (variable-rate shading).
+Each example pairs its source-map/tokenization visualization with the generated video. Section 6
+(Video Generation Qualitative Baseline Comparisons) provides synchronized comparisons with the
+full-resolution model and the baselines, together with per-method token compression and generation
+time.
+A.13
+ADDITIONAL ABLATION STUDY RESULTS
+Tab. 5 reports ablation results across different token budgets, extending the main-paper results in
+Tab. 3, which reports only a single threshold setting at approximately 1.52× token compression.
+We use the same training and evaluation setup as the image generation baseline comparison. We
+introduce the ablation variants considered below.
+Ours w/ direct HR prediction.
+We bypass the analytic patch-wise asymmetric ﬂow recovery
+in equation 9, introduced in Section 4.1, and directly interpret the per-extent output heads as the
+full-resolution ﬂow prediction. The compressed input representation, transformer, and patch-size
+conditioning are retained. The heads are trained against the full-resolution ﬂow objective without
+the analytic recovery step.
+Ours w/ binary grid.
+We restrict the layout to square 1 × 1 and 2 × 2 tokens. This replaces the
+multilevel, potentially anisotropic layout during both training and evaluation; patch-size condition-
+ing and asymmetric ﬂow recovery remain unchanged.
+Ours w/o size embedding.
+We disable the learned patch-size embedding introduced in Sec-
+tion 4.2, removing explicit extent-dependent conditioning of the transformer. We retain the extent-
+speciﬁc input and output heads, single-scale RoPE at each token’s geometric center, and asymmetric
+ﬂow recovery. This isolates the effect of explicitly informing the transformer of each token’s spatial
+extent.
+We show image generation qualitative results of the architectural ablation studies in Fig. 21.
+37
+
+=== PAGE 38 ===
+1998
+1999
+2000
+2001
+2002
+2003
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+2023
+2024
+2025
+2026
+2027
+2028
+2029
+2030
+2031
+2032
+2033
+2034
+2035
+2036
+2037
+2038
+2039
+2040
+2041
+2042
+2043
+2044
+2045
+2046
+2047
+2048
+2049
+2050
+2051
+Token layout
+Direct HR
+No size embedding
+Binary grid
+Ours
+1,111 tokens  ·  2.2× faster
+A young woman looks directly at the camera, her brown hair tousled and partially covering her face. She has bright red lips and striking blue eyes, wearing a black top. The background features a
+blurred, narrow street with stone walls, enhancing the focus on her expression.
+1,752 tokens  ·  1.8× faster
+A grand archway with intricate sculptures and a golden statue atop stands against a cloudy sky. Bright orange tulips bloom in the foreground, creating a vibrant contrast with the stone structure.
+758 tokens  ·  2.8× faster
+A man with a short, dark hairstyle smiles confidently, wearing a light grey suit jacket over a white shirt with a blue collar. He stands with his arms crossed, showcasing a gold watch on his wrist. The
+background is plain and neutral.
+1,076 tokens  ·  2.4× faster
+A young woman with long, wavy hair is wearing round glasses and a striped sweater, gazing intently with a serene lake and soft blue sky as the backdrop.
+1,675 tokens  ·  1.9× faster
+A male deer with large antlers stands alone on a forest floor blanketed with brown leaves, surrounded by tall trees in the background.
+1,592 tokens  ·  1.9× faster
+A person in a plaid hoodie sits at a wooden desk, using a drawing tablet while looking at a computer screen. The workspace features bookshelves in the background and a keyboard next to the
+monitor.
+765 tokens  ·  2.9× faster
+An older man stands with a serious expression, wearing a camouflage-patterned t-shirt and matching military-style pants. His hair is short and slightly tousled. The background is plain and
+light-colored.
+Figure 21: Ablation Study Qualitative Results.
+38
+
+=== PAGE 39 ===
+2052
+2053
+2054
+2055
+2056
+2057
+2058
+2059
+2060
+2061
+2062
+2063
+2064
+2065
+2066
+2067
+2068
+2069
+2070
+2071
+2072
+2073
+2074
+2075
+2076
+2077
+2078
+2079
+2080
+2081
+2082
+2083
+2084
+2085
+2086
+2087
+2088
+2089
+2090
+2091
+2092
+2093
+2094
+2095
+2096
+2097
+2098
+2099
+2100
+2101
+2102
+2103
+2104
+2105
+A.14
+LIMITATIONS
+LoT gains efﬁciency by allocating fewer tokens to regions that can be synthesized more coarsely.
+When ﬁne structures or textures extend across most of an image, as in dense musical notation or
+close-up views of grass or fabric, preserving them may require a ﬁne token layout throughout, leav-
+ing limited room for computational savings. Enforcing a lower token budget in these cases can
+degrade structural ﬁdelity. As shown in Fig. 22, the lower-budget result exhibits more fragmented
+and distorted staff lines than the higher-budget result generated with the same prompt and noise
+seed. Thus, the achievable savings depend on the scene’s detail requirements, and layout adaptation
+does not guarantee faithful ﬁne structures under aggressive token reduction.
+Higher budget: 3,189 tokens (1.28x compression)
+Tokenization
+Generation
+Lower budget: 1,466 tokens (2.79x compression)
+Tokenization
+Generation
+Prompt: Sheet music with handwritten notations and dynamic markings. Several measures filled with musical notes, including phrases like "altargando," "dolce,"
+and "crescendo." Various symbols indicate musical directions and expressions, with some annotations and corrections in pencil.
+Figure 22: Limitation: Fine-Structure Degradation at Lower Token Budgets. The lower-budget
+result shows more broken staff lines.
+39

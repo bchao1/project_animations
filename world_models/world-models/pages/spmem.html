@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Video World Models with Long-term Spatial Memory">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video World Models with Long-term Spatial Memory</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/GPTEval3D_logo_2.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<!--<nav class="navbar" role="navigation" aria-label="main navigation">-->
+<!--  <div class="navbar-brand">-->
+<!--    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">-->
+<!--      <span aria-hidden="true"></span>-->
+<!--      <span aria-hidden="true"></span>-->
+<!--      <span aria-hidden="true"></span>-->
+<!--    </a>-->
+<!--  </div>-->
+<!--  <div class="navbar-menu">-->
+<!--    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">-->
+<!--      <a class="navbar-item" href="https://keunhong.com">-->
+<!--      <span class="icon">-->
+<!--          <i class="fas fa-home"></i>-->
+<!--      </span>-->
+<!--      </a>-->
+
+<!--      <div class="navbar-item has-dropdown is-hoverable">-->
+<!--        <a class="navbar-link">-->
+<!--          More Research-->
+<!--        </a>-->
+<!--        <div class="navbar-dropdown">-->
+<!--          <a class="navbar-item" href="https://hypernerf.github.io">-->
+<!--            HyperNeRF-->
+<!--          </a>-->
+<!--          <a class="navbar-item" href="https://nerfies.github.io">-->
+<!--            Nerfies-->
+<!--          </a>-->
+<!--          <a class="navbar-item" href="https://latentfusion.github.io">-->
+<!--            LatentFusion-->
+<!--          </a>-->
+<!--          <a class="navbar-item" href="https://photoshape.github.io">-->
+<!--            PhotoShape-->
+<!--          </a>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--  </div>-->
+<!--</nav>-->
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Video World Models with Long-term Spatial Memory</h1>
+          <!-- <h1 class="title is-4 publication-title">CVPR 2024</h1> -->
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://wutong16.github.io/">Tong Wu*</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://ys-imtech.github.io/">Shuai Yang*</a><sup>3,4</sup>,</span>
+            <span class="author-block">
+              <a href="https://ryanpo.com/">Ryan Po</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://justimyhxu.github.io/">Yinghao Xu</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://liuziwei7.github.io/">Ziwei Liu</a><sup>5</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=GMzzRRUAAAAJ&hl=zh-CN">Dahua Lin</a><sup>2,4</sup>
+            </span>
+            <span class="author-block">
+              <a href="https://stanford.edu/~gordonwz/">Gordon Wetzstein</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 test">
+            <span class="author-block">* Equal contribution</span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Stanford University</span>
+            <span class="author-block"><sup>2</sup> The Chinese University of Hong Kong,</span>
+            <span class="author-block"><sup>3</sup> Shanghai Jiao Tong University,</span>
+            <span class="author-block"><sup>4</sup>Shanghai Artificial Intelligence Laboratory</span>
+            <span class="author-block"><sup>5</sup>S-Lab, Nanyang Technological University</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2506.05284"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/spmem/spmem"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+
+<!--              <span class="link-block">-->
+<!--                <a href="https://arxiv.org/abs/2011.12948"-->
+<!--                   class="external-link button is-normal is-rounded is-dark">-->
+<!--                  <span class="icon">-->
+<!--                      <i class="ai ai-arxiv"></i>-->
+<!--                  </span>-->
+<!--                  <span>arXiv</span>-->
+<!--                </a>-->
+<!--              </span>-->
+              <!-- Video Link. -->
+<!--              <span class="link-block">-->
+<!--                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"-->
+<!--                   class="external-link button is-normal is-rounded is-dark">-->
+<!--                  <span class="icon">-->
+<!--                      <i class="fab fa-youtube"></i>-->
+<!--                  </span>-->
+<!--                  <span>Video</span>-->
+<!--                </a>-->
+<!--              </span>-->
+              <!-- Code Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/3DTopia/GPTEval3D"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span> -->
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="https://drive.google.com/file/d/1pYmSRu_oMy_v6f7ngnkFER6PNWmJAe52/view?usp=sharing"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a>
+              </span> -->
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+        <img src="./static/images/teaser.jpg" >
+<!--      <h2 class="subtitle has-text-centered">-->
+<!--        <span class="dnerf"> [TODO]-->
+<!--      </h2>-->
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Emerging world models autoregressively generate video frames in response to actions, such as camera movements and text prompts, among other control signals. 
+            Due to limited temporal context window sizes, these models often struggle to maintain scene consistency during revisits, leading to severe forgetting of previously generated environments. 
+            Inspired by the mechanisms of human memory, we introduce a novel framework to enhancing long-term consistency of video world models through a geometry-grounded long-term spatial memory.
+            Our framework includes mechanisms to store and retrieve information from the long-term spatial memory and we curate custom datasets to train and evaluate world models with explicitly stored 3D memory mechanisms.
+            Our evaluations show improved quality, consistency, and context length compared to relevant baselines, paving the way towards long-term consistent world generation.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Paper video. -->
+   <div class="columns is-centered has-text-centered">
+     <div class="column is-four-fifths">
+       <!-- <h2 class="title is-3">Video</h2> -->
+       <!-- <div class="publication-video">
+         <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                 frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+       </div> -->
+       <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/wm-demo.mp4"
+                    type="video/mp4">
+      </video>
+   </div>
+   </div>
+    <!--/ Paper video. -->
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop content">
+    <h2 class="title">TL;DR</h2>
+    <p>
+     Our video generation framework relies on long-term spatial memory, short-term working memory, and sparse episodic memory.
+    </p>
+    <div class="columns is-centered has-text-centered">
+     <div class="column is-four-fifths">
+       <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/demo_page.mp4"
+                    type="video/mp4">
+      </video>
+   </div>
+   </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop content">
+    <h2 class="title">Data Construction</h2>
+    <img src="./static/images/data.jpg" >
+    <p>
+      We use Mega-SaM to extract camera poses and dynamic point maps from the full video clip. 
+      For the source part, dynamic regions are erased via TSDF-Fusion, and the point cloud is rendered along the target trajectory to to serve as static geometry guidance for the target part. 
+      Qwen generates annotations for actions in future target frames.
+    </p>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title">Long-term Video Generation</h2>
+
+    <div class="columns is-centered">
+
+      <div class="column">
+        <div class="content">
+          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/long_5.mp4"
+                    type="video/mp4">
+          </video>
+          <div style="text-align: center;">
+            <p>
+              A rider on horseback traverses a narrow, grassy path through a mountainous landscape under an overcast sky. The terrain is rugged, with rocky outcrops and sparse vegetation, suggesting a remote or wilderness setting.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="content">
+          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/long_8.mp4"
+                      type="video/mp4">
+            </video>
+        <div style="text-align: center;">
+
+        <p>
+          A horseback rider traversing through various urban environments, from cobblestone streets to modern cityscapes. The journey showcases diverse architectural styles and settings, with the rider moving steadily through each scene.
+        </p>
+      </div>
+          </div>
+
+        </div>
+      </div>
+
+
+    <div class="columns is-centered">
+
+      <div class="column">
+        <div class="content">
+          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/long_2.mp4"
+                    type="video/mp4">
+          </video>
+          <div style="text-align: center;">
+        <p>
+          In a desolate, mountainous landscape, two hands emerge from the ground, holding glowing orbs. The scene suggests a mystical or supernatural occurrence, with the hands and orbs being the focal point against the bleak, overcast sky and barren terrain.
+        </p>
+      </div>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="content">
+          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/long_6.mp4"
+                      type="video/mp4">
+            </video>
+            <div style="text-align: center;">
+        <p>
+          a first-person perspective of a character navigating through a rugged, desert-like landscape with red rock formations and sparse vegetation. The sky is partly cloudy, and the sun casts dynamic shadows, enhancing the vivid colors of the environment.
+        </p>
+      </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+
+        <div class="column">
+          <div class="content">
+            <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/long_3.mp4"
+                      type="video/mp4">
+            </video>
+            <div style="text-align: center;">
+          <p>
+            a journey through a forested area, transitioning from a sunny day to a snowy landscape. The path is lined with tall trees and rocky terrain, eventually leading to a rustic wooden cabin nestled among the snow-covered ground.
+          </p>
+        </div>
+          </div>
+        </div>
+  
+        <div class="column">
+          <div class="content">
+            <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+                <source src="./static/videos/long_7.mp4"
+                        type="video/mp4">
+              </video>
+              <div style="text-align: center;">
+          <p>
+          An aerial view of a bustling beachside promenade lined with palm trees, shops, and restaurants. Cars are parked along the street, and people stroll along the sidewalk. The ocean is visible in the background, adding to the scenic beauty of the location.
+          </p>
+        </div>
+            </div>
+  
+          </div>
+        </div>
+
+
+
+        <div class="columns is-centered">
+
+          <div class="column">
+            <div class="content">
+              <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+                <source src="./static/videos/long_1.mp4"
+                        type="video/mp4">
+              </video>
+              <div style="text-align: center;">
+            <p>
+              A sleek, futuristic car drives through a vibrant cityscape with palm trees and modern architecture. The vehicle navigates smooth streets, passing by other cars and urban landmarks under a clear blue sky.
+            </p>
+          </div>
+            </div>
+          </div>
+    
+          <div class="column">
+            <div class="content">
+              <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+                  <source src="./static/videos/long_4.mp4"
+                          type="video/mp4">
+                </video>
+                <div style="text-align: center;">
+            <p>
+              A sleek black sports car drives on a scenic mountain highway, passing other vehicles and surrounded by lush greenery and towering mountains under a clear blue sky.
+            </p>
+          </div>
+              </div>
+    
+            </div>
+          </div>
+
+
+  </div>
+
+</section>
+
+
+
+
+
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title">Static Geometry-grounded Video Generation</h2>
+    
+    <div class="centered-carousel-container">
+      <button class="carousel-arrow prev" aria-label="Previous video">&#10094;</button>
+      
+      <div class="centered-carousel">
+        <div class="centered-video-item">
+          <div class="content">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/short/short_1.mp4" type="video/mp4">
+            </video>
+            <p>A video game set in a dilapidated, sunlit street with old buildings and a horse-drawn carriage. Pedestrians in period clothing walk along the cobblestone path, while the environment suggests a historical or post-apocalyptic setting.</p>
+          </div>
+        </div>
+        
+        <div class="centered-video-item">
+          <div class="content">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/short/short_2.mp4" type="video/mp4">
+            </video>
+            <p>A cobblestone street with horse-drawn carriages and vintage architecture, suggesting an early 20th-century urban setting. The scene is overcast, with tram tracks running down the middle of the street, adding to the historical ambiance.</p>
+          </div>
+        </div>
+
+
+        
+        <div class="centered-video-item">
+          <div class="content">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/short/short_3.mp4" type="video/mp4">
+            </video>
+            <p>A dense, overgrown forest with tangled branches and moss-covered ground. Sunlight filters through the canopy, creating a serene yet mysterious atmosphere. The camera moves slowly, highlighting the intricate details of the natural environment.</p>
+          </div>
+        </div>
+        
+        
+        <div class="centered-video-item">
+          <div class="content">
+            <video autoplay controls muted loop playsinline>
+              <source src="./static/videos/short/short_4.mp4" type="video/mp4">
+            </video>
+            <p>A person walks along a sunlit path through a lush, green landscape, carrying a backpack. The scene is bathed in warm sunlight filtering through trees, creating a serene and adventurous atmosphere.</p>
+          </div>
+        </div>
+        
+
+          <div class="centered-video-item">
+            <div class="content">
+              <video autoplay controls muted loop playsinline>
+                <source src="./static/videos/short/short_5.mp4" type="video/mp4">
+              </video>
+              <p>An aerial view of a snowy forest with a clear blue sky above. A vehicle is driving along a snow-covered road winding through the trees, creating a serene winter landscape.</p>
+            </div>
+          </div>
+          
+          <div class="centered-video-item">
+            <div class="content">
+              <video autoplay controls muted loop playsinline>
+                <source src="./static/videos/short/short_6.mp4" type="video/mp4">
+              </video>
+              <p>A vibrant grocery store fruit section with neatly arranged fruits like bananas, pineapples, apples, and oranges. Price tags are visible on each shelf, indicating the cost of the produce. The scene is well-lit, highlighting the freshness and variety of the fruits.</p>
+            </div>
+          </div>
+  
+  
+          
+          <div class="centered-video-item">
+            <div class="content">
+              <video autoplay controls muted loop playsinline>
+                <source src="./static/videos/short/short_7.mp4" type="video/mp4">
+              </video>
+              <p>An aerial view of a rural road with a single red car driving through a lush, green landscape. The road is flanked by trees and scattered houses, suggesting a peaceful countryside setting. The scene captures the tranquility and beauty of a quiet drive through nature.</p>
+            </div>
+          </div>
+          
+          
+          <div class="centered-video-item">
+            <div class="content">
+              <video autoplay controls muted loop playsinline>
+                <source src="./static/videos/short/short_8.mp4" type="video/mp4">
+              </video>
+              <p>A serene river flows through a lush forest, surrounded by dense greenery and rocky banks. The water cascades over smooth stones, creating a tranquil and picturesque scene of nature's beauty.</p>
+            </div>
+          </div>
+
+
+            <div class="centered-video-item">
+              <div class="content">
+                <video autoplay controls muted loop playsinline>
+                  <source src="./static/videos/short/short_9.mp4" type="video/mp4">
+                </video>
+                <p>A first-person view of a player navigating through a grassy, overgrown area with stone structures and stairs. The environment appears to be part of a post-apocalyptic or abandoned setting, with muted colors and a cloudy sky. The player is holding a firearm, suggesting readiness for combat or exploration.</p>
+              </div>
+            </div>
+            
+            <div class="centered-video-item">
+              <div class="content">
+                <video autoplay controls muted loop playsinline>
+                  <source src="./static/videos/short/short_10.mp4" type="video/mp4">
+                </video>
+                <p>Two shirtless men stand face-to-face in a boxing ring, preparing for a match. The gym is equipped with punching bags and mirrors, suggesting a serious training session. Their focused expressions indicate readiness and determination.</p>
+              </div>
+            </div>
+    
+    
+            
+            <div class="centered-video-item">
+              <div class="content">
+                <video autoplay controls muted loop playsinline>
+                  <source src="./static/videos/short/short_11.mp4" type="video/mp4">
+                </video>
+                <p>An aerial view of a coastal area with a small, graffiti-covered building situated on a grassy hill. The surrounding landscape includes dense greenery and a sandy beach leading to the ocean under a clear blue sky.</p>
+              </div>
+            </div>
+            
+            
+            <div class="centered-video-item">
+              <div class="content">
+                <video autoplay controls muted loop playsinline>
+                  <source src="./static/videos/short/short_12.mp4" type="video/mp4">
+                </video>
+                <p>A group of people ice skating on a sunny day at an outdoor rink. The skaters, dressed in winter gear, glide across the smooth ice under a clear sky with buildings and a mountainous backdrop. Shadows stretch long on the ice as the sun shines brightly.</p>
+              </div>
+            </div>
+
+
+      </div>
+      
+      <button class="carousel-arrow next" aria-label="Next video">&#10095;</button>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>
+@article{wu2025video,
+  title={Video world models with long-term spatial memory},
+  author={Wu, Tong and Yang, Shuai and Po, Ryan and Xu, Yinghao and Liu, Ziwei and Lin, Dahua and Wetzstein, Gordon},
+  journal={arXiv preprint arXiv:2506.05284},
+  year={2025}
+}
+</code></pre>
+  </div>
+</section>
+
+    <p>
+            We thank <a href="https://nerfies.github.io/">Nerfies</a> for providing this amazing project template.
+    </p>
+
+<!--<footer class="footer">-->
+<!--  <div class="container">-->
+<!--    <div class="columns is-centered">-->
+<!--      <div class="column is-8">-->
+<!--        <div class="content">-->
+<!--          <p>-->
+<!--            We thank <a href="https://nerfies.github.io/">Nerfies</a> for providing this amazing project template.-->
+<!--          </p>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</footer>-->
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+
+\paragraph{\bf{Hardware Implementation}} We implement the proposed 3D holographic display design and evaluate our algorithms on the system. The hardware setup and the optical path are shown in Fig.~\ref{fig:hw_setup}. We implement our multi-source laser by cascading multiple 1:4 fiber splitters (Thorlabs TWQ560HA) and arranging 9 customized fiber tip outputs into a $3\times3$ array, which is then held together using a custom-printed 3D mount. The spacing between each source is 8.17 mm and a 200 mm lens is used to collimate the multi-source laser. Each collimated source field is, therefore, incident on the phase SLM with a $2.34^{\circ}$ incident angle. We use a TI DLP6750Q1EVM phase SLM for phase modulation and a 1080p SiliconMicroDisplay liquid crystal on silicon (LCoS) display for Fourier amplitude modulation. A 75 mm Fourier transform lens is used to image the spectrum of the phase-modulated wavefront onto the amplitude SLM. Our final design has a diagonal field-of-view (FoV) of 7.78 degrees and an eyebox size of 8.53 mm $\times$ 8.53 mm. A FLIR Grasshopper 2.3 MP color USB3 vision sensor paired with a Canon EF 50mm f/1.4 USM camera lens is used to capture all experimental results. Please refer to the supplemental material for additional details on the degrees of freedom of our system and the relevant optimization parameters.
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=\columnwidth]{./figures/hw_setup.pdf}
+    \caption{\textbf{Photograph of our multi-source holographic display prototype.} The propagation path is illustrated in red and components are labeled.}
+  \label{fig:hw_setup}
+\end{figure}
+
+
+\paragraph{\bf{Experimental Capture Details}} 
+% talk about pupil supervision
+To capture light field views, we place pupil masks at the Fourier plane to mimic the movement of the user's eyes, which is a technique used in prior works \cite{schiffers2023stochastic,shi2024ergo}. We implement this with a Thorlabs SM1D12 adjustable iris on a translation stage at the Fourier plane. To capture focal stacks, we center the pupil at the Fourier plane and adjust the camera focus to capture images at different depths. 
+
+
+\paragraph{\bf{Assessment}} 
+Experimentally captured results are shown in Figs.~\ref{fig:teaser}, \ref{fig:experimental}, Table \ref{tab:baseline_comparison_experiment}, and in the supplemental material. The PSNR and SSIM values are averaged across all captured light field views. We observe the same trends as predicted by our simulations both quantitatively and qualitatively: the single-source configuration only supports a limited eyebox and suffers from severe brightness falloff at peripheral viewpoints; 3D multi-source holography without a Fourier filter cannot achieve a high image quality due to the copies created the multiple sources; a static random mask placed in the Fourier plane only provides limited degrees of freedom and suffers from low contrast; our approach without time multiplexing (i.e., 1 frame) improves the quality over the random mask as it optimizes the amplitude mask pattern in a content-adaptive manner; our method with 6-frame time multiplexing achieves the highest image quality with the largest amount of empirically observed parallax.
+
+\begin{table}[t]
+   \footnotesize
+  \centering
+  \renewcommand{\arraystretch}{2}
+  \begin{tabular}{@{}P{0.60 \linewidth}P{0.35 \linewidth}@{}}
+    \toprule
+    \makecell[l]{Configuration} & \makecell[l]{Image Quality (PSNR/SSIM)} \\
+    \midrule
+    \makecell[l]{III. Multiple Sources} & \makecell[l]{12.72 / 0.19} \\
+    \makecell[l]{IV. Multiple Sources with Fixed Random Fourier \\ Mask \cite{jo2022binary}} & \makecell[l]{12.46 / 0.17} \\
+    \makecell[l]{V. Multiple Sources with Dynamic Fourier Filter \\(ours)} &  \makecell[l]{13.83 / 0.23 (1 frame) \\ \textbf{14.43} / \textbf{0.40} (6 frames) } \\ 
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Experimentally captured baseline comparisons.} Experimentally captured light field reconstruction performance of different baseline configurations in terms of PSNR/SSIM, averaged across all six test scenes. Our method achieves the best experimental image quality. Per-scene PSNR/SSIM can be found in the supplemental materials.}
+  \label{tab:baseline_comparison_experiment}
+\end{table}

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BulletTime: Decoupled Control of Time and Camera Pose for Video Generation</title>
+  <meta name="description" content="BulletTime: Decoupled Control of Time and Camera Pose for Video Generation">
+  <meta name="keywords" content="4D-controllable video generation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="icon.png" sizes="1280x1280" type="image/png">
+
+  <style>
+    .mt-3 { margin-top: 1rem !important; }
+    .mt-4 { margin-top: 1.5rem !important; }
+    .mt-5 { margin-top: 2rem !important; }
+    .mt-6 { margin-top: 3rem !important; }
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .is-max-desktop { max-width: 1100px; }
+    
+    .video-frame { 
+      position: relative; 
+      width: 100%; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      background: #000; 
+      height: 500px;
+    }
+    
+    .nts-video { 
+      width: 100%; 
+      height: auto; 
+      display: block; 
+      object-fit: cover;
+    }
+    
+    .image img { border-radius: 12px; }
+    
+    @media (min-width: 1024px) {
+      header.navbar { position: sticky; top: 0; z-index: 30; }
+    }
+  </style>
+
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/bulma-carousel.min.js"></script>
+  <script defer src="./static/js/bulma-slider.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+<header class="navbar is-spaced" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="#hero" aria-label="Home">BulletTime</a>
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNav">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      </a>
+    </div>
+    <nav id="mainNav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://19reborn.github.io/" title="Homepage">
+          <span class="icon"><i class="fas fa-home" aria-hidden="true"></i></span>
+        </a>
+        <a class="navbar-item" href="#intro">Introduction</a>
+        <a class="navbar-item" href="#method">Method</a>
+        <a class="navbar-item" href="#results">Results</a>
+        <a class="navbar-item" href="#bibtex">BibTeX</a>
+        <!-- <a class="navbar-item" href="#ack">Acknowledgments</a> -->
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section id="intro" class="hero" style="background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <h1 class="title is-2">
+        BulletTime: Decoupled Control of Time and Camera Pose for Video Generation
+      </h1>
+
+      <p class="is-size-5 mt-3">
+        <a href="https://19reborn.github.io/">Yiming Wang</a><sup>1,2</sup>,
+        <a href="https://zqh0253.github.io/">Qihang Zhang</a><sup>3,2*</sup>,
+        <a href="https://primecai.github.io/">Shengqu Cai</a><sup>2*</sup>,
+        <a href="https://wutong16.github.io/">Tong Wu</a><sup>2†</sup>,
+        <a href="https://janackermann.info/">Jan Ackermann</a><sup>2†</sup>,
+        <br>
+        <a href="https://zhengfeikuang.com/">Zhengfei Kuang</a><sup>2†</sup>,
+        <a href="https://y-zheng18.github.io/">Yang Zheng</a><sup>2†</sup>,
+        <a href="https://m43.github.io/">Frano Raji&#x010D;</a><sup>1†</sup>,
+        <a href="https://vlg.inf.ethz.ch/team/Prof-Dr-Siyu-Tang.html">Siyu Tang</a><sup>1</sup>,
+        <a href="https://stanford.edu/~gordonwz/">Gordon Wetzstein</a><sup>2</sup>
+      </p>
+
+      <p class="is-size-5 has-text-grey">
+        <sup>1</sup>ETH Zurich &nbsp;&nbsp;
+        <sup>2</sup>Stanford University &nbsp;&nbsp;
+        <sup>3</sup>CUHK
+      </p>
+
+      <p class="is-size-6 has-text-grey mt-2" id="ec-footnote">
+        <sup>*,†</sup>Equal contribution
+      </p>
+
+<p class="has-text-centered" style="font-size: 1.25rem; font-weight: bold; color: #B21F2D; margin-top: 2rem; margin-bottom: 1rem; font-family: 'Google Sans', sans-serif;">
+        CVPR 2026
+      </p>
+
+    <div class="buttons is-centered mt-4">
+      <a href="https://arxiv.org/abs/2512.05076" class="button is-dark is-rounded" target="_blank" rel="noopener">
+        <span class="icon"><i class="ai ai-arxiv"></i></span>
+        <span>arXiv</span>
+      </a>
+
+      <a href="https://youtu.be/HS5nUlmH4CE" class="button is-dark is-rounded" target="_blank" rel="noopener">
+        <span class="icon"><i class="fab fa-youtube"></i></span>
+        <span>Video</span>
+      </a>
+
+      <a href="https://github.com/19reborn/BulletTime" class="button is-dark is-rounded" target="_blank" rel="noopener">
+        <span class="icon"><i class="fab fa-github"></i></span>
+        <span>Code</span>
+      </a>
+    </div>
+
+      <figure class="image mt-5">
+        <video
+          src="./static/videos/intro_public_1.mp4"
+          controls
+          playsinline
+          muted
+          autoplay
+          loop
+          width="1600"
+          height="900"
+          style="border: 1px solid #dcdcdc; 
+                 border-radius: 10px;
+                 box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+                 max-width:100%; 
+                 height:auto;"
+        >
+          Your browser does not support the video tag.
+        </video>
+
+        <figcaption class="has-text-centered mt-3">
+         <strong>TL;DR</strong> Time- and camera-controlled 4D video generation.
+        Given a single input video where camera motion is entangled with uniform temporal sampling, our method synthesizes new videos that enable decoupled control over world time and camera pose.
+        </figcaption>
+      </figure>
+      <figure class="image mt-5">
+        <video
+          src="./static/videos/bullet_time_full.mp4"
+          controls
+          playsinline
+          muted
+          loop
+          width="1600"
+          height="900"
+          style="border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); max-width:100%; height:auto;"
+        >
+          Your browser does not support the video tag.
+        </video>
+        <figcaption class="has-text-centered mt-3">
+          Our method enables bullet-time effects (i.e., freely moving the camera while freezing or slowing scene dynamics) for a wide range of real-world videos.
+          <!-- Our method enables bullet-time effects (i.e. camera pose moving, world time slow-down or pausing) for a wide-range of real-world videos with single video input. -->
+        </figcaption>
+      </figure>
+      
+    </div>
+  </div>
+</section>
+<section id="method" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+     Method Overview
+    </h2>
+    <figure class="image has-text-centered mb-5">
+      <video
+        src="./static/videos/method.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        controls
+        style="max-width:100%; height:auto; border-radius:8px;">
+      </video>
+      <figcaption class="has-text-centered mt-3">
+        Overview of our 4D-controllable Diffusion Transformer.
+      </figcaption>
+    </figure>
+
+    <div class="content">
+      <p>
+        <strong>4D-controllable Video Diffusion.</strong>
+        Given a conditional input video, our diffusion model generates new videos under 4D control using world time and camera trajectory. These two signals are injected into the Diffusion Transformer through complementary modulation pathways.
+ 
+        Time control is provided through a <em>time-aware positional encoding</em> <code>RoPE<sub>t</sub></code>,
+        injected into the attention layers, and a corresponding <em>adaptive LayerNorm</em> with <code>MLP<sub>t</sub></code> that predicts affine scale and shift parameters used to modulate intermediate activations.
+
+        Camera control is introduced analogously through a <em>camera-aware positional encoding</em>
+        <code>RoPE<sub>c</sub></code> and an accompanying modulation MLP. Outputs from
+        <code>RoPE<sub>t</sub></code> and <code>RoPE<sub>c</sub></code> are fused into a unified
+        4D positional encoding that conditions the attention layers.
+  
+        Together, these mechanisms form a 4D-controllable DiT block capable of jointly steering
+        temporal evolution and camera motion during generation. We train our model on a curated,
+        fully controllable 4D synthetic dataset in which time and camera factors vary independently,
+        providing explicit supervision for disentangling the two controls.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="results" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      🎥 Results
+    </h2>
+  <div id="video-gallery" class="columns is-multiline is-centered"></div>
+
+
+
+    <h3 class="title is-4 mt-6 has-text-centered">
+      Diversity of Camera Motions
+    </h3>
+
+    <figure class="image mt-5">
+      <video
+        src="./static/videos/diverse_cam_full.mp4"
+        onloadeddata="this.playbackRate = 1.25;"  
+        controls
+        playsinline
+        autoplay
+        muted
+        loop
+        width="1600"
+        height="900"
+        style="border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); max-width:100%; height:auto;"
+      >
+        Your browser does not support the video tag.
+      </video>
+      <figcaption class="has-text-centered mt-3">
+          Input Videos from 
+          <a href="https://github.com/KlingTeam/ReCamMaster" target="_blank" rel="noopener noreferrer">
+            ReCamMaster
+          </a>
+        </figcaption>
+  
+    <h3 class="title is-4 mt-6 has-text-centered">
+      Diversity of Time Control
+    </h3>
+
+    <figure class="image mt-5">
+      <video
+        src="./static/videos/diverse_time_full.mp4"
+        onloadeddata="this.playbackRate = 1.25;"  
+        controls
+        playsinline
+        muted
+        autoplay
+        loop
+        width="1600"
+        height="900"
+        style="border: 1px solid #dcdcdc; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); max-width:100%; height:auto;"
+      >
+        Your browser does not support the video tag.
+      </video>
+      <figcaption class="has-text-centered mt-3">
+        Input video from 
+        <a href="https://github.com/KlingTeam/ReCamMaster" target="_blank" rel="noopener noreferrer">
+          ReCamMaster,
+        </a>
+        and 
+        <a href="https://github.com/Wan-Video/Wan2.2" target="_blank" rel="noopener noreferrer">
+          Wan2.2
+        </a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="bibtex" class="section">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">BibTeX</h2>
+<pre><code>@article{wang2025bullettime,
+  title={BulletTime: Decoupled Control of Time and Camera Pose for Video Generation},
+  author={Wang, Yiming and Zhang, Qihang and Cai, Shengqu and Wu, Tong and Ackermann, Jan and Kuang, Zhengfei and Zheng, Yang and Raji{\v{c}}, Frano and Tang, Siyu and Wetzstein, Gordon},
+  journal={arXiv preprint arXiv:2512.05076},
+  year={2025}
+}
+
+</code></pre>
+  </div>
+</section>
+
+<!-- <section id="ack" class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Acknowledgments</h2>
+    <p class="content">We would like to express our gratitude to Brian Chao and Qin Han for their helpful discussions.</p>
+  </div>
+</section> -->
+
+<!-- <footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p class="is-size-7">
+            Template adapted from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer> -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 1. Logic for Navbar Burger (Mobile Menu) ---
+    const burgers = Array.from(document.querySelectorAll('.navbar-burger'));
+    burgers.forEach(b => {
+      b.addEventListener('click', () => {
+        const target = document.getElementById(b.dataset.target);
+        b.classList.toggle('is-active');
+        target.classList.toggle('is-active');
+      });
+    });
+
+    // --- 2. Logic for General Autoplay (Reduced Motion check) ---
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('video.nts-video').forEach(v => {
+      if (!reduce) { v.setAttribute('autoplay', ''); v.play().catch(()=>{}); }
+    });
+
+    // --- 3. Logic for Results Video Toggle (Generated vs Input) ---
+    // Identify the specific tab group
+    const tabGroup = document.getElementById('tabs-scene-left');
+    
+    if (tabGroup) {
+      // Find all clickables (<a> tags) inside this group
+      const tabLinks = tabGroup.querySelectorAll('a');
+      const vidGen = document.getElementById('generated-left');
+      const vidInput = document.getElementById('input-left');
+
+      tabLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault(); // Stop page jump
+
+          // Remove 'is-active' from all LI parents
+          tabLinks.forEach(l => l.parentElement.classList.remove('is-active'));
+          // Add 'is-active' to the clicked one's parent
+          link.parentElement.classList.add('is-active');
+
+          // Get the target video ID from data-target
+          const target = link.getAttribute('data-target');
+
+          // Toggle visibility and playback
+          if (target === 'generated-left') {
+            vidGen.style.display = 'block';
+            vidInput.style.display = 'none';
+            vidInput.pause();
+            vidGen.play();
+          } else if (target === 'input-left') {
+            vidInput.style.display = 'block';
+            vidGen.style.display = 'none';
+            vidGen.pause();
+            vidInput.play();
+          }
+        });
+      });
+    }
+
+  });
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  
+  // ==========================================
+  // 1. 在这里配置你的视频 (ID必须唯一)
+  // ==========================================
+  const videoData = [
+    {
+      id: "scene1",  // 唯一标识符，不要重复
+      gen: "./static/assets/wan/1127_martial_1/gen.mp4",
+      input: "./static/assets/wan/1127_martial_1/input.mp4",
+      // description: "Video from Wan2.2" // 可选描述
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene2",
+      gen: "./static/assets/wan/latte/gen.mp4",
+      input: "./static/assets/wan/latte/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+
+    {
+      id: "veo_scene2",
+      gen: "./static/assets/veo/1128_fence_new/gen.mp4",
+      input: "./static/assets/veo/1128_fence_new/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+    {
+      id: "veo_scenelipstick",
+      gen: "./static/assets/veo/1201_lipstick/gen.mp4",
+      input: "./static/assets/veo/1201_lipstick/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+
+    {
+      id: "scene3",
+      gen: "./static/assets/wan/1127_bee_1/gen.mp4",
+      input: "./static/assets/wan/1127_bee_1/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    // {
+    //   id: "scene4",
+    //   gen: "./static/assets/wan/1127_computer_1/gen.mp4",
+    //   input: "./static/assets/wan/1127_computer_1/input.mp4",
+    //   // description: "Result 2: Dancing"
+    // },
+    {
+      id: "scene5",
+      gen: "./static/assets/wan/1127_robo_1/gen.mp4",
+      input: "./static/assets/wan/1127_robo_1/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene6",
+      gen: "./static/assets/wan/1127_proposal/gen.mp4",
+      input: "./static/assets/wan/1127_proposal/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene7",
+      gen: "./static/assets/wan/1127_gun_1/gen_trimmed.mp4",
+      input: "./static/assets/wan/1127_gun_1/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene10",
+      gen: "./static/assets/wan/1128_shadow/gen.mp4",
+      input: "./static/assets/wan/1128_shadow/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene8",
+      gen: "./static/assets/wan/1127_urban_guy/gen.mp4",
+      input: "./static/assets/wan/1127_urban_guy/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene9",
+      gen: "./static/assets/wan/1127_soccer/gen.mp4",
+      input: "./static/assets/wan/1127_soccer/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+    {
+      id: "scene11",
+      gen: "./static/assets/wan/1130_watermark/gen.mp4",
+      input: "./static/assets/wan/1130_watermark/input.mp4",
+      description: "Input video generated using Wan2.2" // 可选描述
+    },
+
+  
+
+    {
+      id: "veo_scene1",
+      gen: "./static/assets/veo/1128_blanket/gen.mp4",
+      input: "./static/assets/veo/1128_blanket/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+
+
+    {
+      id: "veo_scene3",
+      gen: "./static/assets/veo/1130_hair/gen.mp4",
+      input: "./static/assets/veo/1130_hair/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+    {
+      id: "veo_scene4",
+      gen: "./static/assets/veo/1130_swim/gen.mp4",
+      input: "./static/assets/veo/1130_swim/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+    {
+      id: "veo_scene5",
+      gen: "./static/assets/veo/1130_dance/gen.mp4",
+      input: "./static/assets/veo/1130_dance/input_trimmed.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+    {
+      id: "veo_scene6",
+      gen: "./static/assets/veo/1130_dance_intro/gen.mp4",
+      input: "./static/assets/veo/1130_dance_intro/input.mp4",
+      description: "Input video generated using Google Veo3"
+    },
+
+    
+    {
+      id: "vipe_scene1",
+      gen: "./static/assets/youtube/1127_boxing/gen_trimmed.mp4",
+      input: "./static/assets/youtube/1127_boxing/input_trimmed.mp4",
+      description: "Real-world Input video from the ViPE Dataset"
+    },
+    {
+      id: "vipe_scene2",
+      gen: "./static/assets/youtube/1127_guitar/gen.mp4",
+      input: "./static/assets/youtube/1127_guitar/input.mp4",
+      description: "Real-world Input video from the ViPE Dataset"
+    },
+    {
+      id: "vipe_scene6",
+      gen: "./static/assets/youtube/1127_bicycle_man/gen.mp4",
+      input: "./static/assets/youtube/1127_bicycle_man/input.mp4",
+      description: "Real-world Input video from the ViPE Dataset"
+      // description: "Result 2: Dancing"
+    },
+    {
+      id: "vipe_scene8",
+      gen: "./static/assets/youtube/1127_door/gen.mp4",
+      input: "./static/assets/youtube/1127_door/input.mp4",
+      description: "Real-world Input video from the ViPE Dataset"
+      // description: "Result 2: Dancing"
+    },
+    {
+      id: "vipe_scene3",
+      gen: "./static/assets/youtube/1127_man/gen.mp4",
+      input: "./static/assets/youtube/1127_man/input.mp4",
+      description: "Video stabilization. Real-world Input video from the ViPE Dataset"
+    },
+    {
+      id: "vipe_scene4",
+      gen: "./static/assets/youtube/1127_girl/gen.mp4",
+      input: "./static/assets/youtube/1127_girl/input.mp4",
+      // description: "Result 2: Dancing"
+      description: "Video stabilization. Real-world Input video from the ViPE Dataset"
+
+    },
+    {
+      id: "vipe_scene5",
+      gen: "./static/assets/youtube/1127_room/gen.mp4",
+      input: "./static/assets/youtube/1127_room/input.mp4",
+      description: "Video stabilization. Real-world Input video from the ViPE Dataset"
+    },
+    
+    // {
+    //   id: "vipe_scene7",
+    //   gen: "./static/assets/youtube/1127_old/gen.mp4",
+    //   input: "./static/assets/youtube/1127_old/input.mp4",
+    //   // description: "Result 2: Dancing"
+    // },
+
+  ];
+
+  // ==========================================
+  // 2. 渲染 HTML 的函数 (不要动)
+  // ==========================================
+const gallery = document.getElementById('video-gallery');
+  
+  videoData.forEach(item => {
+    const html = `
+      <div class="column is-6">
+        <div class="box" style="background: transparent; box-shadow: none; margin-bottom: 0;">
+          
+          <div class="tabs is-centered is-toggle is-fullwidth video-tabs" data-group="${item.id}">
+            <ul>
+              <li class="is-active">
+                <a data-target="gen-${item.id}"><span>Generated</span></a>
+              </li>
+              <li>
+                <a data-target="in-${item.id}"><span>Input</span></a>
+              </li>
+            </ul>
+          </div>
+          
+          <figure class="image">
+            <video id="gen-${item.id}" src="${item.gen}" 
+              controls playsinline autoplay muted loop 
+              width="800" height="450" 
+              style="border: 1px solid #dcdcdc; width:100%; display: block;">
+            </video>
+            
+            <video id="in-${item.id}" src="${item.input}" 
+              controls playsinline muted loop 
+              width="800" height="450" 
+              style="border: 2px solid #00d1b2; width:100%; display: none;">
+            </video>
+          </figure>
+
+          ${item.description ? `
+            <p class="is-size-7 has-text-grey has-text-centered mt-2">
+              ${item.description}
+            </p>
+          ` : ''}
+
+        </div>
+      </div>
+    `;
+    gallery.insertAdjacentHTML('beforeend', html);
+  });
+
+  // ==========================================
+  // 3. 绑定点击切换逻辑 (通用版)
+  // ==========================================
+  // 监听所有的 tab 点击
+  document.querySelectorAll('.video-tabs a').forEach(tabLink => {
+    tabLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // 1. 找到当前点击的 tab 所在的组 (li 和 ul)
+      const clickedLi = tabLink.parentElement;
+      const ul = clickedLi.parentElement;
+      const tabGroup = ul.parentElement; // div.tabs
+      const groupId = tabGroup.getAttribute('data-group');
+      
+      // 2. 切换 Tab 样式
+      ul.querySelectorAll('li').forEach(li => li.classList.remove('is-active'));
+      clickedLi.classList.add('is-active');
+
+      // 3. 获取目标 video ID
+      const targetId = tabLink.getAttribute('data-target');
+      
+      // 4. 获取该组的两个视频
+      const vidGen = document.getElementById(`gen-${groupId}`);
+      const vidInput = document.getElementById(`in-${groupId}`);
+
+      // 5. 切换逻辑
+      if (targetId === `gen-${groupId}`) {
+        vidGen.style.display = 'block';
+        vidInput.style.display = 'none';
+        vidInput.pause();
+        vidGen.play();
+      } else {
+        vidInput.style.display = 'block';
+        vidGen.style.display = 'none';
+        vidGen.pause();
+        vidInput.play();
+      }
+    });
+  });
+
+});
+</script>
+
+</body>
+</html>

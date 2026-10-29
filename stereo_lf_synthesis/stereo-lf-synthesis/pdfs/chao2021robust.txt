@@ -1,0 +1,536 @@
+=== page 1 ===
+ROBUST LIGHT FIELD SYNTHESIS FROM STEREO IMAGES WITH LEFT-RIGHT 
+GEOMETRIC CONSISTENCY 
+ 
+Chun-Hao Chao, Chang-Le Liu, and Homer H. Chen 
+ 
+National Taiwan University 
+ 
+ABSTRACT 
+ 
+We propose a lightweight yet effective deep learning pipeline 
+for light field synthesis from a single stereo image pair. Our 
+pipeline consists of a convolutional network (CNN) that 
+enforces a left-right consistency constraint on the light fields 
+synthesized from left and right stereo views, a stage that 
+merges light fields synthesized from left and right stereo 
+views with a novel alpha blending technique, and a final 
+refinement network using a unique 3D convolution operation. 
+Our experiments quantitatively and qualitatively confirm the 
+effectiveness and robustness of the proposed model, which 
+performs favorably against state-of-the-art algorithms for 
+light field synthesis from extremely sparse (only one, two, or 
+four) views while using much fewer parameters.  
+Index Terms— light field synthesis, light field 
+reconstruction, stereo vision, CNN, deep learning 
+ 
+1. INTRODUCTION 
+ 
+Light field imaging allows users to perform digital refocusing 
+or change the view angle of a scene, and are often acquired 
+through plenoptic cameras [1] or camera arrays [2]. However, 
+capturing high spatial and angular resolution light fields is a 
+great challenge, since plenoptic cameras have inherent 
+spatial-angular resolution tradeoff [1] and since dense camera 
+arrays are impractical for end-users due to bulkiness and cost.  
+Many techniques have been developed to address the 
+problem of light field reconstruction from sparsely sampled 
+views, or so-called “angular super-resolution” [3]–[5]. These 
+models aim to increase the angular resolution of the sparsely 
+sampled light fields, e.g. reconstruct a 7*7 light field by 
+interpolating 3*3 sampled views. However, the underlying 
+assumption that users are able to acquire an array of sampled 
+views is not always true since such light field capturing 
+devices are not easily accessible. 
+At the other end of the spectrum, Srinivasan et al [6] 
+investigated the problem of light field synthesis from a single 
+RGB image. Although plausible visual results were obtained, 
+reconstructing the absolute depth of a scene from a single 
+image is an ill-posed problem [7]–[9]. Therefore, it would be 
+hard to integrate the synthesis pipeline into applications (e.g. 
+AR) that require absolute depth information. This limits the 
+generalizability of the approach.  
+In this work, we consider the problem of light field 
+synthesis from stereo image pairs. This is analogous to 
+synthesizing a high-resolution light field from only two 
+horizontal light field views, which is much harder than light 
+field reconstruction from a grid of sampled views. The 
+solution to this problem will be valuable in the real world 
+because, unlike the grid of sampled views, it is relatively easy 
+to capture stereo image pairs either through stereo cameras or 
+by translating a single-lens camera slightly in the horizontal 
+direction. Furthermore, it is convenient to obtain absolute 
+depth from stereo images [10]–[12] for various devices of 3D 
+visual applications, such as AR headsets. 
+To our knowledge, few works have addressed this 
+problem. Zhang et al [13] proposed to use a phased-based 
+synthesis technique to iteratively refine disparity maps 
+between two input stereo views. Then the densely-spaced 
+light field light field views are reconstructed by warping 
+stereo images using the disparity map. However, this iterative 
+approach is inherently slow. Also, it only uses the left view 
+to generate light fields and does not exploit left-right 
+information when synthesizing light fields. Zhou et al [14] 
+developed the multiplane-images representation (MPI) 
+technique and synthesized new views by performing 
+homography and alpha composition on the multiplane images. 
+However, this approach requires camera poses of the given 
+stereo images and the views to be synthesized during both 
+training and inference, which may not be available for light 
+fields and stereo images in the wild.  
+We propose an end-to-end deep learning framework to 
+synthesize light field from stereo images. By exploiting 
+geometric properties of left-right stereo images, our model 
+learns to extrapolate and interpolate stereo images into coarse 
+light fields.  It further handles occlusion boundaries and non-
+Lambertian effects with a novel 3DCNN architecture to 
+refine the results.  
+The contributions of our work are highlighted as follows: 
+• 
+Our pipeline synthesizes high quality light field, which 
+is made possible by exploiting left-right consistency of 
+stereo images and distance-weighted alpha blending. 
+• 
+Our pipeline incorporates a novel patch-wise spatial 
+angular-shuffling 3DCNN network to refine light field 
+using much fewer parameters than prior methods. 
+• 
+Our pipeline generalizes well for real-world stereo 
+images, and the synthesized light fields lead to promising 
+refocused images.
+
+
+=== page 2 ===
+ 
+Figure 1. Our light field synthesis pipeline for stereo images consists of three major stages: disparity estimation and warping, light field 
+merging, and light field refinement. The output is a full light field with angular resolution 𝑁 × 𝑁 and spatial resolution 𝐻× 𝑊.  
+2. PROPOSED METHOD 
+ 
+2.1. Problem Definition and Notations 
+We denote the input left stereo view by 𝑆! and the right stereo 
+view by 𝑆". For each RGB light field view 𝑉(𝑖, 𝑗) ∈𝑅#×%×& 
+in a light field 𝐹∈𝑅'×'×#×%×&  of angular resolution 
+𝑁× 𝑁 and spatial resolution  𝐻× 𝑊 , we define (𝑖, 𝑗) ∈
+𝑅(, 0 ≤𝑖, 𝑗< 𝑁 as its angular coordinates. We also use 𝑆! 
+and 
+𝑆"
+ to 
+represent 
+𝑉(𝑁/2, 0)
+ and
+ 𝑉(𝑁/2, 𝑁−
+1), respectively.  
+ 
+2.2. Light Field Synthesis Pipeline 
+Disparity Estimation and Consistency Constraint 
+The disparity estimation network, denoted by 𝑔, estimates the 
+disparity between two horizontal views. We concatenate the 
+color channels of 𝑉(𝑁/2,0) and   𝑉(𝑁/2, 𝑁−1)  into a 
+feature map  𝑀!" ∈𝑅#×%×).  The disparity estimation 
+network 𝑔 takes 𝑀!" as input and outputs a horizontal left-to-
+right disparity map; that is, 𝑔(M*+) = 𝐷!" ∈𝑅#×%×, . We 
+then use 𝐷!" to backward warp 𝑉(𝑁/2,0) to each light field 
+view 𝑉(𝑖, 𝑗) and generate the light field 𝐹!. 
+The light field synthesized from the left view should be 
+the same as the light field synthesized from the right view. To 
+achieve this left-right consistency, we concatenate  𝑉(𝑁/
+2, 𝑁−1) and  𝑉(𝑁/2,0) into a feature map 𝑀"! and use the 
+right-to-left disparity map 𝑔(𝑀"!) = 𝐷"! to warp 𝑉(𝑁/
+2, 𝑁−1)  to each light field view 𝑉(𝑖, 𝑗) to generate the light 
+field 𝐹". The left-right consistency is imposed in this process 
+through a loss function 𝐿!" so that 𝐹! and  𝐹"  both 
+approximate the target light field 𝐹-, 
+ 
+ (1) 
+Furthermore, we employ a total variation loss widely 
+used for stereo matching and optical flow [15], [16] to smooth 
+the estimated disparity, 
+(2) 
+ 
+Distance-weighted Alpha Blending 
+To effectively merge the predicted light fields 𝐹! and  𝐹" 
+warped from left and right light field views, we propose a 
+novel distance-weighted alpha blending operation. First, we 
+calculate the left distance map 𝐾! ∈𝑅'×' and the right   
+distance map 𝐾" ∈𝑅'×' whose elements are the Euclidean 
+distances between the angular coordinates of each light field 
+view and the input left or right view, that is, 
+ 
+(3) 
+(4) 
+  
+Second, we obtain the left alpha blending map 𝐴! ∈
+𝑅'×', which defines how much the light field views in 𝐹! 
+contribute to the merged light field. 𝐴! is simply acquired by 
+taking the element-wise harmonic mean of 𝐾! and 𝐾", that is 
+A* =
+.!
+.!/." . Finally, the merged coarse light field is 
+represented by  
+(5) 
+ 
+Light Field Refinement 
+𝐿0 = ‖𝐹! −𝐹-‖, + ‖𝐹" −𝐹-‖,. 
+𝐾!(𝑖, 𝑗) = ‖(𝑖, 𝑗) −(𝑁/2,0)‖(, 
+𝐾"(𝑖, 𝑗) = ‖(𝑖, 𝑗) −(𝑁/2, 𝑁−1)‖(. 
+𝐹0 = 𝐹! ⋅𝐴! + 𝐹" ⋅(1 −𝐴!). 
+𝐿- = ‖∇1𝐷!"‖, + H∇2𝐷!"H, + ‖∇1𝐷"!‖, + H∇2𝐷"!H,. 
+ 
+Figure 2. The error between the ground truth view and synthesized 
+view increases as the distance between the synthesized view and 
+input left-right views increases. We mitigate this distance-
+dependent error by merging 𝐹!   and 𝐹# with a novel alpha-blending 
+technique (see the right figure). 
+
+
+=== page 3 ===
+In the final stage of our pipeline, 𝐹𝑐 is refined with a 
+refinement network 𝑟 to handle occlusions and non-
+Lambertian surfaces. The network 𝑟is a novel 3DCNN 
+architecture, which we call Patch-wise Spatial-Angular 
+Shuffling (PSAS) 3DCNN, and consists of five PSAS-
+convolution blocks. 
+A PSAS convolution block takes a feature map 𝑀∈
+𝑅'#×#×%×& as input and performs three operations: a 3D 
+convolution, an axis transpose, and another 3D convolution. 
+The first 3D convolution is applied to 𝑀 to generate a feature 
+map 𝑀′ ∈𝑅'$#×#×%×& . Then, 𝑀′   is reshaped into an 
+(𝑁4 × 𝑁4) × (𝑁4 × 𝐻/𝑁′) × (𝑁4 × 𝑊/𝑁′) × 3  tensor with 
+0th and 2nd axes swapped with 1st and 4th axes and reshaped 
+back to an 𝑁4( × 𝐻× 𝑊× 3  tensor. Finally, another 3D 
+convolution with 3×3×3 filters is applied to 𝑀4. 
+We denote the refined light field by 𝑟(𝐹0) = 𝐹5  and 
+minimize the reconstruction loss  
+          (6) 
+between 𝐹5 and the target light field 𝐹-, 
+The full objective 𝐿 sums up the losses in equations (1), 
+(2), and (6). Our learning model optimizes the following 
+objective function: 
+ 
+(7) 
+where w controls the weighting of each loss component. 
+ 
+3. EXPERIEMENTS AND RESULTS 
+ 
+3.1. Datasets 
+We evaluate our method on three publicly available datasets: 
+INRIA Lytro 1G Dataset [17], HCI 4D Light Field Dataset 
+[18], and the Stanford Light Field Archive [19]. We split 
+INRIA, HCI and Stanford datasets into training/testing data 
+and obtain 46/17, 20/4, 9/2 light fields, respectively. The 
+above datasets have varying maximum disparity between 
+adjacent light field views (INRIA dataset has small disparity 
+while Stanford dataset has large disparity) and can thus help 
+verify if our pipeline is robust to different disparity levels 
+between adjacent light field views. 
+ 
+3.2. Implementation Details 
+For the disparity estimation network, we employ an 
+architecture similar to the design by Srinivasan et al [6]. The 
+final layer of all networks is a 𝑡𝑎𝑛ℎ function that scales 
+output values to (-1, 1) to stabilize the training process. We 
+use ELU [20] as our hidden layer activation function. All 
+networks are trained end-to-end from scratch using the Adam 
+optimization [21] algorithm with default parameters 𝛽, = 0.9, 
+ 𝛽( = 0.999, and 𝜖= 106. All models use the same loss 
+function weights 𝑤0 = 1, 𝑤- = 0.001, 𝑤" = 1. All networks 
+are trained for 2000 epochs with a learning rate of 0.001. We 
+randomly extract 135×135 patches from light field views as 
+training data.  
+ 
+3.3. Quantitative Results 
+Synthesized Light Field Quality 
+We evaluate the effectiveness of our model by comparing it 
+with three state-of-the-art light field synthesis methods that 
+work for extremely sparse input views: Zhang et al [13] (from 
+two views, non-learning based), Srinivasan et al [6] (from 
+center view), and Kalantari et al [22] (from four corner 
+views). Table 1 shows the PSNR and SSIM of the synthesized 
+light fields. We can see that the proposed method outperforms 
+the three state-of-the-art light field synthesis methods for all 
+three datasets. 
+Model Size and Inference Time 
+We also compare the model size and the inference time to 
+generate a 7 × 7 angular resolution light field of models 
+trained on the INRIA dataset. As shown in Table 2, our model 
+has 44% fewer parameters compared to Srinivasan et al, and 
+is on par with Kalantari et al. Since our model synthesizes a 
+whole light field in one pass, its inference time is much 
+shorter than Kalantari et al, which synthesizes one view at a 
+time. However, our model has longer inference time than 
+Srinivasan et al, since we first synthesize light fields 𝐹! and 
+𝐹" from left and right light field views, respectively, and then 
+merge them.  
+3.4. Qualitative Results 
+We also perform visual quality comparisons with Srinivasan 
+et al and Kalantari et al in Figure 3. 
+𝐿" = ‖𝐹5 −𝐹-‖, 
+𝐿= 𝑤0 ⋅𝐿0 + 𝑤- ⋅𝐿- + 𝑤" ⋅𝐿" 
+Table 1. Performance comparison using INRIA, HCI, and Stanford light field datasets. For the comparison with Zhang et al, we only consider 
+the synthesized horizontal views in the same row of a 𝑁× 𝑁 light field as the input stereo views. The bold numbers indicate the best results. 
+Method 
+INRIA 
+HCI 
+Stanford 
+PSNR↑ 
+SSIM↑ 
+PSNR↑ 
+SSIM↑ 
+PSNR↑ 
+SSIM↑ 
+Srinivasan et al (Full light field) 
+27.43 
+0.7959 
+23.60 
+0.5805 
+17.75 
+0.5846 
+Kalantari et al (Full light field) 
+27.08 
+0.7565 
+23.18 
+0.5032 
+23.78 
+0.7167 
+Ours (Full light field) 
+32.18 
+0.8672 
+29.73 
+0.8277 
+25.85 
+0.8337 
+Zhang et al (Horizontal views) 
+28.87 
+0.9119 
+23.06 
+0.8362 
+25.72 
+0.9328 
+Ours (Horizontal views) 
+34.18 
+0.9400 
+31.50 
+0.9118 
+29.06 
+0.9195 
+Table 2. Inference time and model size comparisons of models 
+trained on the INRIA dataset. 
+ 
+Model Parameters 
+Inference time 
+Srinivasan et al 
+2.94M 
+0.113s (GPU) 
+Kalantari et al 
+1.64M 
+34.51s (GPU) 
+Zhang et al 
+X (non-learning based) 
+514.84s (CPU) 
+Ours 
+1.74M 
+0.235s 
+
+
+=== page 4 ===
+Generalizability to Real-world Stereo Images 
+Our model is trained on the INRIA dataset. To verify its 
+generalizability to real-world images, we capture new stereo 
+images by translating a smartphone camera slightly in the 
+horizontal direction. Results in Figure 4 show that the 
+resulting refocused images  are visually appealing. 
+3.5. Ablation Studies 
+Finally, we conduct ablation studies on models trained on 
+INRIA [17] and HCI [18] datasets to verify the effectiveness  
+of each component in our light field synthesis pipeline. We 
+consider our pipeline excluding left-right consistency and 
+disparity smoothness constraint. We also consider our 
+pipeline using different light field blending methods and 
+refinement network architectures. For the ablation study on 
+network architecture, we compare our refinement network 
+model with the 3DCNN architecture of Srinivasan et al. From 
+the results in Table 3, we can see that each component in our 
+light field synthesis pipeline is essential, which means our 
+design is effective. 
+4. CONCLUSION 
+We present a lightweight yet effective pipeline to synthesize 
+a light field from a single stereo image pair. The novelty of 
+our method lies in the unique design that fully leverages 
+information from left and right stereo images and a special 
+3D convolution operation. From only two horizontal views, 
+our pipeline is able to synthesize a 7 × 7 or 9 × 9 angular 
+resolution light field. Our method qualitatively and 
+quantitatively 
+outperforms 
+state-of-the-art 
+light 
+field 
+synthesis methods that work for extremely sparse views (one, 
+two or four views). Furthermore, experiments conducted on 
+three light field datasets verify that our pipeline is robust to 
+disparity levels between adjacent light field views. Finally, 
+our pipeline generalizes well to real-world stereo images and 
+can synthesize visually appealing light fields from stereo 
+images in the wild. 
+ 
+Figure 3. Examples of the synthesized light field views (top-left and right-bottom view from a 𝑁 × 𝑁 light field) from INRIA, HCI, and 
+Stanford light field datasets (listed from top to bottom). Methods of Srinivasan et al and Kalantari et al are considered for visual quality 
+comparisons. We do not include results of Zhang et al here since the code provided by the authors can only synthesize horizontal views. 
+ 
+Figure 4. Refocused images of a light field synthesized from stereo 
+images. Each row shows the images of an object as the refocused 
+image plane is placed in the front, middle and back of a scene. 
+Diagonal image patches are in focus. 
+Table 3. Ablation studies of our model trained on INRIA and HCI 
+datasets. The bold numbers denote the best performance.  
+ 
+Method 
+Metrics (PSNR/SSIM) 
+INRIA 
+HCI 
+Ours* (w/o left-right consistency) 
+32.07/0.8641 
+29.71/0.8338 
+Ours* (w/o disparity smoothing) 
+32.11/0.8648 
+29.48/0.8176 
+Ours* (𝐹! synthesized from left view)  
+30.67/0.8613 
+27.50/0.8316 
+Ours* (𝐹" synthesized from right view)  
+31.14/0.8307 
+27.41/0.7105 
+Ours* ((𝐹! + 𝐹")/2 average blending) 
+31.92/0.8659 
+28.95/0.8019 
+Ours* (baseline 3DCNN) 
+31.33/0.8603 
+29.54/0.8211 
+Ours* (full model) 
+32.18/0.8672 
+29.73/0.8277 
+
+
+=== page 5 ===
+5. REFERENCES 
+ 
+[1] R. Ng, M. Levoy, M. Brédif, G. Duval, M. Horowitz, and P. 
+Hanrahan, “Light field photography with a hand-held plenoptic 
+camera,” PhD Thesis, Stanford University, 2005. 
+ 
+[2] B. Wilburn, “High-performance imaging with large camera 
+arrays,” in ACM SIGGRAPH 2006 Courses, New York, NY, 
+USA, Jul. 2006, pp. 45–113, doi: 10.1145/1185657.1185701. 
+ 
+[3] Y. Wang, F. Liu, Z. Wang, G. Hou, Z. Sun, and T. Tan, “End-
+to-End View Synthesis for Light Field Imaging with Pseudo 
+4DCNN,” in Computer Vision – ECCV 2018, vol. 11206, V. 
+Ferrari, M. Hebert, C. Sminchisescu, and Y. Weiss, Eds. Cham: 
+Springer International Publishing, 2018, pp. 340–355. 
+ 
+[4] C.-L. Liu, K.-T. Shih, J.-W. Huang, and H. H. Chen, “Light 
+Field Synthesis by Training Deep Network in the Refocused 
+Image Domain,” IEEE Transactions on Image Processing, vol. 
+29, pp. 6630–6640, 2020, doi: 10.1109/TIP.2020.2992354. 
+ 
+[5] G. Wu, M. Zhao, L. Wang, Q. Dai, T. Chai, and Y. Liu, “Light 
+Field Reconstruction Using Deep Convolutional Network on 
+EPI,” in 2017 IEEE Conference on Computer Vision and 
+Pattern Recognition (CVPR), Honolulu, HI, Jul. 2017, pp. 
+1638–1646, doi: 10.1109/CVPR.2017.178. 
+ 
+[6] P. P. Srinivasan, T. Wang, A. Sreelal, R. Ramamoorthi, and R. 
+Ng, “Learning to Synthesize a 4D RGBD Light Field from a 
+Single Image,” in 2017 IEEE International Conference on 
+Computer Vision (ICCV), Venice, Oct. 2017, pp. 2262–2270, 
+doi: 10.1109/ICCV.2017.246. 
+ 
+[7] T. Van Dijk and G. De Croon, “How Do Neural Networks See 
+Depth in Single Images?,” in 2019 IEEE/CVF International 
+Conference on Computer Vision (ICCV), Seoul, Korea (South), 
+Oct. 2019, pp. 2183–2191, doi: 10.1109/ICCV.2019.00227. 
+ 
+[8] S. Gur and L. Wolf, “Single Image Depth Estimation Trained 
+via Depth From Defocus Cues,” in 2019 IEEE/CVF 
+Conference on Computer Vision and Pattern Recognition 
+(CVPR), Long Beach, CA, USA, Jun. 2019, pp. 7675–7684, 
+doi: 10.1109/CVPR.2019.00787. 
+ 
+[9] J. Lin, X. Ji, W. Xu, and Q. Dai, “Absolute Depth Estimation 
+From a Single Defocused Image,” IEEE Transactions on 
+Image Processing, vol. 22, no. 11, pp. 4545–4550, Nov. 2013, 
+doi: 10.1109/TIP.2013.2274389. 
+ 
+[10] H. Hirschmuller, “Stereo Processing by Semiglobal Matching 
+and Mutual Information,” IEEE Transactions on Pattern 
+Analysis and Machine Intelligence, vol. 30, no. 2, pp. 328–341, 
+Feb. 2008, doi: 10.1109/TPAMI.2007.1166. 
+ 
+[11] T. Kanade and M. Okutomi, “A stereo matching algorithm with 
+an adaptive window: theory and experiment,” IEEE 
+Transactions on Pattern Analysis and Machine Intelligence, 
+vol. 16, no. 9, pp. 920–932, Sep. 1994, doi: 10.1109/34.310690. 
+ 
+[12] Jian Sun, Nan-Ning Zheng, and Heung-Yeung Shum, “Stereo 
+matching using belief propagation,” IEEE Transactions on 
+Pattern Analysis and Machine Intelligence, vol. 25, no. 7, pp. 
+787–800, Jul. 2003, doi: 10.1109/TPAMI.2003.1206509. 
+ 
+[13] Zhoutong Zhang, Y. Liu, and Q. Dai, “Light field from micro-
+baseline image pair,” in 2015 IEEE Conference on Computer 
+Vision and Pattern Recognition (CVPR), Jun. 2015, pp. 3800–
+3809, doi: 10.1109/CVPR.2015.7299004. 
+ 
+[14] T. Zhou, R. Tucker, J. Flynn, G. Fyffe, and N. Snavely, “Stereo 
+Magnification: Learning view synthesis using multiplane 
+images,” ACM Trans. Graph. (Proc. SIGGRAPH), vol. 37, 
+2018, Accessed: Dec. 29, 2020. [Online]. Available: 
+https://arxiv.org/abs/1805.09817. 
+ 
+[15] F. Steinbrücker, T. Pock, and D. Cremers, “Large displacement 
+optical flow computation withoutwarping,” in 2009 IEEE 12th 
+International Conference on Computer Vision, Sep. 2009, pp. 
+1609–1614, doi: 10.1109/ICCV.2009.5459364. 
+ 
+[16] C. Zach, T. Pock, and H. Bischof, “A Duality Based Approach 
+for Realtime TV-L1 Optical Flow,” in Pattern Recognition, 
+Berlin, Heidelberg, 2007, pp. 214–223, doi: 10.1007/978-3-
+540-74936-3_22. 
+ 
+[17] “INRIA 
+Light 
+field 
+dataset.” 
+http://clim.inria.fr/research/LowRank2/datasets/datasets.html 
+(accessed Dec. 29, 2020). 
+ 
+[18] “4D Light Field Benchmark.” https://lightfield-analysis.uni-
+konstanz.de/ (accessed Dec. 29, 2020). 
+ 
+[19] “The 
+(New) 
+Stanford 
+Light 
+Field 
+Archive.” 
+http://lightfield.stanford.edu/lfs.html (accessed Dec. 29, 2020). 
+ 
+[20] D.-A. Clevert, T. Unterthiner, and S. Hochreiter, “Fast and 
+Accurate Deep Network Learning by Exponential Linear Units 
+(ELUs),” arXiv:1511.07289 [cs], Feb. 2016, Accessed: Dec. 
+29, 2020. [Online]. Available: http://arxiv.org/abs/1511.07289. 
+ 
+[21] D. P. Kingma and J. Ba, “Adam: A Method for Stochastic 
+Optimization,” arXiv:1412.6980 [cs], Jan. 2017, Accessed: 
+Dec. 
+29, 
+2020. 
+[Online]. 
+Available: 
+http://arxiv.org/abs/1412.6980. 
+ 
+[22] N. K. Kalantari, T.-C. Wang, and R. Ramamoorthi, “Learning-
+Based View Synthesis for Light Field Cameras,” ACM 
+Transactions on Graphics (Proceedings of SIGGRAPH Asia 
+2016), vol. 35, no. 6, 2016. 
+ 

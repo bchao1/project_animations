@@ -1,0 +1,49 @@
+
+Holographic near-eye displays are a next-generation technology that offers unprecedented capabilities for smart eyewear. Direct control over the phase or amplitude of a partially coherent light engine of a virtual or augmented reality (VR/AR) display unlocks unique abilities of correcting aberrations of downstream optics, correcting for a user’s prescription, and displaying perceptually realistic focus cues. Conventional emissive or amplitude-modulating displays require perfect (i.e., image-preserving) optics, which places many restrictions on combiner optics designs. The unique capabilities of holographic near-eye displays, on the other hand, enable “imperfect” optical waveguides with ultra-compact VR/AR display form factors where the holographic light engine corrects for the imperfections~\cite{maimone2017holographic,kim:HolographicGlasses,jang2024waveguide,gopakumar2024full}. 
+
+All holographic displays require a computer-generated holography (CGH) algorithm to convert the target content (e.g., an image or a 3D scene) into the hologram that is shown on the spatial light modulator (SLM). Oftentimes, this is a phase retrieval problem for phase-only SLMs, and neural networks have been proposed to accelerate this task (e.g.,~\cite{peng2020neural,shi2021towards,shi2022end}). Existing CGH algorithms support a variety of different input data formats, including RGB images, RGB-D images with per-pixel depth information, meshes, or light fields~\cite{park2017recent, gerchberg1972practical, wakunami2013occlusion, zhang2017computer, matsushima2009extremely, choi2022time, schiffers2023stochastic, chao2024large}. A major challenge for CGH algorithms, however, is that they are either extremely slow and require input data that are not readily available (e.g., densely sampled light fields) or that they use input data which do not natively support view-dependent effects and occlusions (e.g., RGB-D) or photorealistic scenes (e.g., meshes). Therefore, no existing CGH algorithm offers photorealistic image quality at interactive frame rates with readily available content, such as a few casually captured images or a video of a real scene.
+
+% how is it done today and what are the limitations of current practice?
+% \begin{itemize}
+%     \item today it's done with light fields, polygons, RGBD, ...
+%     \item all of them have various problems: either input data is not readily available and difficult to create or the quality is limited
+%     \item real-time framerates are also difficult to achieve
+% \end{itemize}
+
+Neural rendering techniques have recently enabled novel-view synthesis with photorealistic image quality using just a few images of a scene~\cite{tewari2020state,tewari2022advances}. Among the many proposals for neural scene representations, 3D Gaussians~\cite{kerbl3Dgaussians} have been established as the representation of choice for many applications due to their computational efficiency, high image quality, interpretability, and robust optimization behavior. 
+
+% why now? elaborate on neural rendering
+% \begin{itemize}
+%     \item neural rendering has recently enabled novel-view synthesis with photorealistic image quality using just a few photographs of a scene [CITE STAR]
+%     \item 3D Gaussian have become the SOTA scene representation, offering high image quality, editability, and fast rendering times  [CITE a few Gaussian papers]  
+%     \item our goal is to develop a novel CGH method that offers the benefits of Gaussian-based scene representations to holographic displays
+% \end{itemize}
+
+% \bc{GWS directly synthesizes holograms from existing 2D Gaussian splats without requiring re-optimization, and is compatible with any 2DGS model optimized with off-the-shelf software libraries, such as \texttt{gsplat} \cite{ye2024gsplat}. } 
+
+The core contribution of our work is the development of an efficient Gaussian-to-hologram transform, which we call \textit{Gaussian Wave Splatting} (GWS), that inherits the benefits of ray-based Gaussian scene representations for wave-based holographic displays. We derive the exact analytical expression of a Gaussian-to-hologram transform that supports occlusions and view-dependent effects through a wave-based counterpart of the classic volume rendering equation \cite{kajiya1984ray}, which we call \textit{alpha wave blending}. We provide an efficient CUDA implementation for a variant of our algorithm and demonstrate photorealistic holographic image quality in simulation and with experimental captures.
+
+% what we do
+% \begin{itemize}
+%     \item maybe briefly discuss benefits of polygon-based methods: closed-form solution = fast; occlusions - but limited to computer-generated scenes; high-quality multi-view stereo is an open research challenge 
+%     \item Gaussians instead are much easier to optimize from unstructured, even sparse photographs
+%     \item we develop Gaussian-to-hologram transform  inspired by seminal work on polygon-based CGH algorithms 
+%     \item derive closed-form solution, which supports occlusions and view-dependent effects, etc.
+%     \item novel aspects are alpha blending
+%     \item efficient CUDA implementation 
+%     \item dub our Gaussian-to-hologram transform Gaussian wave splatting
+% \end{itemize}
+
+To summarize, our contributions include
+\begin{itemize}
+    \item Derivation of an exact analytical solution for a Gaussian-to-hologram transform, dubbed \textit{Gaussian Wave Splatting}.
+    \item Design of a wave optics counterpart of the classic volume rendering equation, dubbed \textit{alpha wave blending}.
+    \item Efficient implementation of a GWS variant using custom CUDA kernels that achieves a $30\times$ speedup.
+    \item Validation using numerical simulations and experiments, demonstrating benefits over existing CGH algorithms.
+    % \item derive an analytical solution for CGH using (3D) anisotropic Gaussian primitives (with spherical harmonics);
+    % \item validate it using numerical simulations; and compare it against baselines (PC, polygons);
+    % \item implement it using a custom CUDA kernel (that rasterize each pixel in a hologram) and demonstrate the real-time performance for up to XXX elements;
+    % \item it should be demonstrating the whole pipeline from the assets from the off-the-shelf neural rendering framework (e.g. Nerfstudio~\cite{tancik2023nerfstudio}) to the hologram to the retinal reconstruction that matches the target assets;
+    % \item validate it in limited experimental setups;
+\end{itemize}
+Source code is available on \href{https://github.com/computational-imaging/hsplat}{our Github repository}\footnote{\href{https://github.com/computational-imaging/hsplat}{github.com/computational-imaging/hsplat}}.

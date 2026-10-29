@@ -1,0 +1,153 @@
+\documentclass{article}
+\PassOptionsToPackage{numbers, compress}{natbib}
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2026
+
+% The authors should use one of these tracks.
+% Before accepting by the NeurIPS conference, select one of the options below.
+% 0. "default" for submission
+% \usepackage{neurips_2026}
+% the "default" option is equal to the "main" option, which is used for the Main Track with double-blind reviewing.
+% 1. "main" option is used for the Main Track
+%  \usepackage[main]{neurips_2026}
+% 2. "position" option is used for the Position Paper Track
+%  \usepackage[position]{neurips_2026}
+% 3. "eandd" option is used for the Evaluations & Datasets Track
+ % \usepackage[eandd]{neurips_2026}
+ % if you want to opt-in for a de-anomymized submission (not recommended, but OK):
+ %\usepackage[eandd, nonanonymous]{neurips_2026}
+% 4. "creativeai" option is used for the Creative AI Track
+%  \usepackage[creativeai]{neurips_2026}
+% 5. "sglblindworkshop" option is used for the Workshop with single-blind reviewing
+ % \usepackage[sglblindworkshop]{neurips_2026}
+% 6. "dblblindworkshop" option is used for the Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop]{neurips_2026}
+
+% After being accepted, the authors should add "final" behind the track to compile a camera-ready version.
+% 1. Main Track
+ % \usepackage[main, final]{neurips_2026}
+% 2. Position Paper Track
+%  \usepackage[position, final]{neurips_2026}
+% 3. Evaluations & Datasets Track
+ % \usepackage[eandd, final]{neurips_2026}
+% 4. Creative AI Track
+%  \usepackage[creativeai, final]{neurips_2026}
+% 5. Workshop with single-blind reviewing
+%  \usepackage[sglblindworkshop, final]{neurips_2026}
+% 6. Workshop with double-blind reviewing
+%  \usepackage[dblblindworkshop, final]{neurips_2026}
+% Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote.
+% For workshops (5., 6.), the authors should add the name of the workshop, "\workshoptitle" command is used to set the workshop title.
+% \workshoptitle{WORKSHOP TITLE}
+
+% "preprint" option is used for arXiv or other preprint submissions
+ \usepackage[preprint]{neurips_2026}
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2026}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{array}          % m{} column type for vertical centering
+\usepackage{amsmath}        % \eqref, align, cases, etc.
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsthm}         % theorem/proof environments
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage[table]{xcolor}  % colors (table option for \cellcolor)
+\usepackage{graphicx}       % image inclusion
+\usepackage{wrapfig}        % text-wrapping figures/tables
+
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{pifont}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{placeins}        % \FloatBarrier to pin floats within sections
+\usepackage{float}           % [H] placement specifier
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+
+\graphicspath{{images/}{figures/}}    % default image paths
+
+% Ranking colors for quantitative tables (shared with RALU-style tables)
+\definecolor{tabfirst}{rgb}{1, 0.7, 0.7}
+\definecolor{tabsecond}{rgb}{1, 0.85, 0.7}
+\definecolor{tabthird}{rgb}{1, 1, 0.7}
+
+\newtheorem{theorem}{Theorem}
+
+\definecolor{mygray}{gray}{0.95}
+
+% Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote. 
+% \title{Wavelet Diffusion: Efficient Image and Video Generation using Multi-scale Spectral Representation}
+\title{Spectral Progressive Diffusion \\ for Efficient Image and Video Generation}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\begin{document}
+\author{%
+  Howard Xiao \quad Brian Chao \quad Lior Yariv \quad Gordon Wetzstein\vspace{1ex}\\
+  Stanford University \\
+  \url{https://howardxiao.ca/speed/}
+}
+
+\maketitle
+
+\makeatletter
+\let\arxiv@savedaddcontentsline\addcontentsline
+\def\arxiv@tocfile{toc}
+\renewcommand{\addcontentsline}[3]{%
+  \def\arxiv@targetfile{#1}%
+  \ifx\arxiv@targetfile\arxiv@tocfile
+  \else
+    \arxiv@savedaddcontentsline{#1}{#2}{#3}%
+  \fi
+}
+\makeatother
+
+
+
+\input{definitions}
+\input{sections/abstract}
+\input{sections/intro}
+\input{sections/related}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/conclusion}
+\input{sections/acknowledgement}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage   % flush all pending figure floats before the bibliography
+{
+\small
+\bibliographystyle{plainnat}
+\bibliography{references_arxiv}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{sections/arxiv_appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \newpage
+% \input{checklist.tex}
+
+
+\end{document}

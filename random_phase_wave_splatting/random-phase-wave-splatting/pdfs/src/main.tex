@@ -1,0 +1,240 @@
+
+\documentclass[acmtog,nonacm]{acmart}
+\usepackage{colortbl}
+\usepackage{multirow}
+\usepackage{varwidth} %for the varwidth minipage environment
+\usepackage{pifont} %for the varwidth minipage environment
+\usepackage{boldline}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage[ruled]{algorithm2e} % For algorithms
+\usepackage{wrapfig}
+\usepackage{bm}
+\usepackage{makecell}
+\usepackage{arydshln}
+\usepackage[utf8x]{inputenc}
+\usepackage{siunitx}
+\usepackage{afterpage}
+\usepackage{graphicx}  % Add this to the preamble
+\usepackage[shortcuts]{extdash}
+\usepackage{tabularx}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+\setlength{\textfloatsep}{4pt}
+% \setlength{\abovedisplayskip}{0pt} % Space above equations
+% \setlength{\belowdisplayskip}{0pt} % Space below equations
+
+
+\captionsetup[figure]{aboveskip=4pt, belowskip=2pt}
+
+\citestyle{acmauthoryear}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+\input{definitions}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+%\title{Gaussian wave splatting: \\Computer-generated holography using Gaussian splats}
+%\title{HoloSplats: Gaussian Wave Splatting for Computer-generated Holography}
+%\title{High-Bandwidth Gaussian Wave Splatting for Improved Depth of Field in Holographic Displays}
+\title{Random-phase Wave Splatting of Translucent Primitives for Computer-generated Holography}
+
+\author{Brian Chao}
+\email{brianchc@stanford.edu}
+\orcid{0000-0002-4581-6850}
+\authornote{denotes equal contribution.}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Jacqueline Yang}
+\email{jyang01@stanford.edu}
+\orcid{0009-0002-3101-3026}
+\authornotemark[1]
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Suyeon Choi}
+\email{suyeon@stanford.edu}
+\orcid{0000-0001-9030-0960}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Manu Gopakumar}
+\email{manugopa@stanford.edu}
+\orcid{0000-0001-9017-4968}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\author{Ryota Koiso}
+\email{ryotak@stanford.edu}
+\orcid{0000-0001-6160-0366
+}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+\affiliation{
+  \institution{KDDI Research}
+  \country{Japan}
+}
+\author{Gordon Wetzstein}
+\email{gordon.wetzstein@stanford.edu}
+\orcid{0000-0002-9243-6885}
+\affiliation{
+  \institution{Stanford University}
+  \country{USA}
+}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+% \author{Ben Trovato}
+% \authornote{Both authors contributed equally to this research.}
+% \email{trovato@corporation.com}
+% \orcid{1234-5678-9012}
+% \author{G.K.M. Tobin}
+% \authornotemark[1]
+% \email{webmaster@marysville-ohio.com}
+% \affiliation{%
+%   \institution{Institute for Clarity in Documentation}
+%   \city{Dublin}
+%   \state{Ohio}
+%   \country{USA}
+% }
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Chao, Yang et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+%
+Holographic near-eye displays offer ultra-compact form factors for VR/AR systems but rely on advanced computer-generated holography (CGH) algorithms to convert 3D scenes into interference patterns on spatial light modulators (SLMs). However, conventional CGH algorithms typically generate smooth-phase holograms, limiting their ability to capture view-dependent effects and realistic defocus blur while severely under-utilizing the SLM space–bandwidth product.
+
+In this work, we propose random-phase wave splatting (RPWS), a unified wave optics rendering framework that converts \textit{any 3D representation based on 2D translucent primitives} to random-phase holograms. Our algorithm is fully compatible with recent advances in novel 3D representations based on translucent 2D primitives, such as Gaussians and triangles, improves bandwidth utilization which effectively increases eyebox size, reconstructs accurate defocus blur and parallax, and leverages time-multiplexed rendering not as a mere heuristic for speckle suppression, but as a mathematically exact alpha-blending mechanism derived from first principles in statistics. At the core of RPWS are (1) a fundamentally new wavefront compositing procedure and (2) an alpha-blending scheme specifically designed for arbitrary random-phase geometric primitives, ensuring physically correct color reconstruction and robust occlusion handling when compositing millions of primitives.
+
+RPWS also departs substantially from the recent state-of-the-art primitive-based CGH algorithm, Gaussian Wave Splatting (GWS). Because GWS operates on smooth-phase primitives, it struggles to capture view-dependent effects and realistic defocus blur and severely under-utilizes the SLM space– bandwidth product; moreover, na\"ively extending GWS to random-phase primitives fails to reconstruct accurate colors. In contrast, RPWS is designed from the ground up for arbitrary random-phase translucent primitives, and through extensive simulations and experimental validations we demonstrate that it yields state-of-the-art image quality and perceptually faithful 3D holograms for next-generation near-eye displays.
+
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10010147.10010371</concept_id>
+       <concept_desc>Computing methodologies~Computer graphics</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10010583.10010786</concept_id>
+       <concept_desc>Hardware~Emerging technologies</concept_desc>
+       <concept_significance>300</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
+
+%%%%%%%% Original %%%%%%%%%
+\ccsdesc[500]{Computing methodologies~Computer graphics}
+\ccsdesc[300]{Hardware~Emerging technologies}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{computational displays, holography, virtual reality, augmented reality, Gaussian splatting, neural rendering}
+
+
+
+% %%%%%%%%% To see if we can save space %%%%%%%%
+% \ccsdesc[300]{Hardware~Emerging technologies}
+% % \keywords{holography, neural rendering}
+
+\received{23 May 2025}
+\received[revised]{10 August 2025}
+\received[accepted]{10 August 2025}
+
+
+\begin{teaserfigure}
+  \centering
+	\includegraphics[width=\columnwidth]{figures/teaser.pdf}
+   \caption{Random-phase Wave Splatting (RPWS) takes in \textit{any 2D primitive-based 3D scene representation}, including Gaussians and triangles, (a) as input and converts it into random-phase holograms (b). The prior state-of-the-art primitive-based CGH method, Gaussian Wave Splatting (GWS) \cite{choi2025gaussian}, is unable to accurately reconstruct natural defocus blur due to the smooth-phase nature of synthesized holograms, resulting in limited blur variation across depths and severe ringing artifacts (c). \textit{N}a\"ively applying \textit{r}andom \textit{p}hase to primitives and running GWS (GWS-NRP), completely fails to reconstruct accurate appearance (d). Our RPWS algorithm, on the other hand, maximally utilizes the bandwidth of the spatial light modulator and reconstructs accurate parallax and defocus blur across the eyebox (e, f). While RPWS works for \textit{arbitrary translucent 2D primitives}, here we show Gaussian-based wave splatting holograms for fair comparison with GWS.}
+  \label{fig:teaser}
+\end{teaserfigure} 
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Introduction}
+\input{sections/1_intro}
+
+\section{Related Work}
+\input{sections/2_previous_work}
+
+\section{Wave-optics Rendering of Translucent Primitives for Computer-generated Holography}
+\input{sections/3_method}
+
+\section{Experiments}
+\label{sec:results}
+\input{sections/4_results}
+
+\section{Discussion}
+\input{sections/5_discussion}
+
+\bibliographystyle{ACM-Reference-Format}
+
+\bibliography{bibs}
+
+% start of figure only pages
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.96\textwidth]{figures/sim_fs_lf.pdf}
+    \caption{\textbf{Simulated 3D focal stacks and 4D light fields reconstructed from various baseline CGH algorithms.} The image quality of random-phase polygons-based CGH (Polygons-RP) is inherently limited by the coarse per-face textured mesh representation, resulting in poor image quality even in in-focus regions. GWS \cite{choi2025gaussian} reconstructs sharp details at in-focus regions, but suffers from large depth of field and unnatural ringing artifacts. Our method (RPWS) generates sharp content at focused regions and the resulting hologram has shallow depth of field, reconstructing natural defocus blur across different depths. With additional time-multiplexing, the image quality of RPWS significantly improves.}    
+    \label{fig:sim_fs}
+    
+\end{figure*}
+    
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.96\textwidth]{figures/triangle_splats.pdf}
+    \caption{\textbf{Simulated 3D focal stacks and 4D light fields reconstructed from RPWS of triangle splats \cite{Held2025Triangle}. } We run our RPWS algorithm on Triangle splats proposed by \citet{Held2025Triangle}. RPWS with triangle splats accurately reconstructs natural defocus blur and parallax on a wide variety of scenes, validating the robustness of our method to different translucent primitive types. }
+    \label{fig:triangle_splats}
+\end{figure*}
+
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/experimental_main.pdf}
+    \caption{\textbf{Experimentally captured 3D focal stacks and 4D light fields of holograms generated using different CGH algorithms. } Polygon-based CGH (Polygons-RP) \cite{matsushima2005computer, matsushima2009extremely, matsushima2014silhouette} achieves low image quality due to the low quality of the underlying textured mesh 3D representation. GWS \cite{choi2025gaussian} generates smooth-phase holograms, resulting in limited defocus blur with unnatural ringing artifacts and little-to-no parallax. Our method, RPWS with Gaussian (-GS) and triangle splatting ($-\Delta$) variants, achieves good image quality in in-focus regions, reconstructs natural incoherent blur in defocus regions, and shows significantly more parallax than GWS. With 24 frames time-multiplexing, RPWS (both -GS and $-\Delta$ variants) achieves near speckle-free results.}
+    \label{fig:fs_captured}
+\end{figure*}
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmtog.tex'.

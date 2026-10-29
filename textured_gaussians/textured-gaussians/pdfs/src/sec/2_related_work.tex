@@ -1,0 +1,48 @@
+\section{Related Work}
+
+% should we include this more general related work
+\noindent \textbf{Novel-View Synthesis (NVS) and Neural Rendering.} 
+NVS tackles the problem of generating accurate renderings of 3D scenes from unseen viewpoints given a set of training images and camera poses. 
+NVS traces back to the Structure from Motion (SfM) works \cite{snavely2026phototourism, Hartley2004sfm, brown2005unsupervised} and Multiview Stereo (MVS) \cite{seitz2006comparison, goesele2007multi, huang2018deepmvs}, which served as the basis of several groundbreaking NVS methods \cite{DeepBlending2018, eisemann2008floating, chaurasia2013depth, KPLD21point}. 
+However, these approaches generally require storing hundreds and thousands of input images for reprojection and blending, which leads to massive memory requirements and sometimes fails to reconstruct undersampled regions. 
+
+Recent advances in neural rendering \cite{tewari2022advances} have made great strides in improving the quality of 3D reconstruction and novel-view rendering. 
+Neural rendering algorithms can be roughly classified by the underlying 3D representation, ranging from point clouds~\cite{KPLD21point, aliev2019point, xu2022point}, voxels~\cite{yu_and_fridovichkeil2021plenoxels, hu2023multiscale, yu2021plenoctrees}, meshes~\cite{neumesh, kato2018meshrenderer, Lombardi2018deepappearance, hu2021worldsheet, guo2023vmesh}, to implicit representations using MLPs~\cite{mildenhall2020nerf, mueller2022instant, sitzmann2019srns,attal2022learning}. 
+Recently, 3D Gaussian Splatting \cite{kerbl3Dgaussians} (3DGS) has emerged as the state-of-the-art NVS technique. 
+3DGS achieves high image quality for NVS, is fast to optimize and render, and leverages an explicit Gaussian primitive representation, which makes the method suitable for a wide variety of tasks such as surface extraction \cite{guedon2023sugar, Huang2DGS2024}, human avatar manipulation \cite{qian20233dgsavatar, shao2024splattingavatar}, ambient dynamic modeling~\cite{shih2024modeling}, and object and scene editing \cite{guedon2024frosting, gaussian_grouping}. 
+
+\begin{figure*}[!t]
+    \centering
+\includegraphics[width=\textwidth]{sec/figures/model_pipeline.pdf}
+    \caption{\textbf{Textured Gaussians model pipeline.} 
+    Our method consists of three major components: ray-Gaussian intersection, RGBA texture mapping, and a generalized Gaussian appearance model. 
+    To render the color of a pixel $\mathbf{p}$, we first trace a ray from the camera center $\mathbf{o}$ to the pixel to intersect with 3D Gaussians in the scene. 
+    Then, we query texture and alpha values, $\mathbf{c}_\text{tex}$ and $\alpha_\text{tex}$, from the per-Gaussian RGBA texture maps using the ray-Gaussian intersection point $\mathbf{x}$. 
+    Finally, given the retrieved spatially varying color and alpha values, we alpha-composite the color and alpha values of Gaussians that are hit by the pixel ray using the generalized Gaussian appearance model. }
+    \label{fig:model_pipeline}
+\end{figure*}
+
+Our method augments 3DGS with alpha and texture mapping commonly used in mesh-based 3D representations. 
+During optimization and rendering, we intersect outgoing rays from pixels with Gaussians in the scene. 
+Intersection points are then used to query per-Gaussian texture map values via UV mapping and compute RGB color and alpha blending values. 
+This enables each Gaussian to represent complex textures and shapes, significantly improving NVS quality.
+
+% weak ending
+
+\noindent \textbf{Appearance Modeling in 3D Gaussian Splatting.}  
+In 3DGS, scene geometry is represented by the position, rotation, and scale of 3D Gaussians. By adjusting these properties, 3DGS can represent intricate geometric structures. 
+On the other hand, appearance is modeled using per-Gaussian opacity values and spherical harmonics coefficients. However, pixels within a projected Gaussian are always shaded with the same color up to a Gaussian falloff factor, greatly limiting the expressivity of individual Gaussians. Therefore, recent works have explored ways that allow Gaussians to represent spatially varying features. \citet{huang2024spatial} defined per-Gaussian SH coefficients for color and opacity and used ray-Gaussian intersections to determine the viewing directions within the Gaussian extent. This enables smooth variation of colors and opacities across pixels covered by a single Gaussian but prevents the reconstruction of higher-frequency details. \citet{xu2024texturegs} disentangled appearance and geometry in 3DGS for texture editing, but their method is limited to object-centric scenes with simple geometry due to the unit-sphere parameterization of textures.
+
+Instead of using a global texture map, we enhance each 3D Gaussian with a local texture map on top of the SH coefficients. 
+This allows for a more flexible texture optimization since individual Gaussians are not tied to a shared global texture map. 
+Our method can, therefore, reconstruct objects with complex structures and real-world scenes. 
+Furthermore, each Gaussian can also represent various shapes with the alpha channel in the texture map.
+
+\noindent \textbf{Memory Efficient Gaussian Splatting. } 
+In order to achieve even faster rendering time and compact storage requirements for potential applications on edge devices, there has been a plethora of recent work focusing on optimizing memory-efficient Gaussian Splatting models \cite{bagdasarian20243dgszipsurvey3dgaussian}. 
+These algorithms either prune Gaussians and perform quantization of Gaussian attributes \cite{kerbl2024reducing, lee2024compact, navaneet2023compact3d, morgenstern2023compact, fan2023lightgaussian, Niedermayr_2024_CVPR} or exploit the structural relationships between Gaussians \cite{chen2024hash, tao2024scaffoldgs}. 
+
+Our work is orthogonal and complementary to these works since we focus on improving the appearance modeling of Gaussians by redistributing the model size budget to the per-Gaussian texture maps given any optimized 3DGS model. 
+These model compression algorithms can be easily integrated with the 3DGS pretraining stage in our optimization pipeline to achieve further gains in compactness.
+
+\noindent \textbf{Concurrent Work.} Different from several concurrent works that have explored the idea of augmenting Gaussians with texture maps \cite{rong2024gstex, song2024hdgstextured2dgaussian, xu2024SuperGaussians, svitov2025billboardsplattingbbsplatlearnable}, we 1) additionally utilize alpha textures and 2) provide an in-depth analysis of various texture map variants (alpha-only, RGB, RGBA) that explores the balance between reconstruction capability and model size.

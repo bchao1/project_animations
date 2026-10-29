@@ -1,0 +1,279 @@
+
+\begin{table*}[!ht]
+   \footnotesize
+   \centering
+   \renewcommand{\arraystretch}{2} 
+   \begin{tabular}{@{}P{0.15\textwidth}P{0.1\textwidth}P{0.7\textwidth}@{}}
+   \toprule
+   \makecell[l]{Method} & \makecell[l]{3D\\representation} & \makecell[l]{Description}  \\
+   \midrule
+   \makecell[l]{Na\"ive} & \makecell[l]{Sparse \\ point cloud} & \makecell[l]{Simply treats each point as a pixel and adding up wavefront at the SLM plane without any occlusion handling.} \\
+   \makecell[l]{Chen \& Wilkinson \cite{chen2009computer} \\ 
+   \textbf{(in main paper)}} & \makecell[l]{Sparse \\ point cloud} & \makecell[l]{Treats each point as a fully opaque disk that can potentially block points behind it based on visibility tests. \\ The disk size is a tunable parameter. } \\
+   \makecell[l]{Wave Splatting} & \makecell[l]{Sparse \\ point cloud} & \makecell[l]{Treats each point as an isotropic Gaussian and uses Wave Splatting and alpha wave blending to splat points onto the SLM. \\ The Gaussian scale is a tunable parameter. } \\
+   \makecell[l]{Na\"ive} & \makecell[l]{Dense point \\ cloud / RGBD} & \makecell[l]{Each point exactly corresponds to one pixel and the depth of each point is extracted from ground truth depth maps. } \\
+   \makecell[l]{Matsushima et al. \cite{matsushima2014silhouette} \\ 
+   \textbf{(in main paper)}} & \makecell[l]{Mesh} & \makecell[l]{Each triangle is fully opaque and can block triangles behind it. } \\
+   \makecell[l]{Wave Splatting} & \makecell[l]{Mesh} & \makecell[l]{A different realization of the same algorithm proposed by Matsushima et al. \cite{matsushima2014silhouette} using Wave Splatting. } \\
+   \midrule
+   \makecell[l]{Ours (fast) \\
+   \textbf{(in main paper)}} & \makecell[l]{Gaussians} & \makecell[l]{The fast variant of Gaussian Wave Splatting that converts 2DGS-OIT models to holograms using approximated alpha wave \\ blending (order-invariant transparency).} \\
+   \makecell[l]{Ours (exact) \\
+   \textbf{(in main paper)}} & \makecell[l]{Gaussians} & \makecell[l]{The exact variant of Gaussian Wave Splatting that converts 2DGS models to holograms using exact alpha wave blending. } \\
+   \bottomrule
+   \end{tabular}
+\caption{\textbf{Baseline methods. } In this table, we describe the input 3D representation and algorithm overview for each baseline method. We compare our Gaussian Wave Splatting algorithm with six other primitives-based CGH baselines.}
+\label{tab:baseline_explanation}
+\end{table*}
+
+
+
+In this section, we report and extensive set of baseline comparisons and ablation studies to verify the effectiveness of Gaussian Wave Splatting. In addition to the three default baselines presented in the main paper, here we compare our method against another three, resulting in total of six baseline comparisons. We provide an overview of each baseline in Table. \ref{tab:baseline_explanation}.
+
+
+
+\begin{table*}[!ht]
+   \scriptsize
+   \centering
+   \renewcommand{\arraystretch}{1.2} 
+   \begin{tabular}{@{}P{0.23\textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}@{}}
+   \toprule
+   \makecell[l]{Method - 3D representation} &
+   Lego & Chair & Hotdog & Materials & Mic & Ship & Avg.\\
+   \midrule
+   \makecell[l]{Na\"ive - Point Cloud} & 10.55 / 0.66 / 0.34 & 14.67 / 0.77 / 0.20 & 14.59 / 0.67 / 0.31 & 15.89 / 0.72 / 0.26 & 22.63 / 0.90 / 0.11 & 15.75 / 0.59 / 0.35 & 15.68 / 0.72 / 0.26\\
+   \makecell[l]{Chen \& Wilkinson \cite{chen2009computer} - Point Cloud} & 12.50 / 0.68 / 0.31 & 15.86 / 0.79 / 0.18 & 16.55 / 0.69 / 0.28 & 16.77 / 0.75 / 0.23 & 24.26 / 0.91 / 0.09 & 17.45 / 0.63 / 0.32 & 17.23 / 0.74 / 0.23 \\
+   \makecell[l]{Wave Splatting - Point Cloud} & 12.97 / 0.69 / 0.29 & 16.39 / 0.80 / 0.17 & 16.84 / 0.70 / 0.27 & 16.90 / 0.75 / 0.22 & 24.82 / 0.92 / 0.08 & 17.76 / 0.64 / 0.31 & 17.61 / 0.75 / 0.22 \\
+   \makecell[l]{Nai\"ive - RGBD} & 25.84 / \textbf{0.90} / 0.12 & 24.42 / \textbf{0.92} / \textbf{0.08} & 28.75 / 0.94 / 0.13 & 29.19 / \textbf{0.93} / \textbf{0.10} & \textbf{30.25} / \textbf{0.97} / \textbf{0.04} & 24.31 / 0.85 / 0.22 & 27.13 / \textbf{0.92} / 0.11 \\
+   \makecell[l]{Matsushima et al. \cite{matsushima2014silhouette} - Mesh} & 19.27 / 0.75 / 0.24 & 18.29 / 0.82 / 0.15 & 22.92 / 0.79 / 0.22 & 19.67 / 0.81 / 0.19 & 24.16 / 0.94 / 0.07 & 20.32 / 0.71 / 0.27 & 20.77 / 0.80 / 0.19 \\
+   \makecell[l]{Wave Splatting - Mesh} & 18.89 / 0.74 / 0.25 & 17.93 / 0.81 / 0.15 & 22.65 / 0.77 / 0.23 & 19.41 / 0.80 / 0.20 & 23.19 / 0.93 / 0.08 & 20.24 / 0.70 / 0.27 & 20.38 / 0.79 / 0.20 \\
+   \midrule
+   \makecell[l]{Ours (fast) - Gaussians} & 25.24 / \textbf{0.90} / 0.12 & 25.16 / 0.91 / \textbf{0.08} & 29.82 / \textbf{0.95} / \textbf{0.08} & 27.93 / \textbf{0.93} / \textbf{0.10} & 28.79 / 0.95 / 0.05 & \textbf{26.43} / \textbf{0.86} / \textbf{0.19} & 27.23 / \textbf{0.92} / \textbf{0.10} \\
+   \makecell[l]{Ours (exact) - Gaussians} & \textbf{27.67} / \textbf{0.90} / \textbf{0.11} & \textbf{26.43} / \textbf{0.92} / \textbf{0.08} & \textbf{30.15} / 0.94 / 0.12 & \textbf{28.49} / 0.92 / \textbf{0.10} & 29.40 / 0.96 / \textbf{0.04} & 25.64 / 0.84 / 0.22 & \textbf{27.96} / 0.91 / 0.11 \\
+   \bottomrule
+   \end{tabular}
+\caption{\textbf{Quantitative performance of different CGH algorithms on the Blender \cite{mildenhall2020nerf} dataset. } We evaluate the image quality of 3D holograms generated using our Gaussian Wave Splatting algorithm and various baseline primitives-based CGH methods in terms of PSNR $(\uparrow)$, SSIM $(\uparrow)$, and LPIPS $(\downarrow)$. All point cloud methods suffer from poor image quality due to the overly dim images with black holes. CGH from mesh outperforms point cloud methods, but high frequency details still cannot be reconstructed with per-face colors. CGH from RGBD images achieves much better quality, but still trails Gaussian Wave Splatting due to the unnatural ringing artifacts at depth discontinuities. Both exact and fast variants of Gaussian Wave Splatting achieve superior results over all baseline methods. }
+\label{tab:per_scene_quan_metrics_blender}
+\end{table*}
+
+\begin{table*}[!ht]
+   \scriptsize
+   \centering
+   \renewcommand{\arraystretch}{1.2} 
+   \begin{tabular}{@{}P{0.23\textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}P{0.09 \textwidth}@{}}
+   \toprule
+   \makecell[l]{Method - 3D representation} &
+   Kitchen & Counter & Stump & Room & Garden & Bicycle & Avg.\\
+   \midrule
+   \makecell[l]{Na\"ive - Point Cloud} & 6.67 / 0.06 / 0.72 & 7.87 / 0.12 / 0.75 & 11.48 / 0.03 / 0.72 & 9.85 / 0.10 / 0.76 & 7.39 / 0.02 / 0.73 & 11.07 / 0.04 / 0.74 & 9.05 / 0.06 / 0.74 \\
+   \makecell[l]{Chen \& Wilkinson \cite{chen2009computer} - Point Cloud} & 10.20 / 0.15 / 0.72 & 7.86 / 0.12 / 0.74 & 11.60 / 0.03 / 0.72 & 9.41 / 0.03 / 0.74 & 6.60 / 0.00 / 0.75 & 10.46 / 0.01 / 0.69 & 9.35 / 0.06 / 0.73 \\
+   \makecell[l]{Wave Splatting - Point Cloud} & 10.79 / 0.26 / 0.59 & 7.86 / 0.12 / 0.74 & 11.61 / 0.03 / 0.72 & 9.41 / 0.03 / 0.74 & 6.60 / 0.00 / 0.75 & 10.46 / 0.01 / 0.69 & 9.45 / 0.07 / 0.70 \\
+   \makecell[l]{Nai\"ive - RGBD} & 17.79 / 0.67 / 0.36 & 22.13 / \textbf{0.76} / 0.40 & 17.33 / 0.38 / 0.54 & 24.26 / 0.74 / 0.44 & 16.14 / 0.20 / 0.49 & 17.44 / 0.44 / 0.48 & 19.18 / 0.53 / 0.45 \\
+   \makecell[l]{Matsushima et al. \cite{matsushima2014silhouette} - Mesh} & 14.74 / 0.23 / 0.65 & 12.47 / 0.35 / 0.68 & 18.69 / 0.26 / 0.65 & 17.15 / 0.51 / 0.64 & 15.18 / 0.18 / 0.62 & 16.80 / 0.20 / 0.65 & 15.84 / 0.29 / 0.65 \\
+   \makecell[l]{Wave Splatting - Mesh} & 14.66 / 0.21 / 0.65 & 12.36 / 0.32 / 0.68 & 18.64 / 0.25 / 0.65 & 17.11 / 0.49 / 0.64 & 15.09 / 0.16 / 0.62 & 16.79 / 0.19 / 0.64 & 15.77 / 0.27 / 0.65 \\
+   \midrule
+   \makecell[l]{Ours (fast) - Gaussians} & 22.63 / \textbf{0.82} / \textbf{0.19} & 20.25 / 0.72 / 0.41 & 21.68 / 0.48 / 0.47 & 23.19 / \textbf{0.82} / 0.42 & 15.29 / \textbf{0.25} / 0.52 & 21.18 / \textbf{0.49} / 0.49 & 20.70 / \textbf{0.60} / 0.42 \\
+   \makecell[l]{Ours (exact) - Gaussians} & \textbf{23.99} / 0.77 / 0.23 & \textbf{23.33} / 0.74 / \textbf{0.38} & \textbf{22.16} / \textbf{0.49} / \textbf{0.44} & \textbf{25.12} / 0.78 / \textbf{0.41} & \textbf{18.11} / 0.23 / \textbf{0.47} & \textbf{21.50} / 0.48 / \textbf{0.47} & \textbf{22.37} / 0.58 / \textbf{0.40} \\
+   \bottomrule
+   \end{tabular}
+\caption{\textbf{Quantitative performance of different CGH algorithms on the Mip-NeRF 360 \cite{barron2022mipnerf360} dataset. }  We evaluate the image quality of 3D holograms generated using our Gaussian Wave Splatting algorithm and various baseline primitives-based CGH methods in terms of PSNR $(\uparrow)$, SSIM $(\uparrow)$, and LPIPS $(\downarrow)$. All point cloud methods suffer from poor image quality due to the overly dim images with black holes. CGH from mesh outperforms point cloud methods, but high frequency details still cannot be reconstructed with per-face colors. CGH from RGBD images achieves much better quality, but still trails Gaussian Wave Splatting due to the unnatural ringing artifacts at depth discontinuities. Both exact and fast variants of Gaussian Wave Splatting achieve superior results over all baseline methods. }
+\label{tab:per_scene_quan_metrics_mipnerf360}
+\end{table*}
+
+\subsection{Extended Quantitative Baseline Comparisons}
+
+We show per-scene quantitative comparisons with the the extended set of baseline CGH methods in terms of PSNR, SSIM, and LPIPS in Table \ref{tab:per_scene_quan_metrics_blender} and \ref{tab:per_scene_quan_metrics_mipnerf360}. We evaluate in-focus image quality by merge simulated focal stacks rendered from the generated holograms into an all-in-focus image using RGBD masks computed from depth maps rendered from optimized 2DGS models, and compare this all-in-focus image with ground truth images from the training dataset. Both variants of our Gaussian Wave Splatting algorithm consistently outperform other primitive-based CGH algorithms across all image quality metrics and all scenes. 
+
+All sparse point cloud methods suffer from low image quality due to the extreme sparsity of primitives, leading to overly dark images or images with holes. CGH from mesh cannot reconstruct sharp details unless a disproportionate number of triangles is used. Although RGBD CGH is expected to be the upper bound of all CGH methods since the hologram is directly synthesized from a ground truth all-in-focus RGB image and its corresponding depth map, it trails Gaussian Wave Splatting (GWS) since there significant ringing artifacts at depth discontinuities, while GWS achieves a smoother blur due to the summation of different Gaussian kernels and effectively hides the artifacts. Both of our GWS variants greatly outperforms all other baselines, achieving a superior 5-11 dB average PSNR improvement. 
+
+\subsection{Extended Qualitative Baseline Comparisons}
+We show focal stacks and zoom-in patches of focal slices generated from holograms synthesized using different CGH baselines and 3D representations in Figures 
+\ref{fig:extended_baselines_1} to \ref{fig:extended_baselines_12}.
+
+Without occlusion handling, applying the the Na\"ive algorithm on sparse point clouds results in over-saturated colors since the wavefront of all points are simply added up. With occlusion handling using disk-based visibility tests as described in Chen \& Wilkinson \cite{chen2009computer} or using alpha wave blending, the colors are more accurate. However, the inherent sparseness of point clouds significantly limits the image quality of point cloud-based CGH, leading to overly dim images with holes. This issue is especially prominent for in-the-wild captured 3D reconstruction datasets such as Mip-NeRF 360 \cite{barron2022mipnerf360}, where the SfM point clouds are simply too sparse to provide dense coverage of object surfaces, such as the \textit{bicycle} or \textit{garden} scene. With dense point cloud representations like RGBD images, image quality greatly improves, but still suffers from ringing artifacts at depth discontinuities.
+
+CGH from meshes using the silhouette method proposed by Matsushima et al. \cite{matsushima2014silhouette}
+and alpha wave blending achieves decent image quality, yet high frequency details cannot be reconstructed due to the per-face color representation that is used for polygon-based CGH. 
+
+Both variants of our Gaussian Wave Splatting (GWS) algorithm achieves the best image quality compared to all six other baselines. From the zoomed-in crops from focal slices, we see that GWS accurately reconstructs sharp details in focused regions and synthesizes more natural blur in defocus regions. Compared with polygon-based models, GWS also achieves superior image quality while using an equal or reduced number of geometric primitives compared to the mesh models.
+
+\subsection{3D Focal Stacks of Novel Views}
+We show focal stacks generated from holograms synthesized at different camera viewpoints using our exact Gaussian Wave Splatting algorithm in Figure \ref{fig:nvs_fs}. We follow the Holographics pipeline described in Section \ref{sec:holographics} to generate a hologram from an optimized 2DGS model given a specific viewpoint and camera intrinsics. We see that both high quality novel view synthesis and natural 3D focus effects are accurately reproduced at \textit{all} views, demonstrating the robustness and effectiveness of Gaussian Wave Splatting. Please refer to the supplemental video for the circular smooth trajectory of all novel viewpoints and corresponding experimentally captured focal stacks.
+
+\subsection{Sparse Point Cloud CGH Ablation Studies}
+We perform various ablation studies on CGH from sparse point clouds. First, we ablate the disk size described in Chen \& Wilkinson \cite{chen2009computer}. This is a crucial parameter that determines the spatial extent of the mask that is used to perform visibility tests of points. In our reimplementation of the method, we use the parameter $t_\text{eps}$ described in Algorithm \ref{alg:full_ws} to control the disk size. From Fig \ref{fig:pc_disk_ablation}, we see that the CGH result is highly sensitive to the disk size as a larger disk (smaller threshold) more aggressively blocks points when performing visibility tests, leading to dimmer images. Smaller disk sizes, on the other hand, could lead to over-saturated images due to lenient visibility tests and light leakage.
+
+
+Secondly, we ablate the Gaussian scale parameter when applying Wave Splatting to sparse point clouds and treating each point as an isotropic Gaussian. We describe the scale of each isotropic Gaussian as a multiple of the pixel pitch of the SLM. From Figure \ref{fig:pc_awb_ablation}, we see that images are dim when the Gaussian scale is small and becomes brighter as the Gaussian scale increases  due to larger spatial coverage with bigger Gaussians.
+
+From these two ablation studies, we see that sparse point cloud representations are not ideal for photorealistic CGH due to its bad 3D spatial coverage nature and the need of heuristically tuning point sizes to achieve barely passing image quality. The only way to potentially achieve photorealistic quality is by using RGBD images or dense point clouds.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{supplement/figures/runtime_analysis.pdf}
+    \caption{\textbf{Runtime comparisons of fast and exact GWS.} We show Gaussian Wave Splatting CGH calculation time using varying target hologram resolutions and number of Gaussians as a 2D heatmap. An isocurve representing the runtime of 100 seconds is plotted as a white dashed line. Fast GWS achieves nearly 30$\times$ speedup over exact GWS, and can generate holograms of much higher resolution and fidelity, which is positively correlated to the number of Gaussians, compared to the exact method given the same runtime. }
+    \label{fig:runtime}
+\end{figure}
+
+\subsection{Runtime Comparisons}
+We compare the runtime of fast and exact Gaussian Wave Splatting in Fig. \ref{fig:runtime}. We vary the number of Gaussian primitives used and the target hologram resolution and plot the runtimes as a 2D heatmap. An isocurve corresponding to a runtime of 100 seconds is plotted as a white dashed line. Fast GWS is able to synthesize higher resolution holograms using more primitives compared to exact GWS given the same runtime, which can be observed from Fig. \ref{fig:runtime}  as the fast GWS isocurve is to the top-left of the exact GWS isocurve. Given the same number of primitives and target hologram resolution, fast GWS achieves a nearly $30\times$ speedup over exact GWS.
+
+
+\subsection{Additional Discussion on View-Dependent Effects}
+\label{subsec:occlusion}
+
+\begin{figure}[!h!]
+    \centering
+    \includegraphics[width=\linewidth]{supplement/figures/supp_justify.pdf}
+    \caption{\textbf{Limited SLM bandwidth.} On the left, we show the angular profiles of spherical harmonics, i.e., $Y_1^2(\mathbf{k})$ and $Y_2^2(\mathbf{k})$. These are queried from all angles over the hemisphere, ranging from -90$\deg$ to $+90\deg$ for both the $x-$ and $y-$axes. The SLM (with 8$\mu$m pixel pitch in our case) supports only a limited range of angular support, which we found to be very uniform across the entire region. Colormaps on the right denote the normalized amplitude value.}
+    \label{fig:justify}
+\end{figure}
+In Fig.~\ref{fig:justify}, we visualize the full angular emission profile of a spherical harmonics basis (second degree, the first two orders) over the hemisphere. This map can be interpreted as the angular emission profile, or the amplitude of the desired angular spectrum for holograms. Unfortunately, most current holographic displays only support a limited space-bandwidth product, restricting the angular range due to the pixel pitch size, which is typically a few degrees. This is visualized as the red box in the center. From this, we observe that the angular emission within the range of angles supported by the SLM is relatively uniform, motivating us to approximate the directional effects using zeroth-order spherical harmonics. 
+
+
+Nevertheless, here we discuss an approach to incorporate full directional effects in our Gaussian Wave Splatting. The classical approach to control the angular profile, such as random phase methods, or pioneering work in polygon-based method iterature~\cite{kim2008mathematical, ahrenberg2008computer, park2015removal, askari2017occlusion, zhang2018fast} can be understood in a more principled manner with this discussion. Gaussian Splatting uses spherical harmonics (SH) to represent view dependence~\cite{basri2003lambertian, yu_and_fridovichkeil2021plenoxels, kerbl3Dgaussians}. They form a complete set of orthonormal bases, and typically, the first few coefficients are optimized for each color channel. Here, we discuss how these coefficients can be incorporated into our holograms per basis. 
+
+Directional effects in primitive-based CGHs have primarily been discussed in the context of representing the reflectance distribution of surfaces~\cite{park2017recent}. Pioneering works have attempted to control the angular emission profile using sub-triangles~\cite{kim2008mathematical} and appropriate phase profiles for them. Yeom et al. demonstrated that the desired reflectance distribution could be approximated as a convolution between the angular spectrum of the mesh and the angular distribution~\cite{askari2017occlusion, yeom2016calculation}. In our general GWS formulation, this concept can be adapted as follows:
+\begin{align}
+    \angularspectrum_{\textrm{SH}_l^m} ( \mathbf{k} ) =  \textrm{det} ( \mathbf{J}) \textrm{det}(\mathbf{S}_\idx) \left( \angularspectrum_\canonicalspace \left(\mathbf{S}_\idx \rot_\idx^{-1}\mathbf{k} \right) \ast_{\mathbf{k}} Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})} \right) e^{j  \mathbf{k} \cdot \mean_\idx} \label{eq:convolution},
+\end{align}
+where $\ast_{\mathbf{k}}$ is the convolution operator in the spatial frequency domain and $Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})}$ denotes the angular kernel, having the spherical harmonics function of degree $l$ and order $m$ as its amplitude. For simplicity, we consider an example Gaussian without rotation, translation, scaling, and a basis of the first-degree and first-order, but incorporating these parameters and the extension to other basis are straightforward. The spatial and angular amplitude profile of an example Gaussian with a reasonable size, on the order of tens of microns, is shown in Fig.~\ref{fig:justify2}. Ideally, we want $\angularspectrum_{\textrm{SH}_l^m} ( \mathbf{k})$ to have the angular emission profile $Y_l^m(\mathbf{k})$, while retaining the Gaussian amplitude profile of the original $u(\coordinate)$ from our Gaussian wave splatting. However, note that the convolution in the Fourier domain is equivalent to element-wise multiplication in the spatial domain. The amplitude of $Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})}$ in the spatial domain (i.e., the amplitude of the Fourier transform of $Y_l^m(\mathbf{k}) e^{j\phi (\mathbf{k})}$) highly depends on the phase profile $\phi (\mathbf{k})$. This task essentially boils down to achieving the spatio-angular light field profile $l(\coordinate, \mathbf{k})$ from a coherent wavefront.
+
+\begin{figure}[!h!]
+    \centering
+    \includegraphics[width=\linewidth]{supplement/figures/supp_justify_2.pdf}
+    \caption{\textbf{Visualization of Gaussians in spatial and Fourier domain.} We visualize the Gaussians in spatial and Fourier domain.}
+    \label{fig:justify2}
+\end{figure}
+It has been noted in the literature that a coherent wavefront can only represent a light field corresponding to rank-1 mutual intensity~\cite{zhang2011analysis, choi2022time, hamann2018time}. Due to this constraint, one might not be able to perfectly achieve both the desired spatial and angular emission profiles simultaneously with a coherent wavefront modulated by a bandlimited SLM. However, it has been demonstrated that one can rely on partial coherence to achieve high-quality light field holograms with time-multiplexing~\cite{choi2022time, kim2024holographic}. Inspired by this work, we discuss a heuristic sampling strategy in a time-multiplexed setting to achieve the desired angular emission profile (e.g., the first-order SH basis) while preserving the desired spatial amplitude.
+
+\begin{figure*}[!h!]
+    \centering
+    \includegraphics[width=\linewidth]{supplement/figures/fig_supp_SH.pdf}
+    \caption{\textbf{The effect of phase sampling and partial coherence for directional effects.} Here, we visualize a virtual setting where we have control over a very large angular support. On the left, we show that the naïve choice of phase for the angular kernel leads to very narrow support in the spatial domain, causing the wavefront to lose spatial information. On the right, we show the partially coherent setting, where we sample random phases to convolve the angular kernel with a Gaussian. The average intensity over time in the Fourier domain demonstrates that it achieves the desired angular spectrum while maintaining the Gaussian shape. Colormap denotes the normalized amplitude value.}
+    \label{fig:justify3}
+\end{figure*}
+
+For simplicity, we consider the unit Gaussian, and this problem can be formulated as finding a set of phase profiles $\{\phi (\mathbf{k}) \}_{1, \cdots, T}$ that achieve the desired splatted Gaussian amplitude profile $u$ and angular emission profile $Y_l^m$. While this is an interesting direction for future exploration, we observe that random phase profiles sampled from the uniform distribution range of $[ -\pi, \pi ]$ can achieve the desired spatial profile, as the time-averaged spatial amplitude of Fourier spectrum of these samples would be unity. Note that this is the classical choice of a fully random phase that mimics a diffuser,~\cite{matsushima2020introduction} which corresponds to the zeroth-order spherical harmonics in our setting. Fig.~\ref{fig:justify3} shows that the spatial and angular amplitudes of $\angularspectrum_{\textrm{SH}_l^m}$ using this heuristic sampling, demonstrating that the time-averaged amplitude achieves a Gaussian in the spatial domain and a spherical harmonics basis in the angular domain. We use this strategy for Fig.~3 in the manuscript and its extended version in Fig.~\ref{fig:vde_extended}.
+
+In this toy example, we compare occlusion handling methods for Gaussians. For all methods, we partially sample the pupil shape of a circle, translating it horizontally from -0.8 mm to 0.8 mm. This range covers the full exit pupil in this setting, with the pupil diameter being slightly smaller than the exit pupil. In Fig.~\ref{fig:vde_extended}, the first two columns show the results of the phase-matched RGBD method (\textit{first column}) and our method with a single illumination wave (\textit{second column}), which concentrates energy around the center of the exit pupil. Consequently, when pupil moves to near the edge of the eye box, the energy is filtered out. For RGBD and silhouette methods, since they require a hyperparameter (threshold) to define the depth map boundaries or the disk used to mask out waves from the rear, we test an extensive set of hyperparameters. The optimal hyperparameter would depend on the scene geometry. Notably, in all cases, the reconstruction using our method using multiple reference illuminations (sampled from a random phase distribution in the Fourier domain with zero-order spherical harmonics emission) is the closest to the target images geometrically rendered from different viewpoints.
+
+\clearpage
+\newpage
+% Extended baseline comparisons
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_lego.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_1}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_chair.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_2}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_hotdog.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_3}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_mic.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_4}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_materials.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_5}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[height=0.93\textheight]{supplement/figures/supp_baselines_ship.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_6}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_kitchen.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_7}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_counter.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_8}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_stump.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_9}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_room.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_10}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_garden.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_11}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/supp_baselines_bicycle.pdf}
+    \caption{\textbf{Extended simulated qualitative baseline comparisons.} Point cloud CGH methods produce dim images due to sparse 3D representations. Dense point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the per-face color constraint. In contrast, our Gaussian Wave Splatting algorithm delivers superior image quality through accurate occlusion handling and novel view synthesis enabled by alpha wave blending.}
+    \label{fig:extended_baselines_12}  
+\end{figure*}
+
+% novel view focal stack 
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/nvs_fs.pdf}
+    \caption{\textbf{Simulated 3D focal stack of holograms of novel views.} We synthesize holograms using exact Gaussian Wave Splatting from different novel viewpoints, and verify 3D focusing capabilities. Gaussian Wave Splatting accurately reconstructs sharp details in focused regions and synthesizes natural blur in defocus regions at \textit{all} viewpoints, demonstrating the robustness of our method. }
+    \label{fig:nvs_fs}
+\end{figure*}
+
+
+% point cloud ablations
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/pc_disk_ablation.pdf}
+    \caption{\textbf{Ablation studies on visibility test disk size in point cloud CGH. } We vary the binarization threshold that determines the disk size used in the visibility test described in Chen \& Wilkinson \cite{chen2009computer}. Smaller threshold leads to larger disks, resulting in dimmer images. As the threshold increases, occlusion handling becomes more lenient and might lead to oversaturated colors. However, this threshold is not robust and needs to be heuristically tuned. }
+    \label{fig:pc_disk_ablation}  
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{supplement/figures/pc_awb_ablation.pdf}
+    \caption{\textbf{Ablation studies on Gaussian scale in point cloud CGH. } We vary the Gaussian scale when treating points as isotropic Gaussians and applying Wave Splatting on the isotropic Gaussians. We define the size of the point as a multiple of the SLM pixel pitch. Smaller scale leads to smaller points, resulting in dimmer images and dark holes. As the Gaussian scale increases, the points become bigger and the image is more densely populated. However, this scale parameter is not robust and needs to be heuristically tuned.  }
+    \label{fig:pc_awb_ablation}  
+\end{figure*}
+
+
+\begin{figure*}
+    \centering
+    \includegraphics[angle=90, height=0.85\textheight]{supplement/figures/vde_extended.pdf}
+    \caption{\textbf{Extended comparisons on occlusion handling for Gaussians.}  In this toy example, we compare occlusion handling methods for Gaussians. For all methods, we partially sample the pupil shape of a circle, translating it horizontally from -0.8 mm to 0.8 mm. This range covers the full exit pupil in our setting, with the pupil diameter being slightly smaller than the exit pupil. The first two columns show the results of the phase-matched RGBD method (\textit{first column}) and our method with a single illumination wave (\textit{second column}), which concentrates energy around the center of the exit pupil. Consequently, when pupil moves to near the edge of the eye box, the energy is filtered out. For RGBD and silhouette methods, since they require a hyperparameter (threshold) to define the depth map boundaries or the disk used to mask out waves from the rear, we test an extensive set of hyperparameters. The optimal hyperparameter would depend on the scene geometry. Notably, in all cases, the reconstruction using our method using multiple reference illuminations (sampled from a random phase distribution in the Fourier domain with zero-order spherical harmonics emission) is the closest to the target images geometrically rendered from different viewpoints.}
+    \label{fig:vde_extended}  
+\end{figure*}

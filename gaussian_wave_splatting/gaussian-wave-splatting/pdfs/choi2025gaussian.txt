@@ -1,0 +1,4126 @@
+=== PAGE 1 ===
+arXiv:2505.06582v1  [cs.GR]  10 May 2025
+Gaussian Wave Splating for Computer-Generated Holography
+SUYEON CHOI∗, Stanford University, USA
+BRIAN CHAO∗, Stanford University, USA
+JACQUELINE YANG, Stanford University, USA
+MANU GOPAKUMAR, Stanford University, USA
+GORDON WETZSTEIN, Stanford University, USA
+Gaussian Wave Splating
+Coherent 
+illumination
+Gaussian 
+primitives
+φ
+Front focus
+Back focus
+Hologram
+Multiview image captures
+Gaussian-based scene representation
+Experimentally captured 3D hologram
+Fig. 1. Emerging Gaussian splating techniques take a few casually captured photographs as input and output a Gaussian scene representation (lef). Our
+Gaussian Wave Splating approach turns these types of representations into holograms that can be directly displayed on emerging holographic displays
+(center). The color bar below the hologram denotes phase values of the phase-only hologram. Our Gaussian-based computer-generated holography algorithm
+reconstructs photorealistic 3D scenes with refocusing capabilities as seen in the experimentally captured results on the right.
+State-of-the-art neural rendering methods optimize Gaussian scene represen-
+tations from a few photographs for novel-view synthesis. Building on these
+representations, we develop an eﬃcient algorithm, dubbed Gaussian Wave
+Splatting, to turn these Gaussians into holograms. Unlike existing computer-
+generated holography (CGH) algorithms, Gaussian Wave Splatting supports
+accurate occlusions and view-dependent eﬀects for photorealistic scenes
+by leveraging recent advances in neural rendering. Speciﬁcally, we derive
+a closed-form solution for a 2D Gaussian-to-hologram transform that sup-
+ports occlusions and alpha blending. Inspired by classic computer graphics
+techniques, we also derive an eﬃcient approximation of the aforementioned
+process in the Fourier domain that is easily parallelizable and implement
+it using custom CUDA kernels. By integrating emerging neural rendering
+pipelines with holographic display technology, our Gaussian-based CGH
+framework paves the way for next-generation holographic displays.
+CCS Concepts: • Computing methodologies →Computer graphics; •
+Hardware →Emerging technologies.
+Additional Key Words and Phrases: computational displays, holography,
+virtual reality, augmented reality, Gaussian splatting, neural rendering
+∗denotes equal contribution.
+Authors’ addresses: Suyeon Choi, suyeon@stanford.edu, Stanford University, USA;
+Brian Chao, brianchc@stanford.edu, Stanford University, USA; Jacqueline Yang,
+jyang01@stanford.edu, Stanford University, USA; Manu Gopakumar, manugopa@
+stanford.edu, Stanford University, USA; Gordon Wetzstein, gordon.wetzstein@stanford.
+edu, Stanford University, USA.
+1
+INTRODUCTION
+Holographic near-eye displays are a next-generation technology
+that oﬀers unprecedented capabilities for smart eyewear. Direct con-
+trol over the phase or amplitude of a partially coherent light engine
+of a virtual or augmented reality (VR/AR) display unlocks unique
+abilities of correcting aberrations of downstream optics, correcting
+for a user’s prescription, and displaying perceptually realistic fo-
+cus cues. Conventional emissive or amplitude-modulating displays
+require perfect (i.e., image-preserving) optics, which places many
+restrictions on combiner optics designs. The unique capabilities of
+holographic near-eye displays, on the other hand, enable “imper-
+fect” optical waveguides with ultra-compact VR/AR display form
+factors where the holographic light engine corrects for the imper-
+fections [Gopakumar et al. 2024; Jang et al. 2024; Kim et al. 2022;
+Maimone et al. 2017].
+All holographic displays require a computer-generated hologra-
+phy (CGH) algorithm to convert the target content (e.g., an image
+or a 3D scene) into the hologram that is shown on the spatial light
+modulator (SLM). Oftentimes, this is a phase retrieval problem for
+phase-only SLMs, and neural networks have been proposed to accel-
+erate this task (e.g., [Peng et al. 2020; Shi et al. 2021, 2022]). Existing
+CGH algorithms support a variety of diﬀerent input data formats,
+including RGB images, RGB-D images with per-pixel depth infor-
+mation, meshes, or light ﬁelds [Chao et al. 2024; Choi et al. 2022;
+Gerchberg 1972; Matsushima and Nakahara 2009; Park 2017; Schif-
+fers et al. 2023; Wakunami et al. 2013; Zhang et al. 2017a]. A major
+
+
+=== PAGE 2 ===
+111:2
+•
+Choi, Chao et al.
+challenge for CGH algorithms, however, is that they are either ex-
+tremely slow and require input data that are not readily available
+(e.g., densely sampled light ﬁelds) or that they use input data which
+do not natively support view-dependent eﬀects and occlusions (e.g.,
+RGB-D) or photorealistic scenes (e.g., meshes). Therefore, no exist-
+ing CGH algorithm oﬀers photorealistic image quality at interactive
+frame rates with readily available content, such as a few casually
+captured images or a video of a real scene.
+Neural rendering techniques have recently enabled novel-view
+synthesis with photorealistic image quality using just a few images
+of a scene [Tewari et al. 2020, 2022]. Among the many proposals
+for neural scene representations, 3D Gaussians [Kerbl et al. 2023]
+have been established as the representation of choice for many ap-
+plications due to their computational eﬃciency, high image quality,
+interpretability, and robust optimization behavior.
+The core contribution of our work is the development of an ef-
+ﬁcient Gaussian-to-hologram transform, which we call Gaussian
+Wave Splatting (GWS), that inherits the beneﬁts of ray-based Gauss-
+ian scene representations for wave-based holographic displays. We
+derive the exact analytical expression of a Gaussian-to-hologram
+transform that supports occlusions and view-dependent eﬀects
+through a wave-based counterpart of the classic volume render-
+ing equation [Kajiya and Von Herzen 1984], which we call alpha
+wave blending. We provide an eﬃcient CUDA implementation for a
+variant of our algorithm and demonstrate photorealistic holographic
+image quality in simulation and with experimental captures.
+To summarize, our contributions include
+• Derivation of an exact analytical solution for a Gaussian-to-
+hologram transform, dubbed Gaussian Wave Splatting.
+• Design of a wave optics counterpart of the classic volume
+rendering equation, dubbed alpha wave blending.
+• Eﬃcient implementation of a GWS variant using custom
+CUDA kernels that achieves a 30× speedup.
+• Validation using numerical simulations and experiments,
+demonstrating beneﬁts over existing CGH algorithms.
+Source code is available on our Github repository1.
+2
+RELATED WORK
+Our work builds on recent progress in holographic displays [Chang
+et al. 2020; Javidi et al. 2021; Park 2017; Yaraş et al. 2010], but focuses
+on developing a new CGH algorithm inspired by recent advances
+in neural scene representations and rendering. We review these
+methods in the following.
+CGH Algorithms. CGH refers to an algorithm that converts
+a target scene into a 2D amplitude, phase, or complex ﬁeld to be
+displayed on an SLM, i.e., the hologram, which optically synthesizes
+the desired target intensity distribution. These algorithms have been
+developed to accommodate various types of scene representations.
+One of the classic algorithms is the point-based method [Chen and
+Wilkinson 2009a; Lucente 1993; Maimone et al. 2017], where the tar-
+get content is represented as a collection of points, each propagated
+to the SLM plane and digitally interfered with a reference wave. The
+propagation of all points toward the SLM is equivalent to a spatially
+1github.com/computational-imaging/hsplat
+varying convolution of a point cloud with a depth-dependent point
+spread function (PSF) and is computationally prohibitive. Moreover,
+point clouds require an excessive number of primitives to represent
+a scene with high ﬁdelity and are inherently limited in their ability
+to model occlusions and view-dependent eﬀects, although look-up
+table approaches and ray-based occlusion methods have been pro-
+posed to partially address these limitations [Chen and Wilkinson
+2009a; Kim and Kim 2008; Lucente 1993; Shi et al. 2021].
+To support view-dependent eﬀects, polygon-based methods [Ahren-
+berg et al. 2008; Kim et al. 2008; Matsushima and Nakahara 2009; Mat-
+sushima et al. 2014, 2003] and holographic stereograms (HS) [Benton
+1983; Halle et al. 1991; Kang et al. 2008; Padmanaban et al. 2019]
+have been proposed. Polygon-based methods convert a mesh into
+a complex-valued wavefront. However, the wavefront footprint of
+triangles varies with their orientation, position, and size, requiring
+substantial memory for look-up table approaches and these methods
+are often slow [Wang et al. 2021b]. Furthermore, numerical stability
+issues often arise when calculating wavefronts of arbitrarily oriented
+triangles. Finally, these methods struggle to render highly detailed
+appearances unless an excessive number of tiny triangles are used.
+On the other hand, holographic stereograms encode densely sam-
+pled light ﬁelds into holograms and typically result in low image
+quality because of their heuristic choices of phase distributions of
+objects [Kang et al. 2016; Padmanaban et al. 2019].
+Recent advances in machine learning have shown promise in
+tackling these challenges, either by accelerating the CGH algorithm
+using deep neural networks or by providing more numerically accu-
+rate procedures that can adapt to ﬂexible target representations. Sev-
+eral works proposed using convolutional neural networks (CNNs)
+to approximate the spatially varying convolution, demonstrating
+real-time performance [Horisaki et al. 2021; Peng et al. 2020; Shi et al.
+2021, 2022; Yang et al. 2022]. While promising, these CNN-based
+methods rely on RGB, RGB-D, or layered-depth-image (LDI) inputs,
+which all suﬀer from depth discontinuity artifacts when render-
+ing from arbitrary viewpoints. Furthermore, such methods require
+re-training neural networks for diﬀerent hardware conﬁgurations.
+Gradient-descent-based methods oﬀer more ﬂexibility, accepting
+custom loss functions and various targets such as RGB and RGB-D
+images, focal stacks, and light ﬁelds [Chakravarthula et al. 2022,
+2019; Choi et al. 2022, 2021; Gopakumar et al. 2024; Kavaklı et al.
+2023; Kuo et al. 2023; Peng et al. 2020; Zhang et al. 2017b]. Light
+ﬁeld holograms generated via gradient descent [Chao et al. 2024;
+Choi et al. 2022; Kim et al. 2024; Schiﬀers et al. 2023], in particular,
+have shown great potential for reconstructing photorealistic con-
+tent with view-dependent eﬀects, but increased rendering, memory,
+input/output (IO), and data streaming costs for light ﬁelds as well
+as their iterative nature make them impractical for real-time ap-
+plications. Moreover, densely sampled light ﬁelds are not readily
+available, so content has to be speciﬁcally curated in this format.
+Our Gaussian Wave Splatting method inherits beneﬁts of Gauss-
+ian scene representations, including photorealistic and 3D-consistent
+view synthesis and an explicit primitives-based representation, al-
+lowing for the generation of holograms that support accurate 3D
+eﬀects. A comparison with existing CGH methods is shown in Tab. 1.
+
+
+=== PAGE 3 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:3
+Table 1. Comparison of CGH algorithms w.r.t. eﬀiciency and visual quality.
+We compare our GWS with the point-based method (PBM), convolutional
+neural network (CNN) methods using RGB, RGB-depth (RGB-D), and sto-
+chastic gradient descent-based (SGD) methods using focal stacks and light
+fields (LF), as well as the polygon-based method. Our approach uses readily
+available input data, such as a few photographs of a real scene, does not
+require pre-training any networks tied to a specific hardware configuration,
+and naturally supports occlusions and view-dependent eﬀects (VDEs).
+Methods
+Eﬃciency
+Visual quality
+eﬃcient
+data
+pretraining
+VDE
+photorealistic
+inference
+availability
+required
+content
+PBM [Chen and Wilkinson
+2009a; Maimone et al. 2017]
+6
+:
+:
+:
+RGB-D, CNN [Peng et al.
+2020; Shi et al. 2021, 2022]
+6
+6
+6
+6
+focal stack, SGD [Choi
+et al. 2022]
+:
+:
+:
+6
+LF [Choi et al. 2022; Kang et al.
+2008; Padmanaban et al. 2019]
+:
+:
+:
+6
+6
+Polygons [Kim et al. 2008;
+Matsushima et al. 2003]
+:
+6
+:
+6
+:
+GWS (eﬃcient)
+6
+:
+6
+GWS (exact)
+:
+6
+:
+6
+6
+Neural Scene Representations and Rendering. Recent ad-
+vances in neural rendering [Tewari et al. 2022] have made great
+strides in improving the quality of 3D reconstruction and novel-
+view rendering. Neural rendering algorithms can be roughly clas-
+siﬁed by the underlying 3D representation, ranging from point
+clouds [Aliev et al. 2019; Kopanas et al. 2021; Xu et al. 2022], vox-
+els [Fridovich-Keil et al. 2022; Hu et al. 2023; Sitzmann et al. 2019a;
+Yu et al. 2021], meshes [Bao et al. 2022; Guo et al. 2023; Hu et al. 2021;
+Kato et al. 2018; Lombardi et al. 2018], to implicit representations
+using MLPs [Mildenhall et al. 2020; Müller et al. 2022; Sitzmann
+et al. 2020, 2019b]. However, it is non-trivial to convert these 3D
+representations to high-quality holograms for direct viewing on
+a 3D holographic display. Almost all of these 3D representations
+include neural networks, and thus an additional step of extracting
+RGB-D images, layered depth images (LDI), light ﬁelds, or meshes
+from these neural representations is required for CGH calculation.
+Among these converted explicit 3D representations, mesh repre-
+sentations retain the most 3D information since each primitive
+is continuously distributed in 3D space unlike the discrete depth
+partitioning in RGB-D or LDI representations. However, mesh op-
+timization and extraction processes are either deeply embedded
+in neural representation training [Hanocka et al. 2020; Tang et al.
+2023] or are based on signed distance function optimization [Wang
+et al. 2021a; Yariv et al. 2021] and Marching Cubes [Lorensen and
+Cline 1987] or Poisson Surface Reconstruction [Kazhdan et al. 2006],
+which all require careful tuning to obtain decent quality meshes.
+Recently, 3D Gaussian Splatting [Kerbl et al. 2023] (3DGS) has
+emerged as the state-of-the-art novel-view synthesis and 3D recon-
+struction technique. 3DGS achieves high image quality for novel-
+view synthesis, is fast to optimize and render, and leverages an
+explicit Gaussian primitive representation which makes the method
+suitable for a wide variety of computer vision and graphics applica-
+tions. The absence of neural networks in the Gaussians represen-
+tation allows us to directly convert optimized Gaussians into 3D
+holograms without any preprocessing, eliminating possibilities of
+image ﬁdelity loss throughout the conversion process. The highly
+parallelizable nature of splatting Gaussians [Kerbl et al. 2023] is also
+desirable for building eﬃcient CGH algorithms, as we demonstrate
+with our novel wave splatting of Gaussians in the Fourier domain.
+Among the plethora of 3DGS variants [Chen and Wang 2024], 2DGS
+[Huang et al. 2024] is especially suitable for CGH because an angular
+spectrum-based analysis of waves is deﬁned on planes, and since
+2D Gaussians and meshes are both ﬂat-primitive representations,
+CGH from 2D Gaussians can therefore greatly beneﬁt from insights
+made by the pioneering research on polygon-based CGH. Hence,
+we use 2DGS as our scene representation for CGH calculation.
+3
+BACKGROUND ON GAUSSIAN SPLATTING
+Gaussian-based scene representations have been shown to be ex-
+pressive and eﬃciently rendered via diﬀerentiable splatting. Our
+work builds on recent 2DGS methods [Huang et al. 2024], where a
+2D or ﬂat Gaussian is deﬁned by its center ą ∈R3, two principal
+tangent vectors t푢, t푣∈R3 that control the orientation of the Gauss-
+ian, and two scaling factors ĩ푢,ĩ푣∈R that control the variance of
+the Gaussian.
+To render the color of a pixel, the colors associated with each
+Gaussian are alpha-composited from front to back as
+c =
+푁
+Õ
+푖=1
+c푖Ă푖
+푖−1
+Ö
+푗=1
+(1 −Ă푗),
+(1)
+where ğ is the index of the Gaussians, c푖is the color of each Gaussian
+computed from the per-Gaussian spherical harmonic coeﬃcients
+and viewing direction, and Ă푖is the alpha value computed from the
+opacity ĥ푖associated with each Gaussian and the standard Gaussian
+value G푖evaluated at the UV coordinate (ī, Ĭ) ∈R2 corresponding
+the pixel location in the local 2D Gaussian tangent plane as
+Ă푖= G푖(ī, Ĭ) · ĥ푖.
+(2)
+The attributes (center, rotation, scale, opacity, and spherical har-
+monic coeﬃcients) of the Gaussians are optimized using gradient
+descent optimization with photometric losses between rendered and
+target images as described by Huang et al. [2024].
+4
+WAVE SPLATTING
+In this section, we develop a method to compute holograms that
+faithfully represent the 3D scene, given a collection of 2D Gaussians
+representing this scene. To encode the Gaussian primitives as in-
+terference patterns based on the theory of wave optics, we need
+to propagate the wavefront contribution of each Gaussian, namely
+ī(x), in free space to the SLM plane. The optical propagation over
+a distance İ can be described by a free-space wave propagation
+operator P(·;İ), such as the angular spectrum method [Goodman
+2005; Matsushima and Shimobaba 2009]:
+P
+
+ī(x);İ
+
+=
+∬
+F (ī(x)) H (k,İ) ě 푗(푘푥푥+푘푦푦)Ěġ푥Ěġ푦,
+(3)
+H (k,İ) =
+(
+ě 푗푘푧푧,
+if
+q
+ġ2푥+ ġ2푦< 2휋
+휆,
+0,
+otherwise,
+, |k| = 2ÿ
+ą
+(4)
+where ą is the wavelength, k = (ġ푥,ġ푦,ġ푧) is the wave vector,
+and F (·) denotes the Fourier transform. Instead of integrating a
+radiance ﬁeld along each ray, as in classic volume rendering [Kajiya
+
+
+=== PAGE 4 ===
+111:4
+•
+Choi, Chao et al.
+and Von Herzen 1984], in our wave-based setting, we splat the
+wavefront contributions of Gaussians onto a common plane that is
+orthogonal to the optical axis by simulating their wave propagation
+through the volume from front to back using alpha compositing.
+Note that this composition can be evaluated at any plane, such as
+the SLM where İ = 0. Therefore, we obtain the composited complex-
+valued wavefront at the SLM, īSLM, as
+īSLM(x) =
+푁
+Õ
+푖
+c푖ĥ푖P
+
+ī푖(x;İ푖)Đ푖(x) ; −İ푖
+
+,
+(5)
+Đ푖(x) =
+푖−1
+Ö
+푗=1
+(1 −ĥ푗|ī푗(x;İ푗)|),
+(6)
+where ī푖(x;İ푖) denotes the wavefront contribution of the ğ푡ℎGauss-
+ian at depth İ푖(see next subsection, Eq. 10) and ĥ푖denotes the
+opacity of the ğ푡ℎGaussian. Đ푖(x) is the accumulated transmittance
+along the wave propagation, from the ﬁrst Gaussian to the ğ푡ℎGauss-
+ian [Huang et al. 2024; Kerbl et al. 2023]. We refer to Eq. 5 as alpha
+wave blending. Our alpha wave blending technique inherits the ad-
+vantages of Gaussian splatting, including smooth falloﬀs for each
+object opacity (Eq. 2), to seamlessly merge the Gaussians for high-
+quality reconstruction. This formulation simpliﬁes to the original
+ray-based alpha blending if we ignore the wave propagation opera-
+tor and the phase of all wavefronts (i.e., ī푖= G푖).
+Previous polygon-based CGH methods, such as silhouette-based
+approaches [Matsushima et al. 2014], are inherently slow due to
+their recursive nature that involves repeatedly masking out the
+occluded ﬁeld from the back with a binary aperture. Additionally,
+the use of binary apertures with translucency to emulate alpha
+blending [Matsushima 2020] results in artifacts, as we discuss and
+compare further in Sec. 5 (see Figs. 4 and 5). Our alpha wave blending
+technique, on the other hand, performs exact alpha blending like its
+ray-based counterpart, and is also compatible with silhouette-based
+methods for meshes with binary opacity.
+In alpha wave blending, the wavefronts of arbitrarily oriented
+2D Gaussians need to be accurately propagated to planes parallel
+to the SLM plane. One way to achieve this is to place each 2D
+Gaussian disk on its local tilted plane and propagate it to a parallel
+plane using tilted propagation, which translates to remapping the
+angular spectrum [Matsushima et al. 2003]. However, this approach
+is inherently slow as it requires performing a Fast Fourier Transform
+(FFT) for each primitive to compute the angular spectrum on the
+tilted plane. Additionally, it may introduce numerical errors due to
+the nonlinear remapping of Fourier coordinates [Zhang et al. 2022].
+To overcome these limitations, we derive a closed-form solution for
+the angular spectrum of arbitrary 2D Gaussian disks at the SLM
+plane (Sec. 4.1).
+To further speed up alpha wave blending, we develop an ap-
+proximated alpha blending model inspired by order-invariant opac-
+ity [McGuire and Bavoil 2013] in traditional computer graphics
+(Sec. 4.2). This approximated model can be eﬃciently parallelized
+in the Fourier domain, and we achieve a 30× speedup compared to
+naïve alpha wave blending using our custom CUDA CGH kernels.
+canonical space
+hologram space
+world space
+model
+transform
+xc
+yc
+SLM
+view transform,
+projective mapping,
+hologram transform
+viewpoint
+x
+y
+x = RiSixc+µi
+SLM
+y
+yc
+2D Gaussian
+Plane wave
+zc
+z
+canonical space
+(object space lies on
+the same plane)
+kr
+hologram
+space
+ui(x)
+ui(x; z )i
+Fig. 2. Illustration of coordinate systems and Gaussian Wave Splat-
+ting. Top: We take a set of optimized primitives from oﬀ-the-shelf neural
+rendering frameworks in world space and convert them into into hologram
+space through a sequence of coordinate transformations. Each Gaussian
+in hologram space is represented by its own aﬀine transformation from
+canonical space. Botom: In hologram space, GWS computes the analytical
+solution of the wavefront footprint at the SLM generated by a Gaussian
+wavefront—with arbitrary rotation and position—illuminated by a plane
+wave.
+4.1
+Gaussian Wave Splating
+In this section, we derive the closed-form solution for the wave-
+front contribution of a 2D Gaussian to the SLM. To focus on the
+relationship between the 2D Gaussian’s position, rotation, and the
+SLM plane, we assume that the SLM lies centered on the 푥푦−plane.
+The position, rotation, and scale of the 2D Gaussian, discussed in
+the following section, are deﬁned in this hologram space (see Fig. 2).
+To render holograms of the optimized 2DGS model deﬁned in world
+space from any given viewpoint, we can simply rotate and project
+the 2D Gaussians with the corresponding view transform and pro-
+jective mapping as we would in the traditional graphics pipeline to
+transform the oﬀ-the-shelf Gaussians to the ray space [Zwicker et al.
+2001]. The Gaussians in ray space are sequentially transformed into
+hologram space, based on the hardware setup geometry, including
+the relative position between eyepiece, SLM, and the target volume,
+
+
+=== PAGE 5 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:5
+as illustrated in Fig. 2. We refer interested readers to the Supple-
+mentary Materials for the complete holographics pipeline used to
+render holograms from optimized Gaussian splatting models.
+To calculate the wavefront of the 푖푡ℎGaussian 푢푖(x) in hologram
+space, we begin with a zero-mean, unit-variance standard Gaussian
+푢푐deﬁned in the canonical space x푐= (푥푐,푦푐,푧푐= 0). We note
+that Gaussians have the neat property for CGHs that their Fourier
+transform, ˆ푢푐, is also a zero-mean Gaussian
+푢푐(x푐) = 푒−1
+2 (푥2
+ę+푦2
+ę )
+F
+←→ˆ푢푐(k푐) = 2휋푒−2휋2kT
+ękę .
+(7)
+From this canonical Gaussian, our Gaussian in hologram space
+is deﬁned by its center ą푖∈R3×1 and covariance matrix Σ푖=
+푅푖푆푖푆T
+푖푅T
+푖∈R3×3, which can be factorized into a scaling matrix
+푆푖∈R3×3 and a rotation matrix 푅푖= 푅푥푅푦푅푧∈R3×3. Since we
+work with 2D Gaussian disks, we assume that the 푧-scales of all
+Gaussians are zero. With these parameters, any 2D Gaussian can
+be transformed from the canonical space to the hologram space
+as x = 푅푖푆푖x푐+ ą푖. We are interested in how such a Gaussian
+contributes to the SLM plane in hologram space (see Fig. 2), where
+they will be composited using alpha wave blending. To this end,
+we derive the closed-form solution for the angular spectrum of 2D
+Gaussian primitives ˆ푢푖(k) in hologram space. Note that, while we
+proceed with the angular spectrum in the following equations, this
+is equivalent to transformations between wavefronts, which can
+also be obtained using the Fourier transform. First, we transform
+the wavefront in the canonical space to the object space, which lies
+on the same plane as the canonical space and is deﬁned by a 2D
+aﬃne transform using the scaling matrix x표= 푆푖x푐. From the aﬃne
+theorem for two-dimensional Fourier transforms [Bracewell et al.
+1993], we obtain the angular spectrum in object space ˆ푢표(k표) as
+푢표(x표) = 푢푐(푆−1
+푖
+x표)
+F
+←→ˆ푢표(k표) = det(S) ˆ푢푐((S−1
+푖)−Tk표).
+(8)
+Next, we propagate the wavefront in the object space to the holo-
+gram space, which is translated and tilted relative to the object space:
+x = 푅푖x표+ ą푖. We observe that translation by ą푖in the spatial do-
+main is equivalent to applying a phase ramp 푒푗k·ąğ in the Fourier
+domain, as observed in Eq. 4. The propagation of wavefronts be-
+tween tilted planes can be described by the rotational transform of
+the waveﬁeld [Matsushima et al. 2003]. The main insight behind
+this approach is that the wave vector also follows the same rota-
+tion, meaning a plane wave of wavenumber k in hologram space
+corresponds to a plane wave of wavenumber 푅−1
+푖
+k in object space.
+Thus, the angular spectrum in hologram space can be obtained by
+remapping the angular spectrum in the local space, k표= 푅−1
+푖
+k:
+ˆ푢푖(k) = det(J)det(S푖) ˆ푢푐
+
+S푖푅−1
+푖
+k
+
+푒푗k·ąğ
+(9)
+= 2휋det(J)det(S푖)푒−2휋2kTΣğk푒푗k·ąğ .
+(10)
+Here, det(J) = 푘ĥİ
+푘İ is the Jacobian determinant of the transformation
+of Fourier coordinates. We dub Eq. 10 the Gaussian Wave Splatting
+equation, as it describes the exact angular spectrum of the splatted
+wavefront at the SLM plane. The wavefront proﬁle at the SLM 푢푖(x)
+can be obtained by applying the inverse Fourier transform to ˆ푢푖(k).
+Similarly, the wavefront proﬁle at depth 푧푖,푢푖(x;푧푖), can be obtained
+by setting the depth 푧component in ą푖to zero in Eq. 10, if we want
+to apply the attenuation factor 푇푖before splatting the wavefront
+onto the SLM plane. Note that Eq. 9 is not limited to 2D Gaussians
+but can be generalized to any primitives that have a closed-form
+solution for the angular spectrum in canonical space [Ahrenberg
+et al. 2008; Kim et al. 2008].
+This closed-form solution oﬀers various beneﬁts, including an
+eﬃcient CUDA implementation in the Fourier domain as well as
+support for occlusions and view-dependent eﬀects. Due to the band-
+width of the SLM, we assume all Gaussians are illuminated by a
+reference plane wave propagating in the direction of k푟. This in-
+volves a shift in the angular spectrum by k푟in the Fourier domain.
+4.2
+Fast CUDA Implementation of Approximated Gaussian
+Wave Splating using Order-Invariant Transparency
+We can apply the Fourier transform to both sides of Eq. 5 and rewrite
+alpha wave blending in the Fourier domain:
+ˆ푢SLM(k) =
+푁
+Õ
+푖
+c푖표푖F
+
+푢푖(x)푇푖(x)
+
+H (k, −푧푖)
+=
+푁
+Õ
+푖
+c푖표푖
+
+ˆ푢푖(k) ∗F
+
+푇푖(x)
+
+H (k, −푧푖),
+(11)
+where ∗denotes the convolution operator. The formulation of Eq. 11
+is equivalent to the Gaussian splatting volume rendering equation in
+the spatial domain deﬁned in Eq. 1, the only diﬀerence being that Eq.
+11 is deﬁned for each frequency location k instead of pixel location
+x. However, unlike its spatial-domain counterpart, it is diﬃcult to
+utilize per-pixel parallelization to speed up the calculation of Eq. 11
+due to the presence of a convolution, which cannot be eﬃciently
+calculated for each frequency location k. This is an inherent compu-
+tational challenge in CGH where a single pixel on a plane aﬀects all
+pixels within its subhologram on other planes.
+To fully utilize CUDA parallelization for real-time CGH calcula-
+tion, we design an approximated version of alpha wave blending
+to allow for eﬃcient per-frequency parallelization. Speciﬁcally, we
+discard the transparency term, i.e.,푇푖(x) ≈1, in Eq. 11 and therefore
+remove the costly convolution operation:
+ˆ푢SLM(k) ≈
+푁
+Õ
+푖
+c푖표푖ˆ푢푖(k)H (k, −푧푖).
+(12)
+It is now straightforward to parallelize the computation of this
+approximated CGH model since each term in Eq. 12 can be indepen-
+dently calculated per-frequency location k. Therefore, we implement
+custom CUDA kernels to perform eﬃcient CGH calculation using
+this approximated alpha wave blending model.
+The spatial-domain counterpart of Eq. 12 can be described as:
+c ≈
+푁
+Õ
+푖=1
+푐푖훼푖=
+푁
+Õ
+푖=1
+푐푖G푖표푖,
+(13)
+where c is the ﬁnal rendered pixel color, 푐푖, 훼푖,표푖∈R are the color,
+alpha, and opacity of the 푖th Gaussian, respectively, and G푖is the
+splatted 2D Gaussian value evaluated at the location of the pixel cur-
+rently being rendered. Note that the transparency term is omitted
+compared to the original volume rendering equation (Eq. 1). Inter-
+estingly, this image formation model is known as order-invariant
+
+
+=== PAGE 6 ===
+111:6
+•
+Choi, Chao et al.
+Naïve OIT
+OIT with view-dependent opacity
+d2
+d1
+α1 (d1) = α2 (d2)  
+d2
+d1
+α1 (d1) ≠ α2 (d2)  
+Fig. 3. Order-invariant transparency with view-dependent opacity.
+We ablate novel-view synthesis of our 2DGS-OIT model using view-agnostic
+opacity (clamping opacity to (0, 1) using a sigmoid function as in naive
+Gaussian splating) and view-dependent opacity represented with spherical
+harmonics. The naïve OIT model suﬀers from severe color leakage or even
+complete disappearance of objects. Conversely, the OIT model with view-
+dependent opacity greatly mitigates such artifacts, achieving image quality
+comparable to 2DGS.
+transparency (OIT) in traditional computer graphics [McGuire and
+Bavoil 2013], and is mainly designed for speeding up alpha com-
+positing operations. As the name suggests, OIT ignores the ordering
+of primitives, discards the front-to-back alpha compositing proce-
+dure in Eq. 1, and represents the ﬁnal composited color simply as a
+weighted sum of the Gaussian colors and opacities.
+Since this image formation model is diﬀerent from the alpha com-
+positing model in 2DGS, we cannot directly apply the eﬃcient alpha
+wave blending method to the optimized 2DGS models. Therefore,
+we replace the volume rendering equation (Eq. 1) used by 2DGS
+with Eq. 13, and refer to this 2DGS variant as 2DGS-OIT. We opti-
+mize 2DGS-OIT models for the eﬃcient version of our alpha wave
+blending algorithm, implement custom CUDA kernels to perform
+forward and backward passes of Eq. 13, and integrate them with
+existing 2DGS libraries. Please refer to the supplemental materials
+for mathematical derivations and implementation details.
+A problem with Eq. 13 is that, although easily parallelizable in
+the Fourier domain, the absence of ordering information among
+primitives prevents the Gaussian splatting model from accurately
+representing occlusion. This is illustrated in Fig. 3, where the ren-
+dered colors from two opposite viewpoints along the same line of
+sight are exactly the same, yet intuitively the rendered color from
+each viewpoint should be more similar to the color of the closer
+Gaussian. In order to re-introduce occlusion modeling and ordering
+information back to Eq. 13, we leverage view-dependent opacity by
+deﬁning the opacity of each Gaussian as a set of spherical harmon-
+ics (SH) coeﬃcients o푖∈R퐾: 훼푖= G푖· SH(o푖, d), where 퐾is the
+number of SH coeﬃcients, SH is the linear spherical harmonics op-
+erator and d ∈R3 is the viewing direction. This leads to signiﬁcant
+improvements in 3D reconstruction quality, as shown in Fig. 3.
+5
+EXPERIMENTS
+5.1
+Implementation Details
+Datasets and 3D Scene Representations. We create 3D holo-
+grams of selected scenes from the synthetic Blender dataset [Milden-
+hall et al. 2020] and the MipNeRF-360 dataset [Barron et al. 2022]
+using diﬀerent 3D scene representations, including 2D Gaussians,
+meshes, and point clouds.
+We use the open-source Gaussian splatting software library gsplat
+[Ye et al. 2024] to optimize naive 2DGS models used for our ex-
+act Gaussian Wave Splatting (Sec 4.1). Additionally, we implement
+custom kernels and integrate them into gsplat to optimize our
+2DGS-OIT models for the fast variant of GWS (Sec 4.2). To ﬂexibly
+control the ﬁnal number of optimized Gaussians, we leverage the
+3DGS-MCMC densiﬁcation strategy [Kheradmand et al. 2024] and
+cap the maximum number of Gaussians.
+To be able to apply polygon-based CGH on meshes, the meshes are
+required to have per-face colors since it is unclear how to apply tex-
+ture mapping in polygon-based CGH. However, a disproportionate
+number of triangles is required to reconstruct detailed appearance
+when using per-face colors, therefore almost all high-quality mesh
+models do not use per-face colors and leverage texture mapping.
+Therefore, we start from optimized textured mesh models released
+by the NeRF2Mesh [Tang et al. 2023] authors and calculate per-face
+colors by averaging the per-vertex colors to acquire the textured
+meshes that are applicable for polygon-based CGH.
+For point cloud representations, we used provided SfM points
+for the MipNeRF-360 scenes and points uniformly sampled on the
+NeRF2Mesh meshes for the Blender scenes.
+Algorithm Implementations. We implement GWS and all base-
+line methods in PyTorch, and additionally implement fast GWS in
+CUDA. Since most prior primitive-based CGH methods lack reliable
+open-source reference implementations, one of the major goals of
+this project is to create a uniﬁed primitive-based CGH algorithms
+development framework that allows for hologram generation from
+the various 3D representations, such as point clouds, meshes, and
+Gaussian splats. To this end, we create the hsplat PyTorch library
+for primitive-based CGH. Please refer to the Supplementary Materi-
+als for pseudocode and implementation details.
+Table 2. Qantitative performance of diﬀerent CGH algorithms. We
+evaluate the image quality of simulated holograms generated using diﬀerent
+CGH methods in terms of PSNR (↑) / SSIM (↑) / LPIPS (↓). Our methods
+achieve 5–11dB PSNR improvement over baseline methods.
+Method - 3D representation
+Blender
+Mip-NeRF 360
+Chen and Wilkinson [2009b] - Point Cloud
+18.34 / 0.77 / 0.20
+9.45 / 0.074 / 0.70
+Matsushima et al. [2014] - Mesh
+20.79 / 0.81 / 0.18
+15.77 / 0.27 / 0.65
+Ours (fast) - Gaussians
+26.55 / 0.92 / 0.10
+20.70 / 0.59 / 0.42
+Ours (exact) - Gaussians
+27.30 / 0.91 / 0.11
+22.37 / 0.58 / 0.40
+Experimental Setup. To experimentally validate our algorithms,
+we build a holographic display benchtop prototype using a FISBA
+READYBeam™Bio2 ﬁber-coupled module and a Holoeye PLUTO
+phase-only liquid crystal on silicon (LCoS) SLM. Color images are
+
+
+=== PAGE 7 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:7
+Naïve wave blending
+Silhoute-based method
+(Binary aperture)
+Alpha wave blending
+(Ours)
+Target rendering
+Fig. 4. Simulated comparisons on wavefront blending strategies. We ablate wavefront blending strategies to reconstruct a scene represented by a
+collection of Gaussians in simulation. Naïvely adding up all the Gaussians without considering occlusion leads to oversaturated colors (lef). State-of-the-art
+occlusion handling techniques [Matsushima et al. 2014] employ a binary aperture to atenuate wavefront contributions from the rear based on the opacity of
+the front object, and do not appropriately handle smooth Gaussian falloﬀs and alpha blending (center lef). Our alpha wave blending method (center right)
+performs exact alpha blending and faithfully reconstructs the 3D scene. On the right, we show the target image rendered with ray-based alpha blending.
+captured with separate exposures for each wavelength and com-
+bined in post-processing. In our setup, the depth range in hologram
+space is approximately 1cm, corresponding to a total depth range in
+view space from optical inﬁnity to approximately 0.5m. To address
+hardware imperfections, we account for laser beam intensity varia-
+tions and perform spatially varying lookup table calibration [Choi
+et al. 2021; Shi et al. 2022]. We refer readers to the Supplementary
+Materials for details on the experimental setup and its calibration
+procedures.
+Displaying GWS holograms with Phase-only SLMs. Our GWS
+algorithms compute a complex-valued hologram 푢SLM, similar to
+other primitive-based methods. To encode the complex-valued wave-
+front splatted onto the SLM plane into a phase-only pattern, we
+use the double phase–amplitude coding method (DPAC) described
+in the literature [Hsueh and Sawchuk 1978; Maimone et al. 2017].
+DPAC directly encodes a complex-valued wavefront 푎푒푗휙into two
+phase values, 푃± = 푎± 푐표푠−1휙, and interlaces 푃+ and 푃−like a
+checkerboard pattern [Maimone et al. 2017].
+5.2
+Simulation and Experimental Results
+Occlusion Handling. In Gaussian splatting, occlusion is handled
+via alpha compositing, and we evaluate occlusion handling for the
+wave counterpart in Fig. 4. The left column shows simulated recon-
+structions using holograms generated without occlusion handling,
+where all rear Gaussians contribute to the hologram. The second
+column presents results with a silhouette-based method emulating
+alpha blending [Matsushima 2020], which attenuates rear wavefront
+contributions with a translucent mask of the front object. Our al-
+pha wave blending (third column) uniquely achieves accurate scene
+reconstruction from a collection of Gaussians, which is shown in
+the rightmost column.
+Baseline Comparisons with Simulations and Experiments.
+We compare our exact GWS algorithm and our fast variant of GWS
+with various primitive-based CGH methods, including point-based
+methods [Chen and Wilkinson 2009b] and polygon-based methods
+[Matsushima and Nakahara 2009; Matsushima et al. 2014]. Please
+refer to the supplemental materials for comparisons with a more
+extensive set of baselines.
+We show experimentally captured 3D focal stacks of holograms
+generated from diﬀerent 3D representations in Fig. 6. Point clouds
+are inherently sparse, thus visible holes are present in both the target
+rendering and the synthesized 3D hologram and the point sizes need
+to be heuristically tuned to achieve a merely passing image quality.
+Meshes with per-face colors lead to overly smooth colors and cannot
+reconstruct high-frequency details unless paired with a texture map
+or using a disproportionate number of primitives. However, texture
+mapping is infeasible in the context of polygon-based CGH and a
+large number of primitives leads to infeasible processing times. Our
+GWS method achieves superior 3D hologram quality with sharp
+reconstruction in focused regions as shown in the insets with colored
+borders. Furthermore, GWS delivers superior image quality despite
+using an equal or reduced number of geometric primitives compared
+to the mesh models.
+We additionally show experimentally captured focal stacks of
+exact GWS holograms generated from various novel viewpoints of
+an optimized 2DGS model in Fig. 7. GWS achieves accurate refocus-
+ing eﬀects at every viewpoint, demonstrating the robustness of our
+method. Please refer to the supplemental video for the full circular
+trajectory novel-view rendering and captured 3D focal stacks at
+each novel viewpoint. To generate the hologram for each individual
+frame, we transform the Gaussians into the hologram space using
+the view transform corresponding to each video frame, following
+the holographics pipeline described in the supplemental materials.
+Finally, we report quantitative results of simulated baseline com-
+parisons in terms of various image quality metrics in Table 2. We
+evaluate the in-focus image quality by merging simulated focal
+stacks rendered from the generated holograms into an all-in-focus
+image using RGB-D masks computed from depth maps rendered
+from optimized 2DGS models, and compare this all-in-focus image
+with ground-truth images from the training dataset. Both the fast
+and exact version of our Gaussian Wave Splatting algorithm consis-
+tently outperform other primitive-based CGH algorithms in terms of
+all image quality metrics. Note that since Gaussian splatting uses a
+weighted photometric loss that prioritizes pixel-wise reconstruction
+(PSNR) over structural similarity and perceptual quality, fast GWS
+achieves slightly better performance in SSIM and LPIPS compared
+to exact GWS.
+
+
+=== PAGE 8 ===
+111:8
+•
+Choi, Chao et al.
+Table 3. Runtime comparison of primitive-based CGH. We report the
+runtime of other primitive-based algorithms and both variants of GWS.
+Since prior methods lack open-source implementations, we directly borrow
+the reported runtime from the corresponding papers, and evaluate GWS
+using the same target resolution and number of primitives specified in the
+papers. Given the same target hologram resolution and number of primitives,
+fast GWS achieves a runtime comparable to prior methods while greatly
+exceeding their image quality with a 30× speedup compared to exact GWS.
+Method
+Resolution
+Number of primitives
+Runtime
+Chen and Wilkinson [2009b]
+1024 × 1280
+15k points
+2.47s
+Matsushima et al. [2014]
+2000 × 2000
+15k triangles
+13.5s
+Ours (fast)
+1024 × 1280
+15k Gaussians
+6.84s
+2000 × 2000
+15k Gaussians
+18.06s
+Ours (exact)
+1024 × 1280
+15k Gaussians
+180s
+2000 × 2000
+15k Gaussians
+470s
+Exact and Fast Gaussian Wave Splatting. In the rightmost two
+columns of Fig. 6, we show experimentally captured focal stacks of
+holograms generated using our GWS algorithms. The experimen-
+tally captured results of the fast variant suﬀers from slight contrast
+reduction and background color leakage artifacts in some regions
+due to the lack of accurate order information among Gaussians,
+although these artifacts are already greatly mitigated with the view-
+dependent opacities described in Section 4 as shown in the target
+rendering. The exact version achieves better results due to the ac-
+curate modeling of occlusions through alpha wave blending at the
+cost of longer CGH calculation time.
+We show runtime comparisons of exact and fast GWS and prior
+primitive-based CGH methods in Table 3. Fast GWS achieves a
+nearly 30× speedup over exact GWS at the cost of a slight drop in
+image quality, and achieves a runtime comparable to prior methods
+while greatly exceeding their image quality. Please refer to the
+supplemental materials for a more detailed runtime analysis.
+Partially Coherent GWS For View-Dependent Eﬀects. Direc-
+tional eﬀects in primitive-based CGHs have primarily been dis-
+cussed in the context of representing the reﬂectance distribution
+of surfaces [Cuypers et al. 2012; Park 2017]. Pioneering work has
+attempted to control the angular emission proﬁle using subtrian-
+gles [Kim et al. 2008] and appropriate phase proﬁles for them. Yeom
+et al. demonstrated that the desired reﬂectance distribution could
+be approximated as a convolution between the angular spectrum
+of the mesh and the angular distribution [Askari et al. 2017; Yeom
+and Park 2016]. In our general, partially coherent GWS formulation,
+Eq. 9 can be adapted as follows:
+ˆ푢SHģ
+Ģ (k) = det(J)det(S푖)
+
+ˆ푢푐
+
+S푖푅−1
+푖
+k
+
+∗k 푌푚
+푙(k)푒푗휙(k)
+푒푗k·ąğ,
+(14)
+where ∗k is the convolution operator in the spatial frequency domain
+and 푌푚
+푙(k)푒푗휙(k) denotes the angular kernel, having the spherical
+harmonics function 푌푚
+푙
+of degree 푙and order 푚as its amplitude.
+Importantly, the phase proﬁle of this kernel 휙(k) plays a crucial
+role as it might aﬀect the intensity proﬁle in the spatial domain,
+and the degree of freedom to represent arbitrary spatio-angular
+light ﬁeld is inherently limited by the rank-1 constraint of coherent
+RGB-D
+(no occlusion handling)
+Silhouete-based
+(masking)
+Ours
+(alpha wave blending)
+Lef 
+view
+Center 
+view
+Right 
+view
+Target
+(geometric rendering)
+Fig. 5. Simulated comparisons on parallax. RGB-D data lacks infor-
+mation about objects behind occluders, resulting in blank regions when
+viewed from other viewpoints. The silhouete-based method [Matsushima
+et al. 2014], designed for binary apertures, masks the wavefronts from the
+rear, leading to inaccurate wavefront masking and blending of continuous
+Gaussian profiles. Our alpha wave blending method eﬀectively handles the
+occlusion of Gaussians, naturally blends them according to their smooth
+falloﬀs from all viewpoints, and best matches the target shown on the right.
+wavefronts [Zhang 2011]. To address this, one can rely on partial
+coherence, expecting the average of the amplitude of the kernel
+to be unity in the spatial domain to keep the amplitude proﬁle of
+our Gaussians. To achieve this, we sample multiple phases for 휙(k)
+from a uniform distribution in the range [−휋, 휋]. Please refer to the
+Supplementary Materials for more details.
+In Fig. 5, we compare various CGH methods based on the parallax
+eﬀects observed from diﬀerent viewpoints. To this end, we generate
+partially coherent wavefronts using 24 frames for a toy scene, in
+which a red Gaussian is located at the zero-disparity plane and a
+blue Gaussian is positioned 2 cm behind it. As the viewpoint shifts
+from right to left, the blue Gaussian moves as expected, and our
+alpha wave blending, shown in the third column, faithfully repre-
+sents the desirable occlusion eﬀects corresponding to the viewpoints.
+The previous state-of-the-art occlusion handling technique, i.e., the
+silhouette-based method [Matsushima et al. 2014], and the basic
+point-based method using RGB-D [Shi et al. 2021], fail to model the
+occlusions for Gaussians due to incorrect masking or incomplete
+scene representation. Our method is the only one that takes con-
+tinuous falloﬀs into account, uniquely reconstructing the blended
+purple color in the overlapped region (right view), whereas other
+binary-mask-based methods, or data representations which do not
+support alpha maps, cannot represent such blends. Both baselines
+require a heuristic threshold to discretize the depth map or mask
+the Gaussian [Chen and Wilkinson 2009b], which we set to 0.1.
+In contrast, our alpha wave blending eliminates the need for such
+hyperparameter tuning while accurately alpha blending Gaussians
+from all perspectives.
+
+
+=== PAGE 9 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:9
+6
+DISCUSSION
+In summary, we develop CGH algorithms that encode Gaussian-
+based scene representations into holograms. To this end, we derive
+an alpha wave blending formulation as well as analytical expressions
+that map Gaussian primitives to a complex-valued wavefronts. Un-
+like conventional Gaussian splatting, where the rendered image can
+be rasterized per pixel, the wave nature of holographic rendering in-
+creases computational cost, because each SLM pixel is aﬀected by an
+extended sub-hologram region on another, parallel plane. However,
+we observe that our analytical expression can be eﬃciently imple-
+mented per frequency in the Fourier domain and implement custom
+CUDA kernels that accelerate this process, achieving a 30× speedup.
+We validate our framework through simulations and experiments,
+demonstrating photorealistic image quality using oﬀ-the-shelf and
+widely used novel-view synthesis datasets.
+Limitations and Future Work. Our work is a ﬁrst step towards
+seamlessly connecting emerging neural graphics pipelines to CGH
+algorithms, leaving many exciting future directions to be explored.
+First, our work focuses on encoding a collection of Gaussians into
+a complex wavefront while placing less emphasis on the phase distri-
+bution of the Gaussians, which governs defocus behavior. As a result,
+our method, except Fig. 5, only ensures correct in-focus imagery,
+exhibiting unnatural defocus blur and a limited eyebox. In contrast,
+random-phase holograms can maximize the bandwidth utilization of
+the SLM and have been demonstrated to achieve accurate occlusion
+and parallax, synthesize natural defocus blur, reduce the depth of
+ﬁeld, and enlarge the eyebox [Amako et al. 1995; Lohmann and Paris
+1967; Yoo et al. 2021]. Extending GWS to generate random-phase
+holograms is therefore an interesting future direction. We note that
+DPAC typically provides good image quality for smooth-phase holo-
+grams with certain ﬁltering in the Fourier domain. Thus, alternative
+phase encoding methods, such as a learned phase encoder [Peng et al.
+2020] that accounts for optical setup imperfections, or a gradient-
+descent-based method to encode complex GWS wavefronts into a
+phase-only pattern, need to be developed to potentially improve
+image quality, bandwidth utilization, and compactness [Chen et al.
+2021; Gopakumar et al. 2021].
+Next, although our CUDA implementation demonstrates a signif-
+icant speedup over a naïve implementation, it does not yet achieve
+real-time hologram generation. Incorporating priors from closed-
+form solutions of other CGH methods could further accelerate run-
+times [Im et al. 2015; Wang et al. 2023], for example, by reducing
+the region of interest for propagation [Matsushima et al. 2014] or
+by developing eﬃcient CUDA implementations that directly han-
+dle non-localized convolutions in the Fourier domain. Furthermore,
+integrating neural networks [Shi et al. 2021], leveraging custom
+hardware [Makowski et al. 2022; Yamamoto et al. 2022], or design-
+ing end-to-end holographic camera systems [Wang et al. 2024; Yu
+et al. 2023] could also facilitate real-time CGH.
+Finally, our current holographic display hardware supports only
+a limited étendue due to the small diﬀraction angle of the SLM [Kuo
+et al. 2020]. This limitation motivates our current approximation
+of view-dependent eﬀects using only the zeroth order of spherical
+harmonics. Demonstrating higher-order spherical harmonics with
+partially coherent, étendue-expanded hardware systems represents
+another exciting direction for future work.
+Conclusion. By integrating emerging neural rendering techniques
+with holographic display technology, our algorithms pave the way
+toward eﬃcient holographic rendering with photorealistic content.
+ACKNOWLEDGMENTS
+We thank Seung-Woo Nam and Gun-Yeal Lee for fruitful discussions.
+Brian Chao and Jacqueline Yang are supported by Stanford Graduate
+Fellowships and the NSF Graduate Research Fellowship Program
+(GRFP). We also thank EssilorLuxottica and Meta for their support.
+REFERENCES
+Lukas Ahrenberg, Philip Benzie, Marcus Magnor, and John Watson. 2008. Computer gen-
+erated holograms from three dimensional meshes using an analytic light transport
+model. Applied optics 47, 10 (2008), 1567–1574.
+K. Aliev, A. Sevastopolsky, M. Kolos, D. Ulyanov, and V. Lempitsky. 2019. Neural
+Point-Based Graphics. arXiv:1906.08240 arXiv preprint.
+Jun Amako, Hirotsuna Miura, and Tomio Sonehara. 1995. Speckle-noise reduction on
+kinoform reconstruction using a phase-only spatial light modulator. Applied optics
+34, 17 (1995), 3165–3171.
+Mehdi Askari, Seong-Bok Kim, Kwang-Soo Shin, Seok-Bum Ko, Sang-Hoo Kim, Dae-
+Youl Park, Yeon-Gyeong Ju, and Jae-Hyeung Park. 2017. Occlusion handling using
+angular spectrum convolution in fully analytical mesh based computer generated
+hologram. Optics Express 25, 21 (2017), 25867–25878.
+Chong Bao, Bangbang Yang, Zeng Junyi, Bao Hujun, Zhang Yinda, Cui Zhaopeng,
+and Zhang Guofeng. 2022. NeuMesh: Learning Disentangled Neural Mesh-Based
+Implicit Field for Geometry and Texture Editing. In ECCV.
+Jonathan T. Barron, Ben Mildenhall, Dor Verbin, Pratul P. Srinivasan, and Peter Hedman.
+2022. Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields. In CVPR.
+Stephen A Benton. 1983. Survey of holographic stereograms. In Processing and Display
+of Three-Dimensional Data, Vol. 367. SPIE, 15–19.
+R. N. Bracewell, K.-Y. Chang, A. K. Jha, and Y.-H. Wang. 1993. Aﬃne theorem for
+two-dimensional Fourier transform. Electronics Letters 29, 3 (1993), 304–304.
+Praneeth Chakravarthula, Seung-Hwan Baek, Florian Schiﬀers, Ethan Tseng, Grace
+Kuo, Andrew Maimone, Nathan Matsuda, Oliver Cossairt, Douglas Lanman, and
+Felix Heide. 2022. Pupil-aware Holography. ACM Transactions on Graphics (TOG)
+41, 6, Article 212 (2022).
+Praneeth Chakravarthula, Yifan Peng, Joel Kollin, Henry Fuchs, and Felix Heide. 2019.
+Wirtinger holography for near-eye displays. ACM Transactions on Graphics (TOG)
+38, 6 (2019), 1–13.
+Chenliang Chang, Kiseung Bang, Gordon Wetzstein, Byoungho Lee, and Liang Gao.
+2020. Toward the next-generation VR/AR optics: a review of holographic near-eye
+displays from a human-centric perspective. Optica 7, 11 (2020), 1563–1578.
+Brian Chao, Manu Gopakumar, Suyeon Choi, Jonghyun Kim, Liang Shi, and Gordon
+Wetzstein. 2024. Large Étendue 3D Holographic Display with Content-adaptive
+Dynamic Fourier Modulation. In SIGGRAPH Asia 2024 Conference Papers. 1–12.
+Chun Chen, Byounghyo Lee, Nan-Nan Li, Minseok Chae, Di Wang, Qiong-Hua Wang,
+and Byoungho Lee. 2021. Multi-depth hologram generation using stochastic gradient
+descent algorithm with complex loss function. Opt. Express 29, 10 (May 2021), 15089–
+15103. https://doi.org/10.1364/OE.425077
+Guikun Chen and Wenguan Wang. 2024. A survey on 3d gaussian splatting. arXiv
+preprint arXiv:2401.03890 (2024).
+Rick H.-Y. Chen and Timothy D Wilkinson. 2009a. Computer generated hologram from
+point cloud using graphics processor. Applied optics 48, 36 (2009), 6841–6850.
+Rick H.-Y. Chen and Timothy D Wilkinson. 2009b. Computer generated hologram
+with geometric occlusion using GPU-accelerated depth buﬀer rasterization for
+three-dimensional display. Applied optics 48, 21 (2009), 4246–4255.
+Suyeon Choi, Manu Gopakumar, Yifan Peng, Jonghyun Kim, Matthew O’Toole, and
+Gordon Wetzstein. 2022. Time-multiplexed neural holography: a ﬂexible frame-
+work for holographic near-eye displays with fast heavily-quantized spatial light
+modulators. In ACM SIGGRAPH 2022 Conference Proceedings. 1–9.
+Suyeon Choi, Manu Gopakumar, Yifan Peng, Jonghyun Kim, and Gordon Wetzstein.
+2021. Neural 3d holography: Learning accurate wave propagation models for 3d
+holographic virtual and augmented reality displays. ACM Transactions on Graphics
+(TOG) 40, 6 (2021), 1–12.
+Tom Cuypers, Tom Haber, Philippe Bekaert, Se Baek Oh, and Ramesh Raskar. 2012.
+Reﬂectance model for diﬀraction. ACM Transactions on Graphics (TOG) 31, 5 (2012),
+1–11.
+
+
+=== PAGE 10 ===
+111:10
+•
+Choi, Chao et al.
+Sara Fridovich-Keil, Alex Yu, Matthew Tancik, Qinhong Chen, Benjamin Recht, and
+Angjoo Kanazawa. 2022. Plenoxels: Radiance Fields without Neural Networks. In
+CVPR.
+Ralph W Gerchberg. 1972. A practical algorithm for the determination of plane from
+image and diﬀraction pictures. Optik 35, 2 (1972), 237–246.
+Joseph W Goodman. 2005. Introduction to Fourier optics. Roberts and Company pub-
+lishers.
+Manu Gopakumar, Jonghyun Kim, Suyeon Choi, Yifan Peng, and Gordon Wetzstein.
+2021. Unﬁltered holography: optimizing high diﬀraction orders without optical
+ﬁltering for compact holographic displays. Opt. Lett. 46, 23 (Dec 2021), 5822–5825.
+https://doi.org/10.1364/OL.442851
+Manu Gopakumar, Gun-Yeal Lee, Suyeon Choi, Brian Chao, Yifan Peng, Jonghyun Kim,
+and Gordon Wetzstein. 2024. Full-colour 3D holographic augmented-reality displays
+with metasurface waveguides. Nature (2024), 1–7.
+Yuan-Chen Guo, Yan-Pei Cao, Chen Wang, Yu He, Ying Shan, and Song-Hai Zhang.
+2023. VMesh: Hybrid Volume-Mesh Representation for Eﬃcient View Synthesis. In
+SIGGRAPH Asia.
+Michael W Halle, Stephen A Benton, Michael A Klug, and John S Underkoﬄer. 1991. Ul-
+tragram: a generalized holographic stereogram. In Practical Holography V, Vol. 1461.
+SPIE, 142–155.
+Rana Hanocka, Gal Metzer, Raja Giryes, and Daniel Cohen-Or. 2020. Point2Mesh: a
+self-prior for Deformable Meshes. ACM TOG 39, 4 (Aug 2020).
+Ryoichi Horisaki, Yohei Nishizaki, Katsuhisa Kitaguchi, Mamoru Saito, and Jun Tanida.
+2021. Three-dimensional deeply generated holography. Applied optics 60, 4 (2021),
+A323–A328.
+Chung-Kai Hsueh and Alexander A Sawchuk. 1978. Computer-generated double-phase
+holograms. Applied optics 17, 24 (1978), 3874–3883.
+Dongting Hu, Zhenkai Zhang, Tingbo Hou, Tongliang Liu, Huan Fu, and Mingming
+Gong. 2023. Multiscale representation for real-time anti-aliasing neural rendering.
+In Proceedings of the IEEE/CVF International Conference on Computer Vision. 17772–
+17783.
+Ronghang Hu, Nikhila Ravi, Alexander C. Berg, and Deepak Pathak. 2021. Worldsheet:
+Wrapping the World in a 3D Sheet for View Synthesis from a Single Image. In ICCV.
+Binbin Huang, Zehao Yu, Anpei Chen, Andreas Geiger, and Shenghua Gao. 2024. 2d
+gaussian splatting for geometrically accurate radiance ﬁelds. In ACM SIGGRAPH
+2024 Conference Papers. 1–11.
+Dajeong Im, Jaebum Cho, Joonku Hahn, Byoungho Lee, and Hwi Kim. 2015. Accelerated
+synthesis algorithm of polygon computer-generated holograms. Optics Express 23,
+3 (2015), 2863–2871.
+Changwon Jang, Kiseung Bang, Minseok Chae, Byoungho Lee, and Douglas Lanman.
+2024. Waveguide holography for 3D augmented reality glasses. Nature Communica-
+tions 15, 1 (2024), 66.
+Bahram Javidi, Artur Carnicer, Arun Anand, George Barbastathis, Wen Chen, Pietro
+Ferraro, JW Goodman, Ryoichi Horisaki, Kedar Khare, Malgorzata Kujawinska, et al.
+2021. Roadmap on digital holography. Optics Express 29, 22 (2021), 35078–35118.
+James T Kajiya and Brian P Von Herzen. 1984. Ray tracing volume densities. ACM
+SIGGRAPH computer graphics 18, 3 (1984), 165–174.
+Hoonjong Kang, Elena Stoykova, and Hiroshi Yoshikawa. 2016. Fast phase-added
+stereogram algorithm for generation of photorealistic 3D content. Applied optics 55,
+3 (2016), A135–A143.
+Hoonjong Kang, Takeshi Yamaguchi, and Hiroshi Yoshikawa. 2008. Accurate phase-
+added stereogram to improve the coherent stereogram. Applied optics 47, 19 (2008),
+D44–D54.
+Hiroharu Kato, Yoshitaka Ushiku, and Tatsuya Harada. 2018. Neural 3d mesh renderer.
+In Proceedings of the IEEE conference on computer vision and pattern recognition.
+3907–3916.
+Koray Kavaklı, Yuta Itoh, Hakan Urey, and Kaan Akşit. 2023. Realistic defocus blur for
+multiplane computer-generated holography. In 2023 IEEE Conference Virtual Reality
+and 3D User Interfaces (VR). IEEE, 418–426.
+Michael Kazhdan, Matthew Bolitho, and Hugues Hoppe. 2006. Poisson Surface Recon-
+struction. In SGP.
+Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler, and George Drettakis. 2023.
+3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM TOG 42, 4
+(July 2023).
+Shakiba Kheradmand, Daniel Rebain, Gopal Sharma, Weiwei Sun, Yang-Che Tseng,
+Hossam Isack, Abhishek Kar, Andrea Tagliasacchi, and Kwang Moo Yi. 2024. 3D
+Gaussian Splatting as Markov Chain Monte Carlo. In NeurIPS.
+Dongyeon Kim, Seung-Woo Nam, Suyeon Choi, Jong-Mo Seo, Gordon Wetzstein, and
+Yoonchan Jeong. 2024. Holographic parallax improves 3D perceptual realism. ACM
+Transactions on Graphics (TOG) 43, 4 (2024), 1–13.
+Hwi Kim, Joonku Hahn, and Byoungho Lee. 2008. Mathematical modeling of triangle-
+mesh-modeled three-dimensional surface objects for digital holography. Applied
+optics 47, 19 (2008), D117–D127.
+Jonghyun Kim, Manu Gopakumar, Suyeon Choi, Yifan Peng, Ward Lopes, and Gordon
+Wetzstein. 2022. Holographic Glasses for Virtual Reality. In ACM SIGGRAPH 2022
+Conference Proceedings (Vancouver, BC, Canada) (SIGGRAPH ’22). Association for
+Computing Machinery, New York, NY, USA, Article 33, 9 pages. https://doi.org/10.
+1145/3528233.3530739
+Seung-Cheol Kim and Eun-Soo Kim. 2008. Eﬀective generation of digital holograms of
+three-dimensional objects using a novel look-up table method. Applied Optics 47, 19
+(2008), D55–D62.
+Georgios Kopanas, Julien Philip, Thomas Leimkühler, and George Drettakis. 2021.
+Point-Based Neural Rendering with Per-View Optimization. CGF 40, 4 (June 2021).
+http://www-sop.inria.fr/reves/Basilic/2021/KPLD21
+Grace Kuo, Florian Schiﬀers, Douglas Lanman, Oliver Cossairt, and Nathan Matsuda.
+2023. Multisource holography. ACM Transactions on Graphics (TOG) 42, 6 (2023),
+1–14.
+Grace Kuo, Laura Waller, Ren Ng, and Andrew Maimone. 2020. High resolution étendue
+expansion for holographic displays. ACM Transactions on Graphics (TOG) 39, 4
+(2020), 66–1.
+Adoph W Lohmann and DP Paris. 1967. Binary Fraunhofer holograms, generated by
+computer. Applied optics 6, 10 (1967), 1739–1748.
+Stephen Lombardi, Jason Saragih, Tomas Simon, and Yaser Sheikh. 2018. Deep Appear-
+ance Models for Face Rendering. ACM TOG 37, 4 (July 2018).
+William E. Lorensen and Harvey E. Cline. 1987. Marching cubes: A High Resolution
+3D Surface Construction Algorithm. In ACM SIGGRAPH.
+Mark E Lucente. 1993. Interactive computation of holograms using a look-up table.
+Journal of Electronic Imaging 2, 1 (1993), 28–34.
+Andrew Maimone, Andreas Georgiou, and Joel S Kollin. 2017. Holographic near-eye
+displays for virtual and augmented reality. ACM Transactions on Graphics (Tog) 36,
+4 (2017), 1–16.
+Michal Makowski, Jaroslaw Bomba, Antoni Frej, Mateusz Kolodziejczyk, Maciej Sypek,
+Tomoyoshi Shimobaba, Tomoyoshi Ito, Andrei Kirilyuk, and Andrzej Stupakiewicz.
+2022. Dynamic complex opto-magnetic holography. Nature Communications 13, 1
+(2022), 7286.
+Kyoji Matsushima. 2020. Introduction to Computer Holography: Creating Computer-
+Generated Holograms as the Ultimate 3D Image. Springer Nature.
+Kyoji Matsushima and Sumio Nakahara. 2009. Extremely high-deﬁnition full-parallax
+computer-generated hologram created by the polygon-based method. Applied optics
+48, 34 (2009), H54–H63.
+Kyoji Matsushima, Masaki Nakamura, and Sumio Nakahara. 2014. Silhouette method
+for hidden surface removal in computer holography and its acceleration using the
+switch-back technique. Optics express 22, 20 (2014), 24450–24465.
+Kyoji Matsushima, Hagen Schimmel, and Frank Wyrowski. 2003. Fast calculation
+method for optical diﬀraction on tilted planes by use of the angular spectrum of
+plane waves. JOSA A 20, 9 (2003), 1755–1762.
+Kyoji Matsushima and Tomoyoshi Shimobaba. 2009. Band-limited angular spectrum
+method for numerical simulation of free-space propagation in far and near ﬁelds.
+Optics express 17, 22 (2009), 19662–19673.
+Morgan McGuire and Louis Bavoil. 2013. Weighted Blended Order-Independent trans-
+parency. Journal of Computer Graphics Techniques 2, 4 (2013).
+Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ra-
+mamoorthi, and Ren Ng. 2020. NeRF: Representing Scenes as Neural Radiance Fields
+for View Synthesis. In ECCV.
+Thomas Müller, Alex Evans, Christoph Schied, and Alexander Keller. 2022. Instant
+Neural Graphics Primitives with a Multiresolution Hash Encoding. ACM TOG 41, 4
+(July 2022).
+Nitish Padmanaban, Yifan Peng, and Gordon Wetzstein. 2019. Holographic near-eye
+displays based on overlap-add stereograms. ACM Transactions on Graphics (TOG)
+38, 6 (2019), 1–13.
+Jae-Hyeung Park. 2017. Recent progress in computer-generated holography for three-
+dimensional scenes. Journal of Information Display 18, 1 (2017), 1–12.
+Yifan Peng, Suyeon Choi, Nitish Padmanaban, and Gordon Wetzstein. 2020. Neural
+holography with camera-in-the-loop training. ACM Transactions on Graphics (TOG)
+39, 6 (2020), 1–14.
+Florian Schiﬀers, Praneeth Chakravarthula, Nathan Matsuda, Grace Kuo, Ethan Tseng,
+Douglas Lanman, Felix Heide, and Oliver Cossairt. 2023. Stochastic light ﬁeld
+holography. In 2023 IEEE International Conference on Computational Photography
+(ICCP). IEEE, 1–12.
+Liang Shi, Beichen Li, Changil Kim, Petr Kellnhofer, and Wojciech Matusik. 2021.
+Towards real-time photorealistic 3D holography with deep neural networks. Nature
+591, 7849 (2021), 234–239.
+Liang Shi, Beichen Li, and Wojciech Matusik. 2022. End-to-end learning of 3d phase-
+only holograms for holographic display. Light: Science & Applications 11, 1 (2022),
+247.
+Vincent Sitzmann, Julien Martel, Alexander Bergman, David Lindell, and Gordon
+Wetzstein. 2020. Implicit neural representations with periodic activation functions.
+Advances in neural information processing systems 33 (2020), 7462–7473.
+Vincent Sitzmann, Justus Thies, Felix Heide, Matthias Nießner, Gordon Wetzstein, and
+Michael Zollhofer. 2019a. Deepvoxels: Learning persistent 3d feature embeddings. In
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition.
+2437–2446.
+
+
+=== PAGE 11 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:11
+Vincent Sitzmann, Michael Zollhöfer, and Gordon Wetzstein. 2019b. Scene Representa-
+tion Networks: Continuous 3D-Structure-Aware Neural Scene Representations. In
+NeurIPS.
+Jiaxiang Tang, Hang Zhou, Xiaokang Chen, Tianshu Hu, Errui Ding, Jingdong Wang,
+and Gang Zeng. 2023. Delicate Textured Mesh Recovery from NeRF via Adaptive
+Surface Reﬁnement. In ICCV.
+Ayush Tewari, Ohad Fried, Justus Thies, Vincent Sitzmann, Stephen Lombardi, Kalyan
+Sunkavalli, Ricardo Martin-Brualla, Tomas Simon, Jason Saragih, Matthias Nießner,
+et al. 2020. State of the art on neural rendering. In Computer Graphics Forum, Vol. 39.
+Wiley Online Library, 701–727.
+Ayush Tewari, Justus Thies, Ben Mildenhall, Pratul Srinivasan, Edgar Tretschk, Wang
+Yifan, Christoph Lassner, Vincent Sitzmann, Ricardo Martin-Brualla, Stephen Lom-
+bardi, et al. 2022. Advances in neural rendering. In Computer Graphics Forum, Vol. 41.
+Wiley Online Library, 703–735.
+Koki Wakunami, Hiroaki Yamashita, and Masahiro Yamaguchi. 2013. Occlusion culling
+for computer generated hologram based on ray-wavefront conversion. Optics express
+21, 19 (2013), 21811–21822.
+Di Wang, Zhao-Song Li, Yi Zheng, You-Ran Zhao, Chao Liu, Jin-Bo Xu, Yi-Wei Zheng,
+Qian Huang, Chen-Liang Chang, Da-Wei Zhang, et al. 2024. Liquid lens based holo-
+graphic camera for real 3D scene hologram acquisition using end-to-end physical
+model-driven network. Light: Science & Applications 13, 1 (2024), 62.
+Fan Wang, Tomoyoshi Ito, and Tomoyoshi Shimobaba. 2023. High-speed rendering
+pipeline for polygon-based holograms. Photonics Research 11, 2 (2023), 313–328.
+Fan Wang, Tomoyoshi Shimobaba, Yaping Zhang, Takashi Kakue, and Tomoyoshi Ito.
+2021b. Acceleration of polygon-based computer-generated holograms using look-
+up tables and reduction of the table size via principal component analysis. Optics
+Express 29, 22 (2021), 35442–35455.
+Peng Wang, Lingjie Liu, Yuan Liu, Christian Theobalt, Taku Komura, and Wenping
+Wang. 2021a. NeuS: Learning Neural Implicit Surfaces by Volume Rendering for
+Multi-view Reconstruction. In NeurIPS.
+Qiangeng Xu, Zexiang Xu, Julien Philip, Sai Bi, Zhixin Shu, Kalyan Sunkavalli, and
+Ulrich Neumann. 2022. Point-Nerf: Point-Based Neural Radiance Fields. In CVPR.
+Yota Yamamoto, Tomoyoshi Shimobaba, and Tomoyoshi Ito. 2022. HORN-9: Special-
+purpose computer for electroholography with the Hilbert transform. Opt. Express
+30, 21 (Oct 2022), 38115–38127. https://doi.org/10.1364/OE.471720
+Daeho Yang, Wontaek Seo, Hyeonseung Yu, Sun Il Kim, Bongsu Shin, Chang-Kun
+Lee, Seokil Moon, Jungkwuen An, Jong-Young Hong, Geeyoung Sung, et al. 2022.
+Diﬀraction-engineered holography: Beyond the depth representation limit of holo-
+graphic displays. Nature Communications 13, 1 (2022), 6012.
+Fahri Yaraş, Hoonjong Kang, and Levent Onural. 2010. State of the art in holographic
+displays: a survey. Journal of display technology 6, 10 (2010), 443–454.
+Lior Yariv, Jiatao Gu, Yoni Kasten, and Yaron Lipman. 2021. Volume Rendering of
+Neural Implicit Surfaces. In NeurIPS.
+Vickie Ye, Ruilong Li, Justin Kerr, Matias Turkulainen, Brent Yi, Zhuoyang Pan, Otto
+Seiskari, Jianbo Ye, Jeﬀrey Hu, Matthew Tancik, and Angjoo Kanazawa. 2024. gsplat:
+An Open-Source Library for Gaussian Splatting. arXiv preprint arXiv:2409.06765
+(2024). arXiv:2409.06765 [cs.CV] https://arxiv.org/abs/2409.06765
+Han-Ju Yeom and Jae-Hyeung Park. 2016. Calculation of reﬂectance distribution using
+angular spectrum convolution in mesh-based computer generated hologram. Optics
+Express 24, 17 (2016), 19801–19813.
+Dongheon Yoo, Youngjin Jo, Seung-Woo Nam, Chun Chen, and Byoungho Lee. 2021.
+Optimization of computer-generated holograms featuring phase randomness control.
+Optics Letters 46, 19 (2021), 4769–4772.
+Alex Yu, Ruilong Li, Matthew Tancik, Hao Li, Ren Ng, and Angjoo Kanazawa. 2021.
+PlenOctrees for Real-Time Rendering of Neural Radiance Fields. In ICCV.
+Hyeonseung Yu, Youngrok Kim, Daeho Yang, Wontaek Seo, Yunhee Kim, Jong-Young
+Hong, Hoon Song, Geeyoung Sung, Younghun Sung, Sung-Wook Min, and Hong-
+Seok Lee. 2023. Deep learning-based incoherent holographic camera enabling
+acquisition of real-world holograms for holographic streaming system. Nature
+Communications 14, 1 (2023), 3534. https://doi.org/10.1038/s41467-023-39329-0
+Hao Zhang, Liangcai Cao, and Guofan Jin. 2017a. Computer-generated hologram
+with occlusion eﬀect using layer-based processing. Applied optics 56, 13 (2017),
+F138–F143.
+Jingzhao Zhang, Nicolas Pégard, Jingshan Zhong, Hillel Adesnik, and Laura Waller.
+2017b. 3D computer-generated holography by non-convex optimization. Optica 4,
+10 (2017), 1306–1313.
+Yaping Zhang, Houxin Fan, Fan Wang, Xianfeng Gu, Xiaofan Qian, and Ting-Chung
+Poon. 2022. Polygon-based computer-generated holography: a review of fundamen-
+tals and recent progress. Applied Optics 61, 5 (2022), B363–B374.
+Zhengyun Zhang. 2011. Analysis and synthesis of three-dimensional illumination using
+partial coherence. Stanford University.
+Matthias Zwicker, Hanspeter Pﬁster, Jeroen Van Baar, and Markus Gross. 2001. EWA
+volume splatting. In Proceedings Visualization, 2001. VIS’01. IEEE, 29–538.
+Received 23 January 2025; revised 12 March 2025; accepted 5 June 2025
+
+
+=== PAGE 12 ===
+111:12
+•
+Choi, Chao et al.
+Point-based method
+Polygon-based method
+Fast GWS (Ours)
+Exact GWS (Ours)
+Target
+rendering
+Front focal slice of
+captured hologram
+Rear
+focus
+Middle
+focus
+Front
+focus
+Target
+rendering
+Front focal slice of
+captured hologram
+Rear
+focus
+Middle
+focus
+Front
+focus
+Fig. 6. Experimentally captured focal stacks of holograms generated using diﬀerent primitive-based CGH algorithms. For each CGH baseline, we
+show the target rendering of its input 3D representation using a pinhole camera model (top row). Sparse point-cloud representations used in point-based
+methods [Chen and Wilkinson 2009b] inevitably lead to holes in the rendered target image. Polygon-based methods [Matsushima and Nakahara 2009]
+produce overly smooth results unless an excessive number of polygons are used. Our Gaussian Wave Splating methods achieve the best results with sharp
+in-focus regions and more accurate blur in defocus regions. Please refer to the supplementary materials for extensive baseline comparisons.
+
+
+=== PAGE 13 ===
+Gaussian Wave Splating for Computer-Generated Holography
+•
+111:13
+Rear
+ focal
+ slice
+Middle
+focal
+ slice
+Front
+focal
+ slice
+Front
+focus
+Middle
+focus
+Rear
+focus
+Fig. 7. Experimentally captured focal stacks of exact GWS holograms from diﬀerent novel viewpoints. We generate holograms from multiple novel
+viewpoints using our exact GWS method applied to a single scene representation and capture the corresponding 3D focal stacks at each viewpoint. The results
+show that GWS achieves accurate 3D refocusing eﬀects across all viewpoints, demonstrating the robustness of our method. See the supplementary video for
+an additional visualization.
+
+
+=== PAGE 14 ===
+Gaussian Wave Splating for Computer-Generated Holography —
+Supplementary Material
+SUYEON CHOI∗, Stanford University, USA
+BRIAN CHAO∗, Stanford University, USA
+JACQUELINE YANG, Stanford University, USA
+MANU GOPAKUMAR, Stanford University, USA
+GORDON WETZSTEIN, Stanford University, USA
+world 
+space
+canonical
+space
+Model
+transform
+View 
+Transform
+ray 
+space
+Hologram
+transform
+hologram 
+space
+Scaling
+object 
+space
+Rotation
+Projective 
+mapping
+view 
+space
+Translation
+shifted 
+hologram
+space
+xc
+yc
+uc (xc)
+u(x)
+Fig. S1. The Holographics pipeline. We devise a graphics pipeline tailored for primitive-based CGH, dubbed the holographics pipeline. This pipeline takes
+in a set of optimized primitives from oﬀ-the-shelf neural rendering frameworks as input and converts them into primitives suitable for CGH calculation
+through a sequence of coordinate transformations. Our Gaussian Wave Splating algorithms then use the transformed primitives as input to compute the
+complex-valued wavefront of the hologram.
+This document serves as supplementary material to the paper “Gaussian
+Wave Splatting for Computer-Generated Holography”. The sections of this
+supplementary material are organized as follows.
+In Section S1, we elaborate on the transformations of between various
+spaces, starting from the space where the collection of optimized Gaussians
+reside, to the space where the SLM is deﬁned. We then explain in detail
+how Gaussian Wave Splatting takes into account all the aforementioned
+transformation parameters and splats a single Gaussian onto the SLM plane.
+In Section S2, we describe in detail how to splat a collection of Gaussians
+using diﬀerent occlusion-handling techniques to generated a hologram. We
+also elaborate on the optimization of 2DGS and 2DGS-OIT models used for
+GWS.
+In Section S3, we describe the experimental holographic display setup
+and its corresponding calibration process we used to validate our algorithm.
+In Section S4, we provide extensive simulated experiments to validate
+our method, including extended quantitative and qualitative baseline com-
+parisons, runtime analysis, additional discussion on view-dependent eﬀects,
+and occlusion-handling techniques.
+In Section S5, we show an extensive set of experimentally captured results.
+In Section S6, we provide additional details of prior methods, including
+tilted plane propagation and deriving spectrums of triangles in polygon-
+based CGH.
+∗denotes equal contribution.
+Authors’ addresses: Suyeon Choi, suyeon@stanford.edu, Stanford University, USA;
+Brian Chao, brianchc@stanford.edu, Stanford University, USA; Jacqueline Yang,
+jyang01@stanford.edu, Stanford University, USA; Manu Gopakumar, manugopa@
+stanford.edu, Stanford University, USA; Gordon Wetzstein, gordon.wetzstein@stanford.
+edu, Stanford University, USA.
+S1
+HOLOGRAPHICS PIPELINE
+Here, we outline our pipeline of primitive transformations, dubbed
+the holographics pipeline (Fig. S1). Just like the traditional graphics
+pipeline, we transform geometric primitives between various spaces
+in holographics, and we describe in detail these conversions in this
+section.
+S1.1
+Geometric pipeline
+We elaborate on the coordinate systems and transformations be-
+tween various spaces in holographics such that our framework is
+compatible with the traditional computer graphics pipeline [5, 10].
+While we primarily deﬁne these transformations for Gaussian primi-
+tives, it can easily be extended to other primitive-based CGHs [7, 22].
+Model transform. To begin with, we assume the optimized Gaus-
+sians from an oﬀ-the-shelf neural rendering framework [32, 33] are
+deﬁned by a full 3D covariance matrix Σĭ ∈R3×3 in world space
+centered at a point ąĭ ∈R3×1:
+G(xĭ) = ě−1
+2 (x푤−ą푤)TΣ−1
+푤(x푤−ą푤).
+(S1)
+The covariance matrix can be factorized into a scaling matrix ďĭ ∈
+R3×3 and a rotation matrix Ďĭ ∈R3×3 as Σĭ = ĎĭďĭďTĭĎTĭ ∈R3×3.
+These Gaussians in world space are transformed from the canonical
+space where we have a standard Gaussian centered at the origin as
+
+
+=== PAGE 15 ===
+111:2
+•
+Choi, Chao et al.
+Eqs. S2 and S3 (see Fig. S1).
+G(xę) = 푒−1
+2 xT
+푐x푐,
+(S2)
+x푤= 푅푤푆푤x푐+ ą푤,
+(S3)
+x푐, x푤∈R3×1,
+where x푐and x푤denote the coordinates in canonical space and
+world space, respectively. This can be thought as model transform.
+View transform and projective mapping. To render these
+Gaussians in world space from a speciﬁc camera viewpoint, we
+apply a view transformation 푊∈R3×3 that transforms Gaussians
+from world space into view space, where the camera is assumed
+to be looking into the negative z direction. This is followed by a
+projective transform deﬁned by camera intrinsics (focal length, prin-
+cipal point, and projection type such as orthographic, perspective,
+ﬁsheye, etc.) that converts the view space into the ray space, where
+the z-axis is parallel to the outgoing rays from all camera pixels.
+While this projective transform from view space to ray space is not
+aﬃne, Zwicker et al. [38] introduced a local aﬃne approximation
+of this mapping, allowing the covariance matrix Σ푟∈R2×2 and
+the center of the Gaussian ą푟∈R2×1 in ray space to be obtained
+by [14, 38]:
+Σ푟= 퐽푊Σ푤푊T퐽T,
+(S4)
+ą푟= m(푊ą푤),
+(S5)
+where 퐽∈R2×3 is the Jacobian of the aﬃne approximation of the
+projective transformation m [38].
+Finally, we make a minor modiﬁcation to the aforementioned
+projective transform by “lifting” the projected 2D covariance and
+center back to 3D. This is necessary because the depth values are
+required for CGH calculation. Speciﬁcally, we augment ą푟with the
+the depth value of the Gaussian in view space and redeﬁne it as:
+ą푟=
+m(푊ą푤)
+(푊ą푤)2
+
+(S6)
+To lift 2D covariance back to 3D, we perform Eigenvalue decompo-
+sition on the projected 2D covariance matrix to get the 2D rotation
+and scales 푅′푟∈R2×2 and 푆′푟∈R2×2:
+퐽푊Σ푤푊T퐽T = 푅′
+푟푆′2
+푟푅′
+푟
+T
+(S7)
+Then, we augment the 2D rotation matrix 푅′푟with zero rotation
+around the x and y axes and set the z-scale of the Gaussian to be
+zero:
+푅푟=
+푅′푟
+0
+0
+1
+
+(S8)
+푆푟=
+푆′푟
+0
+
+(S9)
+and ﬁnally acquire the lifted 3D covariance Σ푟∈R3×3:
+Σ푟= 푅푟푆푟푆T
+푟푅T
+푟
+(S10)
+Note that ray space coordinates x푟also can be obtained from the
+world coordinate using the same transformation as in Eq. S5:
+x푟= m(푊x푤)
+(S11)
+Hologram transform. To convert Gaussians in ray space to holo-
+grams, we must transform them into the hologram space, which
+is determined by the geometry of the optical parameters of the
+holographic display. For example, we can remap the 푧-values of
+Gaussians in ray space to the desired depth range determined by
+the focal length of the eyepiece. We set the origin of the hologram
+coordinate system at the center of the SLM and align the 푥푦−plane
+with the SLM plane. In other words, the SLM is positioned at 푧= 0
+plane. We refer to the transform from ray space to hologram space
+as hologram transform. The covariance matrix Σ and the center ą,
+coordinate vector x in hologram space are given by a corresponding
+3D aﬃne transformation matrix between these spaces 푇푟→ℎ:
+Σ = 푇푟→ℎΣ푟푇T
+푟→ℎ,
+(S12)
+ą = 푇푟→ℎą푟, x = 푇푟→ℎx푟
+(S13)
+Uniﬁed transformation. By combining these transformations
+as described in Fig. S1, the entire process from canonical space to
+hologram space results in the covariance matrix Σ and the transla-
+tion vector ą in hologram space as follows:
+Σ = (푇푟→ℎ퐽푊푅푤푆푤)푆T
+푤푅T
+푤푊T퐽T푇T
+푟→ℎ
+(S14)
+= 푇푇T
+(S15)
+= 푅푆푆T푅T,
+(S16)
+ą = 푇푟→ℎm(푊ą푤),
+(S17)
+where 푆and 푅are the scaling matrix and the rotation matrix that
+deﬁnes the covariance matrix Σ.
+In summary, the geometric pipeline in holographics starts with
+the parameters of an optimized Gaussian in world space, which are
+the covariance matrix Σ푤and the mean of the Gaussian ą푤. These
+parameters are used to establish a geometric relationship between
+the hologram space and the canonical space. The parameters 퐽and
+푊are determined by the camera intrinsics and extrinsics, while
+the optical conﬁgurations of the holographic display speciﬁes 푇푟→ℎ.
+Using these parameters (푅, 푆, ą) in Eqs. S14—S17, we derive the
+angular spectrum of each Gaussian in the hologram space in the
+next section.
+S1.2
+Hologram pipeline
+To perform wave splatting in hologram space from a collection
+of optimized Gaussians in world space, we derive a closed-form
+solution for the Gaussian wavefront in hologram space, enabling
+eﬃcient parallel implementation. The key insight of our approach is
+that a simple closed-form solution exists in canonical space, which
+we leverage by mapping the plane wave (angular spectrum) in holo-
+gram space from its counterpart in canonical space. To this end,
+we ﬁrst establish the geometric relationship within this pipeline
+(between these spaces) and derive the closed-form solution of the
+angular spectrum in the Fourier domain, ˆ푢(k), in hologram space.
+In other words, we map the spatial frequency component (i.e., the
+value of ˆ푢(k)) through a geometrical transformation (translation,
+rotation, and scaling) from hologram space back to canonical space,
+focusing on each parameter 푅, 푆, and ą, obtained in the previous
+section. In the following, we present the local 3D aﬃne transform
+
+
+=== PAGE 16 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:3
+obtained in the previous section, and the closed-form solution of the
+angular spectrum in canonical space, which is a simple Gaussian:
+x = 푅푆x푐+ ą ´ x푐= 푆−1푅−1(x −ą)
+(S18)
+G(x푐) = 푒−1
+2 xT
+푐x푐
+F
+←→ˆG푐(k푐) = 2휋푒−2휋2kT
+푐k푐,
+(S19)
+where x푐and k푐are the spatial coordinate and the wave vector in
+canonical space and ˆG denotes the Fourier transform of G.
+Translation: x푡= x−ą. First, we translate the coordinate system
+by ą, aligning the orientation of the coordinate system with that
+of the Gaussian. Translation in the spatial domain is equivalent to
+applying a phase ramp in the Fourier domain:
+x푡= x −ą ´ ˆ푢(k) = ˆ푢푡(k푡)푒푗k·x,
+(S20)
+where the subscript 푡denotes the coordinate after the translation.
+Rotation: x표= 푅−1x푡. Next, we map the angular spectrum at
+the 푥푡–푦푡plane to that in the object space, where our Gaussian lies
+on a 푥표–푦표plane. Geometrically, this local space can be obtained
+by rotating shifted hologram space, x푡, in the Euler angle order of
+푥, 푦, and 푧, such that 푅−1 = 푅−1
+푧푅−1
+푦푅−1
+푥, and the coordinates are
+governed by the given rotation matrix x표= 푅−1x푡. Since the wave
+vectors also follow the same rotational transformation, the plane
+wave corresponding to the wave vector k푡corresponds to the plane
+wave corresponding to k표= 푅−1k푡in the object space. Thus, we
+can nonlinearly map the angular spectrum from the object space to
+the shifted hologram space as:
+x표= 푅−1x푡´ ˆ푢푡(k푡) = det(J) ˆ푢표
+
+푅−1k
+
+,
+(S21)
+where det(J) = 푘표푧
+푘푡푧is the Jacobian determinant of the transforma-
+tion of Fourier coordinates. Note that this is essentially the cele-
+brated result of tilted wave propagation [22].
+Scaling: x푐= 푆−1x표. The ﬁnal step to arrive at the canonical
+space is to scale the Gaussian accordingly. This is a simple 2D aﬃne
+transformation without bias though, and we describe the full for-
+mulation, including the bias term b, which is zero in our case, for
+ﬂexibility and completeness.
+x푐= 푆−1x표+ b.
+(S22)
+Using the aﬃne theorem for two-dimensional Fourier transforms [6],
+we obtain
+푢표(x표) = G(푆−1x표+ b)
+F
+←→ˆ푢표(k표) =
+1
+det푆−1 ˆG푐(푆Tk0)푒푗bT푆Tk표,
+(S23)
+where k is the wave vector and ˆ푢표and ˆG denotes the Fourier
+transform of 푢표and G, respectively
+Combining Eqs. S20, S21, and S23, we obtain the ﬁnal closed-form
+solution in hologram space presented in the manuscript, from the
+angular spectrum derived in canonical space:
+ˆ푢(k) = det(J)det(푆) ˆG
+
+푆푅−1k
+
+푒푗k·ą.
+(S24)
+Note that while we set b = 0 in this formulation, this becomes
+ill-posed with the translation d we performed (d = ą in Eq. S20).
+We can set the amount of displacement d arbitrarily, not limited to
+ą. For instance, we can use b = −푆−1푅−1ą푥푦and d = 퐶ą푧, where
+ą푥푦represents the transverse components of the vector ą, and ą푧
+represents the 푧component of ą, retaining its vector form. We show
+that how this formulation is compatible with the polygon-based
+methods in Section S6.
+
+
+=== PAGE 17 ===
+111:4
+•
+Choi, Chao et al.
+S2
+ADDITIONAL DETAILS ON SOFTWARE
+In this section, we provide pseudocodes of the various algorithms
+described in the paper. In fact, all algorithms presented in the paper
+can be classiﬁed into three classes based on how occlusion is handled
+for primitives:
+• Naïve Wave Splatting (WS) Algorithm: simply adding
+up the wavefront contribution of each primitive without
+any occlusion handling. Baselines that fall into this category
+include: Naïve (sparse point cloud), Naïve (dense point cloud,
+RGBD), and our fast Gaussian Wave Splatting (Gaussians).
+• Exact Wave Splatting (WS) Algorithm: the exact wave
+splatting algorithm performs CGH using alpha wave blend-
+ing described in the main paper. Since occlusion is explicitly
+described by alpha wave blending, prior methods that per-
+form occlusion handling can also be easily realized using WS,
+as we will show in S2.3. Baselines that fall into this category
+include: Point cloud WS (sparse point cloud), Polygon WS
+(mesh), and our exact Gaussian Wave Splatting (Gaussians).
+• Silhouette Method: The algorithms that lies in this cate-
+gory are all prior methods that implement visibility tests
+with binary apertures, including Chen & Wilkinson [7]
+(sparse point cloud) and the silhouette method (mesh) pro-
+posed by Matsushima et al. [21]. However, we show that with
+some rearrangement of equations, this can be exactly real-
+ized using Wave Splatting. We note that this classical method
+encompasses most occlusion-handling methods, which re-
+ject or attenuate wavefronts from the rear using binary or
+translucent masks [7, 29].
+These three classes of algorithms sequentially processes each
+primitive and adds up their wavefront contribution at the SLM
+plane. Within these three, the Naïve Wave Splatting algorithm is
+speciﬁcally suited for per-pixel parallelization since no order in-
+formation and no alpha masking (which corresponds to a convolu-
+tion in Fourier domain as described in the main paper) is required.
+Therefore, we additionally describe how to implement the per-pixel
+parallelizable version of the Naïve Wave Splatting algorithm, which
+also serves as the basis for our eﬃcient CUDA implementation of
+the fast variant of our Gaussian Wave Splatting algorithm.
+S2.1
+Naïve Wave Splating Algorithm
+The Naïve Wave Splatting (WS) algorithm simply calculates the
+wavefront contribution of each primitive at the SLM plane and
+sums them up. We outline the sequential version of the Naïve WS
+algorithm using Gaussian primitives in Algorithm 1, and describe
+the per-pixel parallelized version in Section S2.4.
+S2.2
+Exact Wave Splating Algorithm
+At the core of the Exact Wave Splatting (WS) algorithm is alpha
+wave blending, which ﬁrst sorts the primitive from front (near SLM)
+to back (far from SLM) and sequentially processes each primitive.
+The wavefront of each primitive is sequentially “splatted” onto the
+SLM plane from near to far and a global transmittance map is simul-
+taneously updated with the transmittance of each primitive. This
+transmittance map is a crucial component in alpha wave blending
+as it contains all the occlusion information.
+ALGORITHM 1: Naïve Gaussian Wave Splatting, sequential
+version
+▶No need to sort primitives.
+Input: 퐾: Number of primitives
+Input: 푧푘,표푘,푐푘,푆푘, J푘, 푅푘, 휇푘: The depth, opacity, color,
+scale, rotation, center, and Jacobian determinant of
+the Fourier coordinate transformation of the 푘th
+Gaussian
+Input: 푁푥, 푁푦: Image dimensions
+Output: 푢SLM: Wavefront at the SLM plane
+ˆ푢SLM ←0푁푥×푁푦▶Angular spectrum of wavefront at SLM
+plane
+foreach 푘in 1 . . . 퐾do
+ˆ푢푘←det(J푘)det(푆푘) ˆG
+
+푆푘푅−1
+푘k
+
+푒푗k·ą푘▶Query the
+angular spectrum of the 푘th Gaussian at the SLM plane
+using Eq. S24
+ˆ푢SLM ←ˆ푢SLM + ˆ푢푘· 푐푘· 표푘▶multiply by the color and
+opacity of the primitive, and add to the SLM angular
+spectrum
+end
+푢SLM = F −1( ˆ푢SLM)
+return 푢SLM
+The above splatting procedure can also be thought of as propagat-
+ing a wave starting from the SLM plane, and sequentially accumulat-
+ing the wavefront contributions of primitives that are encountered
+along the process one by one. This can be formulated as a recur-
+sive equation, relating the accumulated wavefront up to the 푖-th
+Gaussian, 푢1···푖(r), by adding the attenuated wavefront of the 푖-th
+Gaussian to the previously accumulated wavefront, 푢1···(푖−1) (r),
+after propagation:
+푢1···푖(x) = P
+
+푢1···(푖−1) (x) ;푧푖−푧푖−1
+
++ c푖표푖푇푖(x) 푢푖(x) ,
+(S25)
+푢1···1 (r) = 푢1 (x) ,푇푖(x) =
+푖−1
+Ö
+푗=1
+(1 −표푗|푢푗(x)|),
+(S26)
+where c푖is the color of the 푖th primitive By expanding the recursive
+equation and collapsing the sequential propagations into a single
+propagation distance using the depth-invariant property of the wave
+propagation operator, we can reformulate the recursive equation
+into a summation form:
+푢1···푖(x) = P
+
+푢1···(푖−1) (x) ;푧푖−푧푖−1
+
++ c푖표푖푇푖(x) 푢푖(x)
+= P
+
+P
+
+푢1···(푖−2) (x) ;푧푖−1 −푧푖−2
+
+;푧푖−푧푖−1
+
++ P (c푖−1표푖−1푇푖−1 (x) 푢푖−1 (x) ;푧푖−푧푖−1)
++ c푖표푖푇푖(x) 푢푖(x)
+= · · · =
+푖Õ
+푗=1
+P  c푗표푗푇푗(x) 푢푗(x) ;푧푖−푧푗
+ .
+(S27)
+
+
+=== PAGE 18 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:5
+SLM plane
+Global transmittance map
+Front to back processing
+Image plane
+Front to back processing
+Per-pixel transmittance
+Gaussian Splatting
+Gaussian Wave Splatting
+Fig. S2. Gaussian Splating and Gaussian Wave Splating. Gaussian Splating performs per-pixel alpha blending for all pixels in the rendered image,
+which is highly suitable for parallelization. Conversely, Gaussian Wave Splating requires alpha blending to be performed on a global scale with the full image
+resolution since wave propagation can only be simulated with the full spatial extent of the SLM, and global transmitance map needs to be actively maintained
+throughout the CGH process. However, both methods share the exact same concept of alpha blending.
+We would like to highlight the signiﬁcance of this collapsible
+property of wave propagation, which enables this simple summa-
+tion formulation. After summing all 푁Gaussians, the accumulated
+wavefront will be positioned at a depth of 푧푁. We can then simply
+propagate the entire wavefront back to the SLM plane, where 푧= 0,
+adding only a marginal computational cost with a single FFT-based
+wave propagation [31], arriving at our alpha blending equation
+described in Eq. 5 of the manuscript:
+푢SLM(x) = P
+ 푁
+Õ
+푖=1
+P (c푖표푖푇푖(x) 푢푖(x) ;푧푁−푧푖) ; −푧푁
+!
+(S28)
+=
+푁
+Õ
+푖
+c푖표푖P
+
+푢푖(x)푇푖(x) ; −푧푖
+
+.
+(S29)
+The formulation of exact WS is almost exactly identical as its
+ray space counterpart, which is the volume rendering equation
+widely used in traditional graphics and recent neural rendering
+works [14, 23]. The major diﬀerence is that since we are frequently
+converting between the frequency domain and spatial domain for
+wave propagation, per-pixel alpha blending is not possible in exact
+WS but instead requires a global transmittance map to be maintained
+throughout the process, as illustrated in Figure S2. We speciﬁcally
+outline the pseudocode of Gaussian Wave Splatting in Algorithm
+2, but it can be trivially adapted to support other primitive types
+such as points or triangles simply by replacing the Gaussian angular
+spectrum in the ﬁrst line of the for loop with angular spectrums of
+other primitives.
+Other implementation details. Under plane wave illumination
+in the direction k푟, the angular spectrum derived in Eq. S24 can be
+shifted by k푟[25]. With this intuition, supporting directional eﬀects
+using spherical harmonics can be understood as a convolution of
+the angular spectrum with an angular kernel deﬁned by spherical
+harmonics [2, 34]. This is discussed in detail in Sec. S4.6. Addition-
+ally, we match the phase of each wavefront from the primitives to
+produce multiple coherent wavefronts that constructively interfere,
+following practices in previous CGH methods [18, 24, 26].
+S2.3
+Silhouete-based Method
+Perhaps the most accurate method to address occlusion in prior
+CGH literature is the silhouette-based method [21], and we outline
+its pseudocode in Algorithm 3. The silhouette-based method starts
+from the rearmost polygon P푁and accumulates the wavefront
+contributions that are not attenuated by the front objects, continuing
+the propagation until it reaches the frontmost polygon P1. The
+wavefront contribution up to the 푖th polygon 푢푖···푁, starting from
+푢푁···푁= 푢푁(r), can be inductively formulated as:
+푢푖···푁(x) = 푀푖(x)P (푢푖+1···푁(x) ;푧푖−푧푖+1) + 표푖푢푖(x) ,
+(S30)
+where 푀푖(x) = 1 −표푖퐴푖(x) is the silhouette mask of a translu-
+cent polygon P푖, deﬁned to emulate alpha blending in computer
+graphics [19]. In this context, 퐴푖represents the binary polygon
+aperture, and 표푖denotes the alpha values. This method has shown
+promising results for high-deﬁnition polygon CGH [20]. However,
+its sequential nature, especially the mask proﬁle on the accumu-
+lated wavefront, complicates intuitive use of the collapse property,
+and the reliance on discrete apertures makes it diﬃcult to apply to
+Gaussians. Notably, computational cost can be signiﬁcantly reduced
+by limiting the region of interest for propagation using Babinet’s
+
+
+=== PAGE 19 ===
+111:6
+•
+Choi, Chao et al.
+ALGORITHM 2: Exact Gaussian Wave Splatting
+▶First sort primitives from front (close to SLM) to back (far from SLM) based on depth values
+▶P(푢,푧, 휆) = F −1(F (푢)H (휆,푧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 퐾: Number of primitives
+Input: 푧푘,표푘,푐푘,푆푘, J푘, 푅푘, 휇푘: The depth, opacity, color, scale, rotation, center, and Jacobian determinant of the Fourier coordinate
+transformation of the 푘th Gaussian
+Input: 푁푥, 푁푦: Image dimensions
+Input: 휆: Illumination wavelength
+Input: 푡eps: Threshold for low alpha value, used to ignore low transmittance primitives. We set 푡eps =
+1
+255 following 3DGS [14].
+Input: 푡binarize: Threshold to binarize alpha. Used to realize the disk-based occlusion handling described in Chen & Wilkinson [7]
+Output: 푢SLM: Wavefront at the SLM plane
+푢SLM ←0푁푥×푁푦▶Wavefront at SLM plane
+푇←1푁푥×푁푦▶Initialize transmittance map
+foreach 푘in 1 . . . 퐾do
+ˆ푢푘←det(J푘)det(푆푘) ˆG
+
+푆푘푅−1
+푘k
+
+▶Query the angular spectrum of the 푘th Gaussian at the shifted hologram space using Eq. S24
+푢SLM ←푢SLM + P(푇· 푢푘,푧푘, 휆) · 푐푘· 표푘▶Splat the wavefront onto the SLM plane by propagating the masked wavefront the SLM
+plane, multiplying the propagated wavefront by the the primitive color and opacity, and add to the wavefront on the SLM plane
+훼푘←표푘· |푢푘| ▶Compute the alpha map from the primitive opacity and the primitive wavefront amplitude
+훼푘←훼푘· (훼푘> 푡eps) ▶Ignore low alpha values like in Gaussian Splatting [14]
+if use disk-based occlusion handling then
+훼푘←훼푘> 푡binarize ▶Exact GWS can also be used to implement visibility tests using binary apertures as described in Chen &
+Wilkinson [7]
+end
+푇←푇· (1 −훼푘) ▶Update the transmittance map
+end
+return 푢SLM
+principle [19]. Please refer to Sec. S6 for the full analytical solution
+for polygon-based methods [1, 17, 25, 35].
+From Alpha Wave Blending to Silhouette-based Methods. Our
+alpha wave blending formulation that directly inherits the continu-
+ous aperture property of Gaussians and composites front to back,
+generalizes these silhouette-based methods and is compatible with
+polygons that use binary apertures, as derived in this section and
+demonstrated in Figs. S9 — S20.
+To derive the connection between the general alpha wave blend-
+ing formulation and silhouette-based methods, we start from Eq. S27,
+after propagating the ﬁnal wavefront to where the ﬁrst polygon is
+located (to match the ﬁnal depth) and consider color and opacity
+as translucency applied to the binary aperture proﬁle 표푖퐴푖(x) [19].
+In this setting, the attenuation map 푇푖is equivalent to Î푖−1
+푗=1(1 −
+표푗퐴푗(x)).
+푢1···푁(x) = P
+ 푁
+Õ
+푖=1
+P (표푖퐴푖(x)푇푖(x)푢푖(x);푧푁−푧푖) ;푧1 −푧푁
+!
+(S31)
+=
+푁
+Õ
+푖=1
+P (표푖퐴푖(x)푇푖(x)푢푖(x);푧1 −푧푖)
+(S32)
+=
+푁
+Õ
+푖=1
+P ©­
+«
+표푖퐴푖(x)푢푖(x)
+푖−1
+Ö
+푗=1
+(1 −표푗퐴푗(x));푧1 −푧푖ª®
+¬
+(S33)
+=
+푁
+Õ
+푖=1
+P ©­
+«
+표푖퐴푖(x)푢푖(x)
+푖−1
+Ö
+푗=1
+푀푗(x);푧1 −푧푖ª®
+¬
+.
+(S34)
+We can expand the summation propagating from front to back,
+following the order of silhouette-based method, and the mask term
+can be pulled out at the depth of the polygon sequentially, allowing
+us to arrive at the same recursive formulation to Eq. S30.
+S2.4
+Fast Naïve Wave Splating Algorithm
+Since no order information and alpha blending is need in the Naïve
+WS algorithm, it is trivial to parallelize and can be eﬃciently imple-
+mented in CUDA.
+Whether to parallelize over pixels or primitives, however, is purely
+a design choice that depends on the number of primitives and the
+
+
+=== PAGE 20 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:7
+ALGORITHM 3: Silhouette-based Method
+▶First sort primitives from back (far from SLM) to front (close to SLM) based on depth values.
+▶P(푢,푧, 휆) = F −1(F (푢)H (휆,푧)) is the ASM wave propagation operator and H is the angular transfer function.
+Input: 퐾: Number of primitives
+Input: 푧푘,표푘,푐푘: The depth, opacity, and color of the 푘th primitive
+Input: 푁푥, 푁푦: Image dimensions
+Input: 휆: Illumination wavelength
+Output: 푢SLM: Wavefront at the SLM plane
+푢←0 ▶Initialize accumulated wavefront
+foreach 푘in 1 . . . 퐾do
+if 푘= 1 then
+푢′ ←푢▶Processing ﬁrst primitive so previous accumulated wavefront is zero
+end
+else
+푢′ ←P(푢,푧푘, 휆) ▶Propagate previous accumulated wavefront to current depth
+end
+푢푘←Generate object wavefront(k)
+푢푘←P(푢푘,푧푘, 휆) ▶Propagate object wavefront to its depth
+푢←(1 −|푢푘| · 표푘) · 푢′ + 푢푘· 푐푘· 표푘▶Combine previous accumulated wavefront and current object wavefront to get new
+accumulated wavefront
+푢←P(푢, −푧푘, 휆) ▶Propagate accumulated wavefront back to SLM plane
+end
+푢SLM ←푢
+return 푢SLM
+target hologram resolution. Since we are given a 3D model with
+a ﬁxed number of primitives and the number of the pixels in the
+hologram is usually larger than the number of primitives, we decided
+to parallelize over pixels to achieve maximum gain.
+We roughly outline our how the kernel launches and memory
+allocation is deﬁned in our CUDA implementation of the Fast Naïve
+WS algorithm in Algorithm 4.
+S2.5
+Details on 2DGS Models
+We use the open source gsplat [33] library to optimize 2DGS mod-
+els for Gaussian Wave Splatting CGH calculation. All models are
+optimized using default parameters deﬁned in the open source code
+base.
+To ﬂexibly control the number of the optimized Gaussians in
+the ﬁnal model to match the number of optimized Gaussians with
+the number of triangles in the mesh models for fair comparison,
+we used the 3DGS-MCMC densiﬁcation strategy [15] which is also
+supported in gsplat. We additionally optimized 2DGS models with
+a maximum of 1M Gaussians for video results of focal stacks from
+various novel views.
+S2.6
+Details on 2DGS-OIT Models
+We implement custom CUDA forward and backward kernels and
+integrate them in gsplat to optimize 2DGS-OIT models that are
+used for the fast variant of Gaussian Wave Splatting CGH. Since
+the OIT image formation is diﬀerent than that of 2DGS, the gra-
+dients of the model parameters need to be re-derived. Here, we
+show derivations of several intermediate gradient functions that
+can be easily integrated with existing Gaussian Splatting software
+frameworks, and refer the readers to the extensive writeup provided
+by the gsplat authors for full gradient derivations [33].
+In 2DGS-OIT, the color of each pixel being rendered is represented
+as:
+c ≈
+푁
+Õ
+푖=1
+c푖훼푖=
+푁
+Õ
+푖=1
+c푖G푖표푖,
+(S35)
+where c is the ﬁnal rendered pixel color, c푖, 훼푖,표푖∈R are the color,
+alpha, opacity, and opacity of the 푖th Gaussian, respectively, and G푖
+is the splatted 2D Gaussian value evaluated at the location of the
+pixel currently being rendered.
+Since 푐푖and 훼푖are independent of each other, the gradient for-
+mulas of 훼푖and 푐푖with respect to the loss L is trivial:
+휕L
+휕훼푖
+= c푖· 휕L
+휕c
+(S36)
+휕L
+휕c푖
+= 푎푖· 휕L
+휕c
+(S37)
+Other gradients, such as gradients with respect to opacities and
+spherical harmonics coeﬃcients, are the same as the gradients in
+original 2DGS, and we refer the readers to the gsplat writeup [33]
+for more details.
+To optimize a 2DGS-OIT model, we ﬁrst pretrain a 2DGS model
+with the 3DGS-MCMC strategy and initialize the 2DGS-OIT model
+with means and rotations of the optimized Gaussians from 2DGS.
+We do not densify Gaussians throughout the 2DGS-OIT optimiza-
+tion process. We observe that 2DGS-OIT models converge much
+
+
+=== PAGE 21 ===
+111:8
+•
+Choi, Chao et al.
+ALGORITHM 4: Fast Naïve Gaussian Wave Splatting, parallelized over pixels
+Input: 퐾: Number of primitives
+Input: 푧푘,표푘,푐푘,푆푘, J푘, 푅푘, 휇푘: The depth, opacity, color, scale, rotation, center, and Jacobian determinant of the Fourier coordinate
+transformation of the 푘th Gaussian stored in device memory.
+Input: 푁푥, 푁푦: Image dimensions
+Output: 푢SLM: Wavefront at the SLM plane
+ˆ푢SLM ←0푁푥×푁푦▶Angular spectrum of wavefront at SLM plane
+▶Host code
+gridDim ←(푁푥/퐵푥, 푁푦/퐵푦) ▶Each thread processes one pixel
+blockDim ←(퐵푥, 퐵푦)
+ˆ푢SLM ←0 ▶Initialize output array in device memory
+ComputePixelWavefrontKernel(jj gridDim, blockDim kk)(푧푘,표푘,푐푘, ..., 휇푘, 퐾, ˆ푢SLM)
+Function ComputePixelWavefrontKernel(..., 퐾, 푈SLM):
+▶Calculate global pixel coordinates
+푥←blockIdx.x × blockDim.x + threadIdx.x
+푦←blockIdx.y × blockDim.y + threadIdx.y
+if 푥< 푁푥and 푦< 푁푦then
+for 푘←1 to 퐾do
+▶Process each primitive sequentially for this pixel
+ˆ푢푘[푥,푦] ←det(J푘)det(푆푘) ˆG
+
+푆푘푅−1
+푘k
+
+푒푗k·ą푘[푥,푦] ▶Query the angular spectrum of the 푘th primitive at [푥,푦] pixel
+location at the SLM plane using Eq. S24
+ˆ푢SLM[푥,푦] ←ˆ푢SLM[푥,푦] + ˆ푢푘[푥,푦]H (푧푘, 휆)[푥,푦] · 푐푘· 표푘
+▶Propagate the angular spectrum of the primitive by its depth using the angular transfer function H in ASM
+end
+end
+▶Back on host
+푢SLM = F −1( ˆ푢SLM) ▶Inverse Fourier transform of result
+return 푢SLM
+faster and is more stable to optimize with this pretrained 2DGS ini-
+tialization. We use degree 3 spherical harmonics (16 SH coeﬃcients)
+to model the view-dependent opacity of each Gaussian. All other
+optimization conﬁgurations are the same as that of 2DGS.
+S2.7
+Details on the Eﬀicient CUDA Implementation of
+Fast Gaussian Wave Splating
+We implement the fast version of our Gaussian Wave Splatting using
+custom CUDA kernels following the logic described in Algorithm 4.
+We spawn 1024 threads for each block (32 in both height and width
+dimensions of the hologram), and sequentially process all Gaussians
+in each kernel call. This CUDA kernel is integrated in our hsplat
+library so that it works seamlessly with PyTorch.
+
+
+=== PAGE 22 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:9
+S3
+ADDITIONAL DETAILS ON HARDWARE
+laser
+lens
+SLM
+Fourier filter
+lens
+lens
+Fig. S3. Holographic display prototype used for the experimental
+results.
+Experimental setup. To experimentally validate our algorithms,
+we build a holographic display benchtop prototype using a FISBA
+READYBeam™Bio2 ﬁber-coupled module with three optically aligned
+laser diodes with wavelengths of 638, 520, and 488 nm, respectively,
+and a Holoeye PLUTO phase-only liquid crystal on silicon (LCOS)
+SLM with a resolution of 1920 × 1080 pixels, a pixel pitch of 8 휇m,
+and a precision of 8 bits. We follow an optical conﬁguration similar
+to those used in Choi et al. [9] and Shi et al. [29], which is shown
+in Fig. S3. Color images are captured with separate exposures for
+each wavelength and combined in post-processing. All images are
+captured with a FLIR Grasshopper3 2.3 MP color USB3 vision sensor.
+In our setup, the depth range in hologram space is approximately
+1cm, which is equivalent to total depth range of 2D in view space,
+from optical inﬁnity to approx. 0.5 m.
+Phase encoding. Our CGH algorithm encodes Gaussian-based
+scene representations into a complex-valued wavefront, similar
+to other primitive-based methods. While one can build a hard-
+ware setup with multiple SLMs to modulate complex-valued wave-
+fronts [27, 28], most holographic display setups use phase-only
+SLMs, requiring phase encoding techniques. To encode the complex-
+valued wavefront splatted onto the SLM plane into a phase-only pat-
+tern, we use the double-phase amplitude coding method (DPAC) as
+described in recent literature [13, 18, 29]. The double-phase method
+directly encodes amplitude and phase into two phase values. Specif-
+ically, this method converts a complex-valued wavefront 푎푒푗휙into
+two phase values, 푃1 and 푃2:
+푃1 = 푎−푐표푠−1휙
+(S38)
+푃2 = 푎+ 푐표푠−1휙,
+(S39)
+and interlaces 푃1 and 푃2 like a checkerboard pattern [18].
+Red
+Green
+Blue
+Phase 
+difference
+Phasemap index
+Fig. S4. Spatially varying, calibrated LUTs. We visualize the spatially
+varying, calibrated lookup table (LUT) for red, green, and blue channel
+using the described procedure. This LUT maps the phase diﬀerence to the
+8-bit image index that is dictated by the SLM. The blue line represents the
+mean values across all pixels, while the gray shades indicate the standard
+deviation over all pixels. For all pixels, we rectify the LUT by assigning
+a very large value to ensure that the nearest neighbor search does not
+return values exceeding 휋. Note that discontinuities indicate an inability to
+represent certain phase diﬀerences, resulting in image quality degradation.
+For a beter illustration of this, we show an unideal LUT for the red channel;
+however, in our experiments, we use a beter-calibrated LUT for red as well
+as illustrated for the other channels.
+Hardware calibration To address hardware imperfections, we
+account for laser beam intensity variations and perform spatially
+varying lookup table (LUT) calibration [9, 29, 30]. The calibration
+procedure is as follows: ﬁrst, we carefully align the setup, ensur-
+ing that the camera sensor is focused on the Fourier plane, and
+match the ﬁlter size optimal for the double-phase method [29]. Next,
+we set the initial reference phase level to 127, construct checker-
+board patterns, and incrementally increase the diﬀerence between
+푃2 and 푃1, and vice versa, measuring the corresponding intensity
+per 2 × 2 superpixel to generate the phase LUT (see Fig. S4). To
+avoid phase-wrapping artifacts, we use 3휋range modulation for
+each wavelength [18].
+We observed that adding additional LUT entries for reference
+levels ranging from 42 (corresponding to −휋in 3휋modulation) to
+212 (corresponding to +휋in 3휋modulation) and addressing anti-
+aliasing also marginally improves image quality. While we do not
+claim the calibration techniques as our contribution, we open-source
+the code used for calibration along with hsplat1.
+S4
+ADDITIONAL SIMULATION RESULTS
+In this section, we report and extensive set of baseline comparisons
+and ablation studies to verify the eﬀectiveness of Gaussian Wave
+Splatting. In addition to the three default baselines presented in the
+main paper, here we compare our method against another three, re-
+sulting in total of six baseline comparisons. We provide an overview
+of each baseline in Table. 1.
+S4.1
+Extended Qantitative Baseline Comparisons
+We show per-scene quantitative comparisons with the the extended
+set of baseline CGH methods in terms of PSNR, SSIM, and LPIPS
+in Table 2 and 3. We evaluate in-focus image quality by merge
+simulated focal stacks rendered from the generated holograms into
+an all-in-focus image using RGBD masks computed from depth
+1https://github.com/computational-imaging/hsplat
+
+
+=== PAGE 23 ===
+111:10
+•
+Choi, Chao et al.
+Method
+3D
+representation
+Description
+Naïve
+Sparse
+point cloud
+Simply treats each point as a pixel and adding up wavefront at the SLM plane without any occlusion handling.
+Chen & Wilkinson [7]
+(in main paper)
+Sparse
+point cloud
+Treats each point as a fully opaque disk that can potentially block points behind it based on visibility tests.
+The disk size is a tunable parameter.
+Wave Splatting
+Sparse
+point cloud
+Treats each point as an isotropic Gaussian and uses Wave Splatting and alpha wave blending to splat points onto the SLM.
+The Gaussian scale is a tunable parameter.
+Naïve
+Dense point
+cloud / RGBD
+Each point exactly corresponds to one pixel and the depth of each point is extracted from ground truth depth maps.
+Matsushima et al. [21]
+(in main paper)
+Mesh
+Each triangle is fully opaque and can block triangles behind it.
+Wave Splatting
+Mesh
+A diﬀerent realization of the same algorithm proposed by Matsushima et al. [21] using Wave Splatting.
+Ours (fast)
+(in main paper)
+Gaussians
+The fast variant of Gaussian Wave Splatting that converts 2DGS-OIT models to holograms using approximated alpha wave
+blending (order-invariant transparency).
+Ours (exact)
+(in main paper)
+Gaussians
+The exact variant of Gaussian Wave Splatting that converts 2DGS models to holograms using exact alpha wave blending.
+Table 1. Baseline methods. In this table, we describe the input 3D representation and algorithm overview for each baseline method. We compare our
+Gaussian Wave Splating algorithm with six other primitives-based CGH baselines.
+Method - 3D representation
+Lego
+Chair
+Hotdog
+Materials
+Mic
+Ship
+Avg.
+Naïve - Point Cloud
+10.55 / 0.66 / 0.34
+14.67 / 0.77 / 0.20
+14.59 / 0.67 / 0.31
+15.89 / 0.72 / 0.26
+22.63 / 0.90 / 0.11
+15.75 / 0.59 / 0.35
+15.68 / 0.72 / 0.26
+Chen & Wilkinson [7] - Point Cloud
+12.50 / 0.68 / 0.31
+15.86 / 0.79 / 0.18
+16.55 / 0.69 / 0.28
+16.77 / 0.75 / 0.23
+24.26 / 0.91 / 0.09
+17.45 / 0.63 / 0.32
+17.23 / 0.74 / 0.23
+Wave Splatting - Point Cloud
+12.97 / 0.69 / 0.29
+16.39 / 0.80 / 0.17
+16.84 / 0.70 / 0.27
+16.90 / 0.75 / 0.22
+24.82 / 0.92 / 0.08
+17.76 / 0.64 / 0.31
+17.61 / 0.75 / 0.22
+Naiïve - RGBD
+25.84 / 0.90 / 0.12
+24.42 / 0.92 / 0.08
+28.75 / 0.94 / 0.13
+29.19 / 0.93 / 0.10
+30.25 / 0.97 / 0.04
+24.31 / 0.85 / 0.22
+27.13 / 0.92 / 0.11
+Matsushima et al. [21] - Mesh
+19.27 / 0.75 / 0.24
+18.29 / 0.82 / 0.15
+22.92 / 0.79 / 0.22
+19.67 / 0.81 / 0.19
+24.16 / 0.94 / 0.07
+20.32 / 0.71 / 0.27
+20.77 / 0.80 / 0.19
+Wave Splatting - Mesh
+18.89 / 0.74 / 0.25
+17.93 / 0.81 / 0.15
+22.65 / 0.77 / 0.23
+19.41 / 0.80 / 0.20
+23.19 / 0.93 / 0.08
+20.24 / 0.70 / 0.27
+20.38 / 0.79 / 0.20
+Ours (fast) - Gaussians
+25.24 / 0.90 / 0.12
+25.16 / 0.91 / 0.08
+29.82 / 0.95 / 0.08
+27.93 / 0.93 / 0.10
+28.79 / 0.95 / 0.05
+26.43 / 0.86 / 0.19
+27.23 / 0.92 / 0.10
+Ours (exact) - Gaussians
+27.67 / 0.90 / 0.11
+26.43 / 0.92 / 0.08
+30.15 / 0.94 / 0.12
+28.49 / 0.92 / 0.10
+29.40 / 0.96 / 0.04
+25.64 / 0.84 / 0.22
+27.96 / 0.91 / 0.11
+Table 2. Qantitative performance of diﬀerent CGH algorithms on the Blender [23] dataset. We evaluate the image quality of 3D holograms
+generated using our Gaussian Wave Splating algorithm and various baseline primitives-based CGH methods in terms of PSNR (↑), SSIM (↑), and LPIPS (³).
+All point cloud methods suﬀer from poor image quality due to the overly dim images with black holes. CGH from mesh outperforms point cloud methods, but
+high frequency details still cannot be reconstructed with per-face colors. CGH from RGBD images achieves much beter quality, but still trails Gaussian Wave
+Splating due to the unnatural ringing artifacts at depth discontinuities. Both exact and fast variants of Gaussian Wave Splating achieve superior results over
+all baseline methods.
+Method - 3D representation
+Kitchen
+Counter
+Stump
+Room
+Garden
+Bicycle
+Avg.
+Naïve - Point Cloud
+6.67 / 0.06 / 0.72
+7.87 / 0.12 / 0.75
+11.48 / 0.03 / 0.72
+9.85 / 0.10 / 0.76
+7.39 / 0.02 / 0.73
+11.07 / 0.04 / 0.74
+9.05 / 0.06 / 0.74
+Chen & Wilkinson [7] - Point Cloud
+10.20 / 0.15 / 0.72
+7.86 / 0.12 / 0.74
+11.60 / 0.03 / 0.72
+9.41 / 0.03 / 0.74
+6.60 / 0.00 / 0.75
+10.46 / 0.01 / 0.69
+9.35 / 0.06 / 0.73
+Wave Splatting - Point Cloud
+10.79 / 0.26 / 0.59
+7.86 / 0.12 / 0.74
+11.61 / 0.03 / 0.72
+9.41 / 0.03 / 0.74
+6.60 / 0.00 / 0.75
+10.46 / 0.01 / 0.69
+9.45 / 0.07 / 0.70
+Naiïve - RGBD
+17.79 / 0.67 / 0.36
+22.13 / 0.76 / 0.40
+17.33 / 0.38 / 0.54
+24.26 / 0.74 / 0.44
+16.14 / 0.20 / 0.49
+17.44 / 0.44 / 0.48
+19.18 / 0.53 / 0.45
+Matsushima et al. [21] - Mesh
+14.74 / 0.23 / 0.65
+12.47 / 0.35 / 0.68
+18.69 / 0.26 / 0.65
+17.15 / 0.51 / 0.64
+15.18 / 0.18 / 0.62
+16.80 / 0.20 / 0.65
+15.84 / 0.29 / 0.65
+Wave Splatting - Mesh
+14.66 / 0.21 / 0.65
+12.36 / 0.32 / 0.68
+18.64 / 0.25 / 0.65
+17.11 / 0.49 / 0.64
+15.09 / 0.16 / 0.62
+16.79 / 0.19 / 0.64
+15.77 / 0.27 / 0.65
+Ours (fast) - Gaussians
+22.63 / 0.82 / 0.19
+20.25 / 0.72 / 0.41
+21.68 / 0.48 / 0.47
+23.19 / 0.82 / 0.42
+15.29 / 0.25 / 0.52
+21.18 / 0.49 / 0.49
+20.70 / 0.60 / 0.42
+Ours (exact) - Gaussians
+23.99 / 0.77 / 0.23
+23.33 / 0.74 / 0.38
+22.16 / 0.49 / 0.44
+25.12 / 0.78 / 0.41
+18.11 / 0.23 / 0.47
+21.50 / 0.48 / 0.47
+22.37 / 0.58 / 0.40
+Table 3. Qantitative performance of diﬀerent CGH algorithms on the Mip-NeRF 360 [3] dataset. We evaluate the image quality of 3D holograms
+generated using our Gaussian Wave Splating algorithm and various baseline primitives-based CGH methods in terms of PSNR (↑), SSIM (↑), and LPIPS (³).
+All point cloud methods suﬀer from poor image quality due to the overly dim images with black holes. CGH from mesh outperforms point cloud methods, but
+high frequency details still cannot be reconstructed with per-face colors. CGH from RGBD images achieves much beter quality, but still trails Gaussian Wave
+Splating due to the unnatural ringing artifacts at depth discontinuities. Both exact and fast variants of Gaussian Wave Splating achieve superior results over
+all baseline methods.
+maps rendered from optimized 2DGS models, and compare this all-
+in-focus image with ground truth images from the training dataset.
+Both variants of our Gaussian Wave Splatting algorithm consistently
+outperform other primitive-based CGH algorithms across all image
+quality metrics and all scenes.
+All sparse point cloud methods suﬀer from low image quality
+due to the extreme sparsity of primitives, leading to overly dark
+
+
+=== PAGE 24 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:11
+images or images with holes. CGH from mesh cannot reconstruct
+sharp details unless a disproportionate number of triangles is used.
+Although RGBD CGH is expected to be the upper bound of all
+CGH methods since the hologram is directly synthesized from a
+ground truth all-in-focus RGB image and its corresponding depth
+map, it trails Gaussian Wave Splatting (GWS) since there signiﬁcant
+ringing artifacts at depth discontinuities, while GWS achieves a
+smoother blur due to the summation of diﬀerent Gaussian kernels
+and eﬀectively hides the artifacts. Both of our GWS variants greatly
+outperforms all other baselines, achieving a superior 5-11 dB average
+PSNR improvement.
+S4.2
+Extended Qalitative Baseline Comparisons
+We show focal stacks and zoom-in patches of focal slices generated
+from holograms synthesized using diﬀerent CGH baselines and 3D
+representations in Figures S9 to S20.
+Without occlusion handling, applying the the Naïve algorithm
+on sparse point clouds results in over-saturated colors since the
+wavefront of all points are simply added up. With occlusion handling
+using disk-based visibility tests as described in Chen & Wilkinson
+[7] or using alpha wave blending, the colors are more accurate.
+However, the inherent sparseness of point clouds signiﬁcantly limits
+the image quality of point cloud-based CGH, leading to overly dim
+images with holes. This issue is especially prominent for in-the-
+wild captured 3D reconstruction datasets such as Mip-NeRF 360 [3],
+where the SfM point clouds are simply too sparse to provide dense
+coverage of object surfaces, such as the bicycle or garden scene. With
+dense point cloud representations like RGBD images, image quality
+greatly improves, but still suﬀers from ringing artifacts at depth
+discontinuities.
+CGH from meshes using the silhouette method proposed by Mat-
+sushima et al. [21] and alpha wave blending achieves decent image
+quality, yet high frequency details cannot be reconstructed due to
+the per-face color representation that is used for polygon-based
+CGH.
+Both variants of our Gaussian Wave Splatting (GWS) algorithm
+achieves the best image quality compared to all six other baselines.
+From the zoomed-in crops from focal slices, we see that GWS accu-
+rately reconstructs sharp details in focused regions and synthesizes
+more natural blur in defocus regions. Compared with polygon-based
+models, GWS also achieves superior image quality while using an
+equal or reduced number of geometric primitives compared to the
+mesh models.
+S4.3
+3D Focal Stacks of Novel Views
+We show focal stacks generated from holograms synthesized at
+diﬀerent camera viewpoints using our exact Gaussian Wave Splat-
+ting algorithm in Figure S21. We follow the Holographics pipeline
+described in Section S1 to generate a hologram from an optimized
+2DGS model given a speciﬁc viewpoint and camera intrinsics. We
+see that both high quality novel view synthesis and natural 3D focus
+eﬀects are accurately reproduced at all views, demonstrating the
+robustness and eﬀectiveness of Gaussian Wave Splatting. Please
+refer to the supplemental video for the circular smooth trajectory
+1024
+2048
+Hologram Resolution
+1e4
+1e5
+1e6
+Number of Gaussians (log scale)
+Ours (Fast) Runtime
+1024
+2048
+Hologram Resolution
+Ours (Exact) Runtime
+100
+101
+102
+103
+104
+Runtime in seconds (log scale)
+Fig. S5. Runtime comparisons of fast and exact GWS. We show Gauss-
+ian Wave Splating CGH calculation time using varying target hologram
+resolutions and number of Gaussians as a 2D heatmap. An isocurve repre-
+senting the runtime of 100 seconds is ploted as a white dashed line. Fast
+GWS achieves nearly 30× speedup over exact GWS, and can generate holo-
+grams of much higher resolution and fidelity, which is positively correlated
+to the number of Gaussians, compared to the exact method given the same
+runtime.
+of all novel viewpoints and corresponding experimentally captured
+focal stacks.
+S4.4
+Sparse Point Cloud CGH Ablation Studies
+We perform various ablation studies on CGH from sparse point
+clouds. First, we ablate the disk size described in Chen & Wilkinson
+[7]. This is a crucial parameter that determines the spatial extent
+of the mask that is used to perform visibility tests of points. In
+our reimplementation of the method, we use the parameter 푡eps
+described in Algorithm 2 to control the disk size. From Fig S22,
+we see that the CGH result is highly sensitive to the disk size as
+a larger disk (smaller threshold) more aggressively blocks points
+when performing visibility tests, leading to dimmer images. Smaller
+disk sizes, on the other hand, could lead to over-saturated images
+due to lenient visibility tests and light leakage.
+Secondly, we ablate the Gaussian scale parameter when apply-
+ing Wave Splatting to sparse point clouds and treating each point
+as an isotropic Gaussian. We describe the scale of each isotropic
+Gaussian as a multiple of the pixel pitch of the SLM. From Figure
+S23, we see that images are dim when the Gaussian scale is small
+and becomes brighter as the Gaussian scale increases due to larger
+spatial coverage with bigger Gaussians.
+From these two ablation studies, we see that sparse point cloud
+representations are not ideal for photorealistic CGH due to its bad
+3D spatial coverage nature and the need of heuristically tuning
+point sizes to achieve barely passing image quality. The only way to
+potentially achieve photorealistic quality is by using RGBD images
+or dense point clouds.
+S4.5
+Runtime Comparisons
+We compare the runtime of fast and exact Gaussian Wave Splatting
+in Fig. S5. We vary the number of Gaussian primitives used and the
+target hologram resolution and plot the runtimes as a 2D heatmap.
+An isocurve corresponding to a runtime of 100 seconds is plotted as
+a white dashed line. Fast GWS is able to synthesize higher resolution
+
+
+=== PAGE 25 ===
+111:12
+•
+Choi, Chao et al.
+holograms using more primitives compared to exact GWS given
+the same runtime, which can be observed from Fig. S5 as the fast
+GWS isocurve is to the top-left of the exact GWS isocurve. Given
+the same number of primitives and target hologram resolution, fast
+GWS achieves a nearly 30× speedup over exact GWS.
+S4.6
+Additional Discussion on View-Dependent Eﬀects
+ky
+1
+0
+kx
+ky
+kx
+�㗰y=90°
+SLM bandwidth
+1
+0
+Y2
+1(k)
+Y2
+2(k)
++ 1
+2�㗅
+2 1
+2�㗅
++ 1
+2�㗅
+2 1
+2�㗅
+Spherical harmonics
+Directional effects 
+within SLM bandwidth
+Fig. S6. Limited SLM bandwidth. On the lef, we show the angular profiles
+of spherical harmonics, i.e., 푌2
+1 (k) and 푌2
+2 (k). These are queried from all
+angles over the hemisphere, ranging from -90deg to +90 deg for both the
+푥−and 푦−axes. The SLM (with 8휇m pixel pitch in our case) supports only a
+limited range of angular support, which we found to be very uniform across
+the entire region. Colormaps on the right denote the normalized amplitude
+value.
+In Fig. S6, we visualize the full angular emission proﬁle of a
+spherical harmonics basis (second degree, the ﬁrst two orders) over
+the hemisphere. This map can be interpreted as the angular emis-
+sion proﬁle, or the amplitude of the desired angular spectrum for
+holograms. Unfortunately, most current holographic displays only
+support a limited space-bandwidth product, restricting the angular
+range due to the pixel pitch size, which is typically a few degrees.
+This is visualized as the red box in the center. From this, we observe
+that the angular emission within the range of angles supported by
+the SLM is relatively uniform, motivating us to approximate the
+directional eﬀects using zeroth-order spherical harmonics.
+Nevertheless, here we discuss an approach to incorporate full
+directional eﬀects in our Gaussian Wave Splatting. The classical
+approach to control the angular proﬁle, such as random phase meth-
+ods, or pioneering work in polygon-based method iterature [1, 2,
+17, 26, 36] can be understood in a more principled manner with
+this discussion. Gaussian Splatting uses spherical harmonics (SH)
+to represent view dependence [4, 11, 14]. They form a complete
+set of orthonormal bases, and typically, the ﬁrst few coeﬃcients
+are optimized for each color channel. Here, we discuss how these
+coeﬃcients can be incorporated into our holograms per basis.
+Directional eﬀects in primitive-based CGHs have primarily been
+discussed in the context of representing the reﬂectance distribution
+of surfaces [25]. Pioneering works have attempted to control the
+angular emission proﬁle using sub-triangles [17] and appropriate
+phase proﬁles for them. Yeom et al. demonstrated that the desired
+reﬂectance distribution could be approximated as a convolution
+between the angular spectrum of the mesh and the angular distri-
+bution [2, 34]. In our general GWS formulation, this concept can be
+adapted as follows:
+ˆ푢SH푚
+푙(k) = det(J)det(S푖)
+
+ˆ푢푐
+
+S푖푅−1
+푖
+k
+
+∗k 푌푚
+푙(k)푒푗휙(k)
+푒푗k·ą푖,
+(S40)
+where ∗k is the convolution operator in the spatial frequency domain
+and 푌푚
+푙(k)푒푗휙(k) denotes the angular kernel, having the spherical
+harmonics function of degree 푙and order 푚as its amplitude. For
+simplicity, we consider an example Gaussian without rotation, trans-
+lation, scaling, and a basis of the ﬁrst-degree and ﬁrst-order, but
+incorporating these parameters and the extension to other basis
+are straightforward. The spatial and angular amplitude proﬁle of
+an example Gaussian with a reasonable size, on the order of tens
+of microns, is shown in Fig. S7. Ideally, we want ˆ푢SH푚
+푙(k) to have
+the angular emission proﬁle 푌푚
+푙(k), while retaining the Gaussian
+amplitude proﬁle of the original 푢(x) from our Gaussian wave splat-
+ting. However, note that the convolution in the Fourier domain is
+equivalent to element-wise multiplication in the spatial domain. The
+amplitude of 푌푚
+푙(k)푒푗휙(k) in the spatial domain (i.e., the amplitude
+of the Fourier transform of 푌푚
+푙(k)푒푗휙(k)) highly depends on the
+phase proﬁle 휙(k). This task essentially boils down to achieving the
+spatio-angular light ﬁeld proﬁle 푙(x, k) from a coherent wavefront.
+Y2
+2(k)
+�㗆"(k)
+u(x)
+Fig. S7. Visualization of Gaussians in spatial and Fourier domain. We
+visualize the Gaussians in spatial and Fourier domain.
+It has been noted in the literature that a coherent wavefront
+can only represent a light ﬁeld corresponding to rank-1 mutual
+intensity [8, 12, 37]. Due to this constraint, one might not be able
+to perfectly achieve both the desired spatial and angular emission
+proﬁles simultaneously with a coherent wavefront modulated by
+a bandlimited SLM. However, it has been demonstrated that one
+can rely on partial coherence to achieve high-quality light ﬁeld
+holograms with time-multiplexing [8, 16]. Inspired by this work, we
+discuss a heuristic sampling strategy in a time-multiplexed setting
+to achieve the desired angular emission proﬁle (e.g., the ﬁrst-order
+SH basis) while preserving the desired spatial amplitude.
+
+
+=== PAGE 26 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:13
+Y2
+2(k)
+ÿ"(k)
+u(x)
+<latexit sha1_base64="U5NgBVzIfpRXf+zdbcOGRje1VE=">AB8nicbVDLSgMxFM3UV62vqks3wSK4KjPia1kUxGUF+4DpUDJpg3NJENyRyhDP8ONC0Xc+jXu/Bsz7Sy09UDgcM695NwTJoIbcN1vp7Syura+Ud6sbG3v7O5V9w/aRqWashZVQuluSAwTXLIW
+cBCsm2hG4lCwTji+zf3OE9OGK/kIk4QFMRlKHnFKwEp+LyYwokRkd9N+tebW3RnwMvEKUkMFmv3qV2+gaBozCVQY3zPTSDIiAZOBZtWeqlhCaFjMmS+pZLEzATZLPIUn1hlgCOl7ZOAZ+rvjYzExkzi0E7mEc2il4v/eX4K0XWQcZmkwCSdfxSlAoPC+f14wDWjICaW
+EKq5zYrpiGhCwbZUsSV4iycvk/Z3busXzyc1xo3R1ldISO0Sny0BVqoHvURC1EkULP6BW9OeC8O/Ox3y05BQ7h+gPnM8feyeRZg=</latexit>F
+*k
+ýt(k) ~
+<latexit sha1_base64="U5NgBVzIfpRXf+zdbcOGRje1VE=">AB8nicbVDLSgMxFM3UV62vqks3wSK4KjPia1kUxGUF+4DpUDJpg3NJENyRyhDP8ONC0Xc+jXu/Bsz7Sy09UDgcM695NwTJoIbcN1vp7Syura+Ud6sbG3v7O5V9w/aRqWashZVQuluSAwTXLIW
+cBCsm2hG4lCwTji+zf3OE9OGK/kIk4QFMRlKHnFKwEp+LyYwokRkd9N+tebW3RnwMvEKUkMFmv3qV2+gaBozCVQY3zPTSDIiAZOBZtWeqlhCaFjMmS+pZLEzATZLPIUn1hlgCOl7ZOAZ+rvjYzExkzi0E7mEc2il4v/eX4K0XWQcZmkwCSdfxSlAoPC+f14wDWjICaW
+EKq5zYrpiGhCwbZUsSV4iycvk/Z3busXzyc1xo3R1ldISO0Sny0BVqoHvURC1EkULP6BW9OeC8O/Ox3y05BQ7h+gPnM8feyeRZg=</latexit>F
+<latexit sha1_base64="vTszhuynUnKImlQVxdXjnit5ytw=">AB/3icbVDLSgMxFL1TX7W+RgU3boJFqKBlRnwti25cVnDaQmcomTRtQzMPkoxQxi78FTcuFHrb7jzb8y0s9DWAwmHc+4lJ8ePOZPKsr6NwsLi0vJKcbW0tr6xuWVu7zRklAhCHRLxSLR8LCln
+IXU5y2YkFx4HPa9Ic3md98oEKyKLxXo5h6Ae6HrMcIVlrqmHtugNWAYJ4648qJG7NjpK+jlm2qtYEaJ7YOSlDjnrH/HK7EUkCGirCsZRt24qVl2KhGOF0XHITSWNMhrhP25qGOKDSyf5x+hQK13Ui4Q+oUIT9fdGigMpR4GvJ7O0ctbLxP+8dqJ6V17KwjhRNCT
+h3oJRypCWRmoywQlio80wUQwnRWRARaYKF1ZSZdgz35njROq/ZF9fzurFy7zusowj4cQAVsuIQa3EIdHCDwCM/wCm/Gk/FivBsf09GCke/swh8Ynz+9tJVI</latexit>U(−π, π)
+&
+<latexit sha1_base64="4Exd4I7hQdcYV5iHsuJYOVSt0s8=">AB7XicbVDLSgMxFL1TX7W+qi7dBIvgqsyIr2XRjcsK9gHtUDJpo3NJCHJCGXoP7hxoYhb/8edf2PazkJbD1w4nHMv94TKc6M9f1vr7Cyura+UdwsbW3v7O6V9w+aRqa0AaRXOp2hA3lTNCGZbTtIUJxGnrWh0O/VbT1QbJsWDHSsaJngWMwItk5qdtWQ9YJeueJX/RnQMglyUoEc9V75q9uXJE2osIRjYzqBr2yYW0Z4XRS6qaGKkxGeEA7jgqcUBNms2sn6MQpfRL7UpYNFN/T2Q4MWacRK4zwXZoFr2p+J/XSW18HWZMqNRSQeaL4pQjK9H0dRnmhLx45gopm7FZEh1phYF1DJhRAsvrxMmfV4LJ6cX9eqd3kcRThCI7hFAK4ghrcQR0aQOARnuEV3jzpvXjv3se8teDlM4fwB97nDz6Gju0=</latexit>φ1
+<latexit sha1_base64="NJpPR9m0V/Pc/PGTdrS5FSialU4=">AB7XicbVDLSgMxFL3js9ZX1aWbYBFclZnia1l047KCfUA7lEyaWMzSUgyQhn6D25cKOLW/3Hn35i2s9DWAxcO59zLvfdEijNjf/bW1ldW9/YLGwVt3d29/ZLB4dNI1NaINILnU7woZyJmjDMstpW2mKk4jTVjS6nfqtJ6oNk+LBjhUNEzwQLGYEWyc1u2rIetVeqexX/BnQMglyUoYc9V7pq9uXJE2osIRjYzqBr2yYW0Z4XRS7KaGKkxGeEA7jgqcUBNms2sn6NQpfRL7UpYNFN/T2Q4MWacRK4zwXZoFr2p+J/XSW18HWZMqNRSQeaL4pQjK9H0dRnmhLx45gopm7FZEh1phYF1DRhRAsvrxMmtVKcFm5uD8v127yOApwDCdwBgFcQ3uoA4NIPAIz/AKb570Xrx372PeuLlM0fwB97nD0AKju4=</latexit>φ2
+<latexit sha1_base64="5y6pisS5h3pzAbe4L6Gl/HqTNM8=">ACPXicbVDJSgNBEO1xN25Rj14ag5AcDPB7SAiEcSjgnEhkw9nZ6kSc9id40YJvNjXvwHb968eFDEq1c7YxC3Bw2PV6+q54bCa7ANB+MkdGx8YnJqenczOzc/EJ+celMhbGkrEZDEcoLlygmeMBqwEGwi0gy4ruCnbvdg0H9/JpJxcPgFHoRa/ikHXCPUwJacvKntrqSkGC7ytu7uB8XbZ9Ax/WSm7SEbdoKAWcKJSI5TJvJupUW8aVTaVa+nN20VML9ZiWbsecATp18wSybGfBfYg1JAQ1x7OTv7VZIY58FQAVRqm6ZETQSIoFTwdKcHSsWEdolbVbXNCA+U40kuz7Fa1pYS+U+gWAM/V7R0J8pXq+q52DjdXv2kD8r1aPwdtpJDyIYmAB/fzIiwWGEA+ixC0uGQXR04RQyfWumHaIJBR04DkdgvX75L/krFK2tsqbJxuF/eowjim0glZREVloG+2jI3SMaoiW/SIntGLcWc8Ga/G26d1xBj2LKMfMN4/ABbarUs=</latexit>rD
+|u(x) · F−1(Y 2
+2 (k))|2
+E
+t
+<latexit sha1_base64="dnROTnvUD74YP284O+90WH3zgM=">ACLHicbVDLSgMxFM34tr6qLt0Ei6CbMiO+FiKimy4r2lbo1CGTZtrQZGZM7oglzge58VcEcaGIW7/DtHbh60DgcM495N4TpoJrcN1XZ2x8YnJqema2MDe/sLhUXF6p6yRTlNVoIhJ1GRLNBI9ZDTgIdpkqRmQoWCPsnQ78xg1TmifxBfRT1pKkE/OIUwJWCoqnvr5WYLB/wjuH+A7XQImywPjA7sFJc15JQ/Elczxpi8JdMPI9PItfHe1PYwcBYDzoFhy+4Q+C/xRqSERqgGxSe/ndBMshioIFo3PTeFliEKOBUsL/iZimhPdJhTUtjIplumeGxOd6wShtHibIvBjxUvycMkVr3ZWgnBwvr395A/M9rZhAdtAyP0wxYTL8+ijKBIcGD5nCbK0ZB9C0hVHG7K6ZdogF2/BluD9PvkvqW+Xvb3y7tlO6fhkVMcMWkPraBN5aB8dowqohqi6B49ohf06jw4z86b8/41OuaMqvoB5yPTwGsqAo=</latexit>rD
+|ˆuSHm
+l (k)|2
+E
+t
+Y2
+2(k)
+ÿ"(k)
+u(x)
+<latexit sha1_base64="U5NgBVzIfpRXf+zdbcOGRje1VE=">AB8nicbVDLSgMxFM3UV62vqks3wSK4KjPia1kUxGUF+4DpUDJpg3NJENyRyhDP8ONC0Xc+jXu/Bsz7Sy09UDgcM695NwTJoIbcN1vp7Syura+Ud6sbG3v7O5V9w/aRqWashZVQuluSAwTXLIW
+cBCsm2hG4lCwTji+zf3OE9OGK/kIk4QFMRlKHnFKwEp+LyYwokRkd9N+tebW3RnwMvEKUkMFmv3qV2+gaBozCVQY3zPTSDIiAZOBZtWeqlhCaFjMmS+pZLEzATZLPIUn1hlgCOl7ZOAZ+rvjYzExkzi0E7mEc2il4v/eX4K0XWQcZmkwCSdfxSlAoPC+f14wDWjICaW
+EKq5zYrpiGhCwbZUsSV4iycvk/Z3busXzyc1xo3R1ldISO0Sny0BVqoHvURC1EkULP6BW9OeC8O/Ox3y05BQ7h+gPnM8feyeRZg=</latexit>F
+*k
+ý(k) = const.
+<latexit sha1_base64="ZBcK36lJW/SyQBOx7cv/litXbGY=">ACIXicbVDLSgMxFM3UV62vUZdugkVoF5aZ4qPLoiAuK9iH9EUmzbShmcmQZMQyzK+48VfcuFCkO/FnzLSDaPVA4HDOueTe4wSMSmVZH0ZmaXldS27ntvY3NreMXf3GpKHApM65oyLloMkYdQn
+dUVI61AEOQ5jDSd8WXiN+JkJT7t2oSkK6Hhj51KUZKS32zEhY6HlIjx40e4iLs4AFXcKZgxKruBcd2zEs3PXLvfJ3chwXi30zb5WsGeBfYqckD1LU+ua0M+A49IivMENStm0rUN0ICUxI3GuE0oSIDxGQ9LW1Ecekd1odmEMj7QygC4X+vkKztSfExHypJx4jk4m
+O8pFLxH/89qhcivdiPpBqIiP5x+5IYOKw6QuOKCYMUmiAsqN4V4hESCtdak6XYC+e/Jc0yiX7rHR6c5KvXqR1ZMEBOAQFYINzUAXoAbqAINH8AxewZvxZLwY78Z0Hs0Y6cw+AXj8wv6AKLE</latexit>
+u(x) · F−1(Y 2
+2 (k))
+<latexit sha1_base64="U5NgBVzIfpRXf+zdbcOGRje1VE=">AB8nicbVDLSgMxFM3UV62vqks3wSK4KjPia1kUxGUF+4DpUDJpg3NJENyRyhDP8ONC0Xc+jXu/Bsz7Sy09UDgcM695NwTJoIbcN1vp7Syura+Ud6sbG3v7O5V9w/aRqWashZVQuluSAwTXLIW
+cBCsm2hG4lCwTji+zf3OE9OGK/kIk4QFMRlKHnFKwEp+LyYwokRkd9N+tebW3RnwMvEKUkMFmv3qV2+gaBozCVQY3zPTSDIiAZOBZtWeqlhCaFjMmS+pZLEzATZLPIUn1hlgCOl7ZOAZ+rvjYzExkzi0E7mEc2il4v/eX4K0XWQcZmkwCSdfxSlAoPC+f14wDWjICaW
+EKq5zYrpiGhCwbZUsSV4iycvk/Z3busXzyc1xo3R1ldISO0Sny0BVqoHvURC1EkULP6BW9OeC8O/Ox3y05BQ7h+gPnM8feyeRZg=</latexit>F
+<latexit sha1_base64="Vkdu6auN+WyJn5lN6KongJaRY=">ACDnicbVC7TsNAEDyHVwivACWNRQpNJGNeJURNCmDIA8pDtb5ck5OubOtuzUisvwFNPwKDQUI0VLT8TeckxSQMNJKo5ld7e54EWcKLOvbyC0tr6yu5dcLG5tb2zvF3b2WCmNJaJOEPJQdDyvK
+WUCbwIDTiQpFh6nbW90lfnteyoVC4NbGEe0J/AgYD4jGLTkFsvOEMSp27iAH0AKZKbeuryO5FWHIFh6PnJKD1yiyWrak1gLhJ7RkpohoZb/HL6IYkFDYBwrFTXtiLoJVgCI5ymBSdWNMJkhAe0q2mABVW9ZPJOapa10jf9UOoKwJyovycSLJQaC093ZieqeS8T/O6
+MfgXvYQFUQw0INFfsxNCM0sG7PJCXAx5pgIpm+1SRDLDEBnWBh2DPv7xIWsdV+6x6en1Sql3O4sijA3SIKshG56iG6qiBmoigR/SMXtGb8WS8GO/Gx7Q1Z8xm9tEfGJ8/we2dLw=</latexit>ˆuSHm
+l (k)
+naïve phase choice (coherent setting)
+Partially coherent setting with random phase sampling
+1
+0
+1
+0
+1
+0
+1
+0
+Fig. S8. The eﬀect of phase sampling and partial coherence for directional eﬀects. Here, we visualize a virtual seting where we have control over a
+very large angular support. On the lef, we show that the naïve choice of phase for the angular kernel leads to very narrow support in the spatial domain,
+causing the wavefront to lose spatial information. On the right, we show the partially coherent seting, where we sample random phases to convolve the
+angular kernel with a Gaussian. The average intensity over time in the Fourier domain demonstrates that it achieves the desired angular spectrum while
+maintaining the Gaussian shape. Colormap denotes the normalized amplitude value.
+For simplicity, we consider the unit Gaussian, and this problem
+can be formulated as ﬁnding a set of phase proﬁles {휙(k)}1,··· ,푇
+that achieve the desired splatted Gaussian amplitude proﬁle 푢and
+angular emission proﬁle 푌푚
+푙. While this is an interesting direction
+for future exploration, we observe that random phase proﬁles sam-
+pled from the uniform distribution range of [−휋, 휋] can achieve
+the desired spatial proﬁle, as the time-averaged spatial amplitude
+of Fourier spectrum of these samples would be unity. Note that
+this is the classical choice of a fully random phase that mimics a
+diﬀuser, [19] which corresponds to the zeroth-order spherical har-
+monics in our setting. Fig. S8 shows that the spatial and angular
+amplitudes of ˆ푢SH푚
+푙using this heuristic sampling, demonstrating
+that the time-averaged amplitude achieves a Gaussian in the spatial
+domain and a spherical harmonics basis in the angular domain. We
+use this strategy for Fig. 3 in the manuscript and its extended version
+in Fig. S24.
+In this toy example, we compare occlusion handling methods for
+Gaussians. For all methods, we partially sample the pupil shape of
+a circle, translating it horizontally from -0.8 mm to 0.8 mm. This
+range covers the full exit pupil in this setting, with the pupil di-
+ameter being slightly smaller than the exit pupil. In Fig. S24, the
+ﬁrst two columns show the results of the phase-matched RGBD
+method (ﬁrst column) and our method with a single illumination
+wave (second column), which concentrates energy around the center
+of the exit pupil. Consequently, when pupil moves to near the edge
+of the eye box, the energy is ﬁltered out. For RGBD and silhouette
+methods, since they require a hyperparameter (threshold) to deﬁne
+the depth map boundaries or the disk used to mask out waves from
+the rear, we test an extensive set of hyperparameters. The optimal
+hyperparameter would depend on the scene geometry. Notably, in
+all cases, the reconstruction using our method using multiple ref-
+erence illuminations (sampled from a random phase distribution
+in the Fourier domain with zero-order spherical harmonics emis-
+sion) is the closest to the target images geometrically rendered from
+diﬀerent viewpoints.
+
+
+=== PAGE 27 ===
+111:14
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Ours Gaussian WS (exact)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Fig. S9. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 28 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:15
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S10. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 29 ===
+111:16
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S11. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 30 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:17
+Back focal slice
+from hologram
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S12. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 31 ===
+111:18
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S13. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 32 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:19
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S14. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 33 ===
+111:20
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S15. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 34 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:21
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S16. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 35 ===
+111:22
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S17. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 36 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:23
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S18. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 37 ===
+111:24
+•
+Choi, Chao et al.
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Ours Gaussian WS (exact)
+2D Gaussians
+Fig. S19. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 38 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:25
+All-in-focus
+geometric rendering
+Focal stack
+zoom-in crops
+Naïve 
+Sparse point cloud
+Chen & Wilkinson [2009]
+Sparse point cloud
+Point cloud WS
+Sparse point cloud
+Naïve 
+Dense point cloud/RGBD
+Matsushima et al. [2014]
+Mesh
+Polygon WS
+Mesh
+Ours Gaussian WS (fast)
+2D Gaussians
+Ours Gaussian WS (exact)
+2D Gaussians
+Back focal slice
+from hologram
+Middle focal slice
+from hologram
+Front focal slice
+from hologram
+Fig. S20. Extended simulated qualitative baseline comparisons. Point cloud CGH methods produce dim images due to sparse 3D representations. Dense
+point clouds like RGBD improve results but still have ringing artifacts at depth discontinuities. Polygon-based CGH lacks high-frequency details due to the
+per-face color constraint. In contrast, our Gaussian Wave Splating algorithm delivers superior image quality through accurate occlusion handling and novel
+view synthesis enabled by alpha wave blending.
+
+
+=== PAGE 39 ===
+111:26
+•
+Choi, Chao et al.
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+Fig. S21. Simulated 3D focal stack of holograms of novel views. We synthesize holograms using exact Gaussian Wave Splating from diﬀerent novel
+viewpoints, and verify 3D focusing capabilities. Gaussian Wave Splating accurately reconstructs sharp details in focused regions and synthesizes natural blur
+in defocus regions at all viewpoints, demonstrating the robustness of our method.
+
+
+=== PAGE 40 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:27
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+Threshold = 0.01
+Threshold = 0.1
+Threshold = 0.3
+Threshold = 0.5
+Fig. S22. Ablation studies on visibility test disk size in point cloud CGH. We vary the binarization threshold that determines the disk size used in the
+visibility test described in Chen & Wilkinson [7]. Smaller threshold leads to larger disks, resulting in dimmer images. As the threshold increases, occlusion
+handling becomes more lenient and might lead to oversaturated colors. However, this threshold is not robust and needs to be heuristically tuned.
+
+
+=== PAGE 41 ===
+111:28
+•
+Choi, Chao et al.
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+Focal slice from 3D
+hologram
+All-in-focus geometric
+rendering
+Focal stack zoom-in
+crops
+0.1 x pixel pitch
+0.3 x pixel pitch
+0.5 x pixel pitch
+1.0 x pixel pitch
+0.2 x pixel pitch
+0.6 x pixel pitch
+1.0 x pixel pitch
+2.0 x pixel pitch
+Fig. S23. Ablation studies on Gaussian scale in point cloud CGH. We vary the Gaussian scale when treating points as isotropic Gaussians and applying
+Wave Splating on the isotropic Gaussians. We define the size of the point as a multiple of the SLM pixel pitch. Smaller scale leads to smaller points, resulting
+in dimmer images and dark holes. As the Gaussian scale increases, the points become bigger and the image is more densely populated. However, this scale
+parameter is not robust and needs to be heuristically tuned.
+
+
+=== PAGE 42 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:29
+-0.8mm
+-0.4mm
+0mm
++0.4mm
++0.8mm
+RGBD
+(smooth)
+ours
+(single 
+reference
+illum)
+RGBD
+(th=1e-3)
+RGBD
+(th=1e-2)
+RGBD
+(th=1e-1)
+silhouette
+(th=1e-3)
+silhouette
+(th=1e-2)
+silhouette
+(th=1e-1)
+Ours
+(multiple 
+reference
+illum)
+Target
+Fig. S24. Extended comparisons on occlusion handling for Gaussians. In this toy example, we compare occlusion handling methods for Gaussians. For
+all methods, we partially sample the pupil shape of a circle, translating it horizontally from -0.8 mm to 0.8 mm. This range covers the full exit pupil in our
+seting, with the pupil diameter being slightly smaller than the exit pupil. The first two columns show the results of the phase-matched RGBD method (first
+column) and our method with a single illumination wave (second column), which concentrates energy around the center of the exit pupil. Consequently, when
+pupil moves to near the edge of the eye box, the energy is filtered out. For RGBD and silhouete methods, since they require a hyperparameter (threshold) to
+define the depth map boundaries or the disk used to mask out waves from the rear, we test an extensive set of hyperparameters. The optimal hyperparameter
+would depend on the scene geometry. Notably, in all cases, the reconstruction using our method using multiple reference illuminations (sampled from a
+random phase distribution in the Fourier domain with zero-order spherical harmonics emission) is the closest to the target images geometrically rendered
+from diﬀerent viewpoints.
+
+
+=== PAGE 43 ===
+111:30
+•
+Choi, Chao et al.
+S5
+ADDITIONAL EXPERIMENTAL RESULTS
+S5.1
+Experimentally Captured Baseline Comparisons
+We capture an extensive set of results of baseline methods and our
+Gaussian Wave Splatting algorithm applied to a wide variety of 3D
+scenes from the NeRF synthetic Blender [23] and Mip-NeRF 360
+dataset [3]. Aside from point-based methods and polygon-based
+method shown in the main paper, we additionally show dense point
+cloud (RGBD) results.
+Experimentally captured baseline comparisons closely follow the
+trend of simulated experiments, as shown in Figs. S25 to S36. Point-
+based methods fail to accurately recosntruct the target content.
+Polygon-based methods cannot reconstruct sharp details due to per-
+face colors. RGBD holograms achieve decent image quality since the
+representation is generated exactly from ground truth RGB images
+and depth maps. However, ringing artifacts are present at depth
+discontinuities.
+Our Gaussian Wave Splatting method, both exact and fast, achieve
+signiﬁcant image quality improvements over existing primitives-
+based CGH baselines. GWS achieves sharp reconstruction in focused
+regions and synthesizes more natural blur in defocused regions
+and does not have pronounced ringing artifacts like RGBD, well
+matching the simulated results. Fast GWS exhibits slight contrast
+reduction compared to exact GWS, but overall image quality and
+3D refocusing eﬀects are retained and achieves 30× speedup as
+described in the main paper.
+S5.2
+Experimentally Captured 3D Focal Stacks of Novel
+Views
+Aside from the “garden” scene shown in the main paper, we addition-
+ally capture 3D focal stacks of exact GWS holograms generated from
+diﬀerent novel views of the “kitchen” scene from the Mip-NeRF 360
+dataset and “materials” scene from the Blender dataset in Fig. S37
+and S38, respectively. GWS achieves accurate 3D refocusing eﬀects
+at all novel views, demonstrating the robustness of our method
+to changing perspectives. Please refer to the supplemental videos
+for full novel view trajectory videos of optimized GWS holograms
+generated from diﬀerent views of the underlying 2DGS models, as
+well as 3D focal stacks captured at selected frames.
+
+
+=== PAGE 44 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:31
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S25. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 45 ===
+111:32
+•
+Choi, Chao et al.
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S26. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 46 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:33
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S27. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 47 ===
+111:34
+•
+Choi, Chao et al.
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S28. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 48 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:35
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S29. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 49 ===
+111:36
+•
+Choi, Chao et al.
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Fig. S30. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 50 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:37
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S31. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 51 ===
+111:38
+•
+Choi, Chao et al.
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S32. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 52 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:39
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S33. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 53 ===
+111:40
+•
+Choi, Chao et al.
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S34. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 54 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:41
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S35. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 55 ===
+111:42
+•
+Choi, Chao et al.
+Target 
+rendering
+Point-based method
+Polygon-based method
+RGBD
+Ours GWS (fast)
+Ours GWS (exact)
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured 
+rear focal slice
+Captured
+middle focal slice
+Captured
+front focal slice
+Fig. S36. Experimentally captured baseline comparisons. We experimentally capture 3D focal stacks of holograms generated using diﬀerent baseline
+CGH methods, and the results well match our simulations. Point-based methods result in overly dim images and poor reconstruction quality due to the
+sparseness of point cloud representatins. Polygon-based methods cannot reconstruct fine details. CGH from RGBD images achieve decent image quality. Our
+GWS achieve superior image quality over prior methods, reconstructing sharp details in focused regions.
+
+
+=== PAGE 56 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:43
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured rear 
+focal slice
+Captured middle 
+focal slice
+Captured front 
+focal slice
+Fig. S37. Experimentally captured focal stacks of exact GWS holograms from diﬀerent novel viewpoints. We generate exact GWS holograms from
+various novel viewpoints and capture the corresponding 3D focal stacks at each viewpoint. GWS achieves accurate 3D refocusing eﬀects at all viewpoints,
+demonstrating the robustness of our method.
+
+
+=== PAGE 57 ===
+111:44
+•
+Choi, Chao et al.
+Rear 
+focus
+Middle 
+focus
+Front 
+focus
+Captured rear 
+focal slice
+Captured middle 
+focal slice
+Captured front 
+focal slice
+Fig. S38. Experimentally captured focal stacks of exact GWS holograms from diﬀerent novel viewpoints. We generate exact GWS holograms from
+various novel viewpoints and capture the corresponding 3D focal stacks at each viewpoint. GWS achieves accurate 3D refocusing eﬀects at all viewpoints,
+demonstrating the robustness of our method.
+
+
+=== PAGE 58 ===
+Gaussian Wave Splating for Computer-Generated Holography — Supplementary Material
+•
+111:45
+S6
+POLYGON-BASED METHODS
+In this section, we discuss how our Gaussian Wave Splatting method
+generalize well and are compatible with the pioneering works in
+polygon-based CGH. Here, we assume that we would transform
+their geometric parameters following our holographics pipeline, and
+discuss how their geometric parameters can be described in terms of
+the rotation matrix Ď, scaling matrix ď, and translation ą in Gaussian
+Wave Splatting. For more background, we refer to the review papers
+and the well-curated textbook on these methods [19, 25, 35].
+SLM
+Parallel coordinate
+Tilted local
+coordinate
+Polygon Pn
+Plane wave
+yo
+y
+zo
+z
+ko
+k
+yo
+xo
+yc
+xc
+Polygon Pn
+(1,0)
+(1,1)
+(0,0)
+Fig. S39. Illustration of three coordinate systems. The lef figure is adapted
+from [19]. On the lef, we show the canonical coordinates x푐= (푥푐, 푦푐) and
+the tilted local coordinates (or object space) x표= (푥표, 푦표), which lie on the
+same plane and are defined by a 2D aﬀine transformation: x푐= Ax표. On the
+right, we show the parallel coordinate x and the tilted local coordinate, which
+are related by a rotational transformation and translation: x표= 푅x + v1.
+Unlike Gaussians whose angular spectrums are also elegantly
+Gaussians, the angular spectrums of polygons are more compli-
+cated. In classic fully analytic polygon-based CGH, the reference
+triangle is assumed to be in the canonical space with vertices at
+P푛= {[0, 0]T, [1, 0]T, [1, 1]T} (see Fig. S39). Its angular spectrum
+can be derived as in [1, 17, 35]:
+ˆī푐
+ ġ푥,ġ푦,ġ푧
+ =
+
+
+1
+2,
+if 푘푥= 푘푦= 0
+1−푒푗푘푦
+푘2푦
++
+푗
+푘푦,
+if 푘푥= 0,푘푦≠0
+푒푗푘푥−1
+푘2푥
+−푗푒푗푘푥
+푘푥
+,
+if 푘푥≠0,푘푦= 0
+1−푒푗푘푦
+푘2푦
+−
+푗
+푘푦,
+if 푘푥= −푘푦,푘푦≠0
+푒푗푘푥−1
+푘푥푘푦
++ 1−푒푗(푘푥+푘푦)
+푘푦(푘푥+푘푦) ,
+elsewhere,
+(S41)
+Here, we assume our polygons are already in the hologram space
+after appropriate transformations, with vertices atĒ = [v1, v2, v3] ∈
+R3×3. Note that the tilted local coordinates in S39 is a jargon used in
+classic polygon-based CGH methods, and is the same as the object
+space used in our holographics pipeline.
+We can also obtain the normal vector of the triangle primitive n
+from these vertices. A common practice in polygon-based methods
+is to have the ﬁrst vertex v1 be at the origin of the object space,
+where the İ-axis is parallel to the normal vector n. Thus, this is
+equivalent to having a translation ą = v1, and a rotation matrix Ď =
+Ď푥(Ă)Ď푦(č), with Ă = tan−1(n푥/n푧) and č = tan−1(n푦/
+q
+n2푧+ n2푥),
+where the subscript denotes the component of the vector or the
+axis of rotation. By applying these translation and rotation trans-
+formations, we move from hologram space to object space. There,
+we have three vertices at V표= [0, Ď(v2 −v1), Ď(v3 −v1)], whose
+third row is zero. Thus, we consider the upper 2 × 2 matrix as V0
+in the following for brevity. Then, we can map these vertices to
+the reference vertices P푛with a 2D aﬃne transform ý that satis-
+ﬁes
+1
+1
+0
+1
+
+= ýV표. This corresponds to our 2D aﬃne transform
+theorem in Eq. 8 in the manuscript. Thus, we can replace ď in our
+equation with ý =
+1
+1
+0
+1
+
+V−1
+표.
+In summary, we demonstrate how our formulation can encom-
+passes classic polygon-based methods by following their well-established
+practices. We implement these methods by simply dialing in the pa-
+rameters Ď,ď, ą as described in this section in PyTorch for polygon-
+based CGH baselines following the same implementation details
+provided in Sec. S2.7. We also open-source the code for polygon-
+based CGH along with hsplat2.
+2https://github.com/computational-imaging/hsplat
+
+
+=== PAGE 59 ===
+111:46
+•
+Choi, Chao et al.
+REFERENCES
+[1] Ahrenberg, L., Benzie, P., Magnor, M., and Watson, J. Computer generated
+holograms from three dimensional meshes using an analytic light transport model.
+Applied optics 47, 10 (2008), 1567–1574.
+[2] Askari, M., Kim, S.-B., Shin, K.-S., Ko, S.-B., Kim, S.-H., Park, D.-Y., Ju, Y.-G.,
+and Park, J.-H. Occlusion handling using angular spectrum convolution in fully
+analytical mesh based computer generated hologram. Optics Express 25, 21 (2017),
+25867–25878.
+[3] Barron, J. T., Mildenhall, B., Verbin, D., Srinivasan, P. P., and Hedman, P.
+Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields. In CVPR (2022).
+[4] Basri, R., and Jacobs, D. W. Lambertian reﬂectance and linear subspaces. IEEE
+transactions on pattern analysis and machine intelligence 25, 2 (2003), 218–233.
+[5] Blinn, J. Jim Blinn’s corner: a trip down the graphics pipeline. Morgan Kaufmann,
+1996.
+[6] Bracewell, R. N., Chang, K.-Y., Jha, A. K., and Wang, Y.-H. Aﬃne theorem for
+two-dimensional fourier transform. Electronics Letters 29, 3 (1993), 304–304.
+[7] Chen, R. H.-Y., and Wilkinson, T. D. Computer generated hologram with
+geometric occlusion using gpu-accelerated depth buﬀer rasterization for three-
+dimensional display. Applied optics 48, 21 (2009), 4246–4255.
+[8] Choi, S., Gopakumar, M., Peng, Y., Kim, J., O’Toole, M., and Wetzstein, G. Time-
+multiplexed neural holography: a ﬂexible framework for holographic near-eye
+displays with fast heavily-quantized spatial light modulators. In ACM SIGGRAPH
+2022 Conference Proceedings (2022), pp. 1–9.
+[9] Choi, S., Gopakumar, M., Peng, Y., Kim, J., and Wetzstein, G. Neural 3d
+holography: Learning accurate wave propagation models for 3d holographic
+virtual and augmented reality displays. ACM Transactions on Graphics (TOG) 40,
+6 (2021), 1–12.
+[10] Foley, J. D. Computer graphics: principles and practice, vol. 12110. Addison-Wesley
+Professional, 1996.
+[11] Fridovich-Keil, S., Yu, A., Tancik, M., Chen, Q., Recht, B., and Kanazawa, A.
+Plenoxels: Radiance Fields without Neural Networks. In CVPR (2022).
+[12] Hamann, S., Shi, L., Solgaard, O., and Wetzstein, G. Time-multiplexed light
+ﬁeld synthesis via factored wigner distribution function. Optics letters 43, 3 (2018),
+599–602.
+[13] Hsueh, C.-K., and Sawchuk, A. A. Computer-generated double-phase holograms.
+Applied optics 17, 24 (1978), 3874–3883.
+[14] Kerbl, B., Kopanas, G., Leimkühler, T., and Drettakis, G. 3D Gaussian Splat-
+ting for Real-Time Radiance Field Rendering. ACM TOG 42, 4 (July 2023).
+[15] Kheradmand, S., Rebain, D., Sharma, G., Sun, W., Tseng, Y.-C., Isack, H., Kar,
+A., Tagliasacchi, A., and Yi, K. M. 3d gaussian splatting as markov chain monte
+carlo. In NeurIPS (2024).
+[16] Kim, D., Nam, S.-W., Choi, S., Seo, J.-M., Wetzstein, G., and Jeong, Y. Holo-
+graphic parallax improves 3d perceptual realism. ACM Transactions on Graphics
+(TOG) 43, 4 (2024), 1–13.
+[17] Kim, H., Hahn, J., and Lee, B. Mathematical modeling of triangle-mesh-modeled
+three-dimensional surface objects for digital holography. Applied optics 47, 19
+(2008), D117–D127.
+[18] Maimone, A., Georgiou, A., and Kollin, J. S. Holographic near-eye displays for
+virtual and augmented reality. ACM Transactions on Graphics (Tog) 36, 4 (2017),
+1–16.
+[19] Matsushima, K.
+Introduction to Computer Holography: Creating Computer-
+Generated Holograms as the Ultimate 3D Image. Springer Nature, 2020.
+[20] Matsushima, K., and Nakahara, S. Extremely high-deﬁnition full-parallax
+computer-generated hologram created by the polygon-based method. Applied
+optics 48, 34 (2009), H54–H63.
+[21] Matsushima, K., Nakamura, M., and Nakahara, S. Silhouette method for
+hidden surface removal in computer holography and its acceleration using the
+switch-back technique. Optics express 22, 20 (2014), 24450–24465.
+[22] Matsushima, K., Schimmel, H., and Wyrowski, F. Fast calculation method for
+optical diﬀraction on tilted planes by use of the angular spectrum of plane waves.
+JOSA A 20, 9 (2003), 1755–1762.
+[23] Mildenhall, B., Srinivasan, P. P., Tancik, M., Barron, J. T., Ramamoorthi,
+R., and Ng, R. NeRF: Representing Scenes as Neural Radiance Fields for View
+Synthesis. In ECCV (2020).
+[24] Padmanaban, N., Peng, Y., and Wetzstein, G. Holographic near-eye displays
+based on overlap-add stereograms. ACM Transactions on Graphics (TOG) 38, 6
+(2019), 1–13.
+[25] Park, J.-H.
+Recent progress in computer-generated holography for three-
+dimensional scenes. Journal of Information Display 18, 1 (2017), 1–12.
+[26] Park, J.-H., Yeom, H.-J., Kim, H.-J., Zhang, H., Li, B., Ji, Y.-M., and Kim, S.-H.
+Removal of line artifacts on mesh boundary in computer generated hologram by
+mesh phase matching. Optics Express 23, 6 (2015), 8006–8013.
+[27] Reichelt, S., Häussler, R., Fütterer, G., Leister, N., Kato, H., Usukura, N.,
+and Kanbayashi, Y. Full-range, complex spatial light modulator for real-time
+holography. Optics letters 37, 11 (2012), 1955–1957.
+[28] Shi, L., Huang, F.-C., Lopes, W., Matusik, W., and Luebke, D. Near-eye light
+ﬁeld holographic rendering with spherical waves for wide ﬁeld of view interactive
+3d computer graphics. ACM Transactions on Graphics (TOG) 36, 6 (2017), 1–17.
+[29] Shi, L., Li, B., Kim, C., Kellnhofer, P., and Matusik, W. Towards real-time
+photorealistic 3d holography with deep neural networks. Nature 591, 7849 (2021),
+234–239.
+[30] Shi, L., Li, B., and Matusik, W. End-to-end learning of 3d phase-only holograms
+for holographic display. Light: Science & Applications 11, 1 (2022), 247.
+[31] Shimobaba, T., Masuda, N., and Ito, T. Simple and fast calculation algorithm
+for computer-generated hologram with wavefront recording plane. Optics letters
+34, 20 (2009), 3133–3135.
+[32] Tancik, M., Weber, E., Ng, E., Li, R., Yi, B., Wang, T., Kristoffersen, A., Austin,
+J., Salahi, K., Ahuja, A., et al. Nerfstudio: A modular framework for neural
+radiance ﬁeld development. In ACM SIGGRAPH 2023 Conference Proceedings
+(2023), pp. 1–12.
+[33] Ye, V., Li, R., Kerr, J., Turkulainen, M., Yi, B., Pan, Z., Seiskari, O., Ye, J., Hu,
+J., Tancik, M., and Kanazawa, A. gsplat: An open-source library for Gaussian
+splatting. arXiv preprint arXiv:2409.06765 (2024).
+[34] Yeom, H.-J., and Park, J.-H. Calculation of reﬂectance distribution using angular
+spectrum convolution in mesh-based computer generated hologram. Optics
+Express 24, 17 (2016), 19801–19813.
+[35] Zhang, Y., Fan, H., Wang, F., Gu, X., Qian, X., and Poon, T.-C. Polygon-based
+computer-generated holography: a review of fundamentals and recent progress.
+Applied Optics 61, 5 (2022), B363–B374.
+[36] Zhang, Y.-P., Wang, F., Poon, T.-C., Fan, S., and Xu, W. Fast generation of full
+analytical polygon-based computer-generated holograms. Optics express 26, 15
+(2018), 19206–19224.
+[37] Zhang, Z. Analysis and synthesis of three-dimensional illumination using partial
+coherence. Stanford University, 2011.
+[38] Zwicker, M., Pfister, H., Van Baar, J., and Gross, M. Ewa volume splatting.
+In Proceedings Visualization, 2001. VIS’01. (2001), IEEE, pp. 29–538.

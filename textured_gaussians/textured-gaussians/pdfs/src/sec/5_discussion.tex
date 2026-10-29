@@ -1,0 +1,11 @@
+\section{Discussions}
+
+
+\noindent \textbf{Limitations.} 
+The use of 2D diffuse texture maps in our model assumes that all textures lie on a local surface and does not model spatially varying specular color. Thus, extending our texture representation to represent local 3D volume textures or even 5D radiance fields is crucial. Using factorized representations such as TensoRF \cite{Chen2022ECCVtensorf} or triplane \cite{Chan2021eg3d} to represent these high-dimensional textures could also be an interesting research problem. Finally, extending Textured Gaussians to support dynamic scene reconstruction \cite{yang2023deformable3dgs, shih2024modeling} through time-varying texture maps could be a natural next-step.
+
+\noindent \textbf{Conclusions.} 
+In this paper, we augment 3DGS with texture maps to allow individual Gaussians to model spatially varying colors and opacity. As such, each Gaussian can represent a much richer set of appearances and shapes. This greatly improves the expressivity of individual Gaussians, leading to better novel-view synthesis quality. Our method achieves better quality than 3DGS when using the same number of Gaussians, and achieves better or comparable quality when using the same model size. 
+
+\section*{Acknowledgment}
+We thank artist \href{https://www.kijalucas.com/}{Kija Lucas} for allowing us to use her art installation at the Palo Alto Art Center as one of our custom captured scenes (the \textit{flower gallery} scene). Brian Chao is supported by the Stanford Graduate Fellowship and the NSF GRFP. 

@@ -1,0 +1,479 @@
+=== page 1 ===
+SELF-SUPERVISED DEEP LEARNING FOR FISHEYE IMAGE RECTIFICATION
+Brian ChaoĽ1 
+Pin-Lun HsuĽ1 
+Hung-Yi Lee1 
+Yu-Chiang Frank Wang1,2
+1 Department of Electrical Engineering, National Taiwan University, Taipei, Taiwan
+2 ASUS Intelligent Cloud Services, Taipei, Taiwan
+ABSTRACT
+To rectify ﬁsheye distortion from a single image, we advance
+self-supervised learning strategies and propose a unique
+deep learning model of Fisheye GAN (FE-GAN). Our FE-
+GAN learns pixel-level distortion ﬂow from sets of ﬁsheye
+distorted images and distortion-free ones (but not requir-
+ing such correspondences), with unique cross-rotation and
+intra-warping consistency introduced. With such novel self-
+supervised learning techniques, our FEGAN is able to recover
+the distortion-free image directly from the single ﬁsheye im-
+age input.
+Our experiments quantitatively and qualitative
+conﬁrm the effectiveness and robustness of our proposed
+model, which performs favorably against recent GAN-based
+image translation models.
+Index Terms— ﬁsheye camera, image rectiﬁcation, gen-
+erative adversarial network, deep learning, self-supervised
+learning
+1. INTRODUCTION
+Fisheye cameras are widely used in a variety of computer
+vision tasks. With a large ﬁeld of view (FOV), the images
+captured by ﬁsheye cameras contain more content informa-
+tion, favorable for users with particular viewing preferences.
+Unfortunately, images taken by ﬁsheye cameras often suffer
+from large geometric distortions, especially around the outer
+regions of the image. Such undesirable properties might de-
+grade the performance in recognition and segmentation, since
+the pin-hole camera model assumption cannot be held. There-
+fore, it is desirable to be able to rectify such artifacts, so that
+highly structured physical properties of the image content can
+be properly observed and processed.
+Early works on ﬁsheye image rectiﬁcation often require
+intrinsic and extrinsic camera parameters for calibration,
+while such parameters can be estimated from multi-view
+images [1, 2]. However, it might not be always applicable
+to collect multi-view images for a scene of interest. Thus,
+how to address such single-image rectiﬁcation tasks becomes
+a more challenging task.
+Fitzgibbon [3] proposed a divi-
+sion model to approximate ﬁsheye distortion in images with
+fewer parameters.
+To estimate the distortion parameters,
+Bukhari et al. [4] detected curved-arcs, while Aleman-Flores
+et al. [5] utilized an improved Hough Transform to achieve
+so. Many works have followed this “plumb-line” assump-
+tion to estimate distortion parameters from distorted straight
+lines [4, 6, 7]. Nevertheless, the above methods are based on
+the pre-determined hand-crafted low-level features (e.g., edge
+detection, Hough Transform, etc.), which might have limited
+abilities in describing image content.
+With the recent advances of deep learning, alternative ap-
+proaches to image rectiﬁcation based on deep convolutional
+neural networks (CNNs) have shown promising results. Yin
+et al. [8] predicted distortion parameters, guided by seman-
+tic segmentation maps to rectify the ﬁsheye images. Xue et
+al. [9] leveraged CNNs for line segment annotations, and fo-
+cused on transforming curved arcs into straight lines. Li et
+al. [10] regressed the pixel-wise ﬂow between ﬁsheye and
+distortion-free images to re-sample the distorted pixels. How-
+ever, most existing learning-based methods for image rectiﬁ-
+cation require supervision (i.e., ground truth distortion-free
+images, distortion parameters, line segments, segmentation
+maps, ground truth ﬂow, or paired image data) [8, 9, 10].
+The above assumptions and requirements might not be prac-
+tical when training deep learning models for real-world ap-
+plications. Furthermore, all of these works assume that there
+is only one ﬁsheye distortion model, and thus choose to re-
+cover its parameters. In real-life scenarios, however, we may
+have no prior knowledge about the distorted ﬁsheye images.
+Assuming the use of a single camera model for image rectiﬁ-
+cation might not be sufﬁcient.
+To overcome the above problems, we propose an end-
+to-end deep learning framework based on Generative Adver-
+sarial Networks (GANs) [11], Fisheye GAN (FE-GAN). Our
+FE-GAN does not require ground truth camera parameters or
+corresponding distortion-free image during training. By ad-
+vancing self-supervised learning (SSL) strategy and ideas of
+optical ﬂow [12], our model implicitly learns intrinsic camera
+parameters for single-image ﬁsheye rectiﬁcation.
+The contributions of our work are highlighted as follows:
+• We are among the ﬁrst to propose self-supervised deep
+learning models for ﬁsheye image rectiﬁcation.
+• By utilizing GAN-based models, our proposed FE-
+GAN advances self-supervised learning (SSL) strate-
+2248
+978-1-5090-6631-5/20/$31.00 ©2020 IEEE
+ICASSP 2020
+
+
+=== page 2 ===
+Fig. 1. Network architecture of our proposed Fisheye GAN (FE-GAN), which consists of two major components: a generator
+G = (U, W) that rectiﬁes the input distorted ﬁsheye image x, and a discriminator D = (Dadv, Dcls). Note that the module U
+in G predicts the distortion ﬂow f = U(x), and W rectiﬁes the distorted image based on f. In order to realize self-supervised
+learning, cross-rotation and intra-image warping consistency are uniquely observed as detailed in Sect. 2.2.
+gies to observe both image intrinsics and ﬁsheye cam-
+era properties for automated rectiﬁcation.
+• Learning of our FE-GAN does not require ground truth
+camera parameters nor distorted-ground truth image
+pairs during training.
+2. PROPOSED METHOD
+2.1. Problem Deﬁnition and Notations
+To perform single-image rectiﬁcation for ﬁsheye cameras,
+we aim at learning a mapping function between the dis-
+torted image domain X and the recovered distortion-free
+image domain Y . During training, unpaired training images
+{xi}N
+i=1 ⊂X and {yi}N
+i=1 ⊂Y are given. We denote the data
+distributions as x∼data(x) and y∼data(y).
+Our proposed deep self-supervised learning (SSL) frame-
+work of Fisheye GAN (FE-GAN) is illustrated in Fig. 1. Note
+that an intermediate output is the distortion ﬂow fi∈F of an
+image xi, which is an H∗W ∗2 feature map (H and W denote
+the height and width of the input image, respectively). This
+ﬂow map indicates pixel-wise image coordinate mapping be-
+tween xi and the predicted distortion-free image exi. We now
+detail our network design in the following subsections.
+2.2. Fisheye GAN (FE-GAN)
+Overall Architecture
+As shown in Figure 1, our proposed deep learning framework
+for ﬁsheye image rectiﬁcation is based on Generative Adver-
+sarial Networks (GANs). Our generator G : X→Y aims at
+recovering the distortion-free images Y from images X cap-
+tured by ﬁsheye cameras. To be more speciﬁc, the genera-
+tor part of our network consists of a ﬂow prediction module
+U : X→F and a warping module W : (X, F)→Y . We note
+that, the ﬂow prediction module U ﬁrst takes an input dis-
+torted image xi∈MH∗W ∗3 and outputs a ﬂow map U(xi) =
+fi∈MH∗W ∗2. As for the warping module W, it is applied to
+recover the rectiﬁed image using the predicted ﬂow, and thus
+the distortion-free predicted output is exi = W(xi, fi).
+On the other hand, the discriminator D in our pro-
+posed framework consists of two unique modules, i.e., D =
+(Dadv, Dcls). Dadv aims to distinguish between {G(x) = exi}
+and {y}, while Dcls identiﬁes the output images as distorted
+ones or those with distortion free. Note that Dcls is trained
+in an adversarial fashion, which views distortion-free images
+as real and the generated outputs as distorted ones. The ob-
+jectives of the above adversarial and classiﬁcation-oriented
+discriminators are described below:
+Ladv(G, D) = Ey∼data(y)[log Dadv(y)]
++ Ex∼data(x)[log (1 −Dadv(G(x)))],
+(1)
+Lcls(G, D) = Ey∼data(y)[log Dcls(y)]
++ Ex∼data(x)[log (1 −Dcls(x))]
++ Ex∼data(x)[log (1 −Dcls(G(x)))].
+(2)
+Cross-Rotation Consistency for SSL
+Since SSL does not require any labeled data or those with
+particular correspondence pairs (e.g., distorted image and
+its distortion-free version) during training, we now intro-
+duce two unique properties, cross-rotation and intra-image
+warping consistency, which allow us to realize deep SSL for
+single-image ﬁsheye rectiﬁcation.
+Inspired by Geometric Consistent Generative Adver-
+sarial Networks (GcGAN) [13], we additionally perform
+2249
+
+
+=== page 3 ===
+Table 1. Performance comparisons in PSNR, SSIM, and RMSE on image datasets from MCindoor, Wireframe, and LSUN
+Churches. Note that the numbers in bold indicate the best results.
+Method
+MCindoor
+Wireframe
+LSUN Churches
+PSNR↑
+SSIM↑
+RMSE↓
+PSNR↑
+SSIM↑
+RMSE↓
+PSNR↑
+SSIM↑
+RMSE↓
+CycleGAN
+11.404
+0.335
+71.902
+11.505
+0.257
+68.549
+10.982
+0.193
+72.683
+UNIT
+12.959
+0.44
+61.387
+8.965
+0.215
+93.236
+10.336
+0.235
+79.812
+FE-GAN (ours)
+15.215
+0.498
+45.672
+12.846
+0.352
+59.887
+12.781
+0.377
+59.492
+data augmentation by rotating the images by 90, 180, and
+270 degrees. We denote such transformation as Rθ, where
+θ∈{90, 180, 270}, and thus enforce cross-rotation consis-
+tency by rectifying the original distorted input and its rotated
+version:
+Lgeo c(G) = Ex∼data(x)[∥Rθ(G(x)) −G(Rθ(x))∥1]
++ Ex∼data(x)[∥G(x) −R−θ(G(Rθ(x)))∥1]. (3)
+Since the ﬁsheye distortion ﬂow is radial-symmetric, it is ex-
+pected to be invariant to the rotated versions of the input im-
+age, we further calculate the following loss when observing
+cross-rotation consistency:
+Lflow c(G) = Ex∼data(x)[∥U(x) −U(Rθ(x))∥1].
+(4)
+Intra-Image Warping Consistency for SSL
+The above cross-rotation consistency utilizes data-augmentation
+like techniques for recovering image or distortion ﬂow out-
+puts of interest, without observing the resulting ground truth
+information. We now advance the intrinsic properties of ﬁsh-
+eye cameras and their images, and enforce another type of
+consistency for the purpose of self-supervised learning.
+With the common assumption that the optical axis goes
+through the image center, the generated distortion ﬂow fi of
+an single image xi has the following properties:
+• Radial-symmetric: The distortion ﬂow for each pixel
+either points outwards or inwards with respect to the
+image center, while the ﬂow magnitudes for equidistant
+pixels across the image center remain the same.
+• Smoothness: Differences in ﬂow magnitudes along hor-
+izontal and vertical directions for adjacent pixels would
+be small.
+With the above observations, we have two objectives imposed
+on f = U(x) centered at (0, 0), while fp denotes the ﬂow of
+the pixel at image-coordinate p∈R2 in the ﬂow map f:
+Lsmooth(G) = Ex∼data(x)[
+Z
+f
+∥∇xfp∥1 + ∥∇yfp∥1],
+(5)
+Lradial(G) = Ex∼data(x)[
+Z
+f
+|
+fp·p
+∥fp∥·∥p∥|
++
+Z
+r
+V ar({∥fp∥| ∥p∥= r})].
+(6)
+The full objective L(G, D) sums up the losses in (1) to (6),
+and thus learning of our model solves the following problem:
+G = arg min
+G max
+D L(G, D).
+(7)
+3. EXPERIMENTS AND RESULTS
+3.1. Datasets
+We evaluate our method on three image datasets constructed
+from MCindoor20000 [14], Wireframe [15], and LSUN
+Churches [16]. Following [8, 9, 10], we apply the ﬁsheye
+transform deﬁned in [17] with randomly determined param-
+eters to synthesize 1000 ﬁsh-eye images for each dataset.
+However, we do not utilize ground truth and distorted image
+pairs for training.
+3.2. Implementation Details
+Similar to [12], we utilize cross-connection architectures to
+assimilate coarse-to-ﬁne generation in our ﬂow prediction
+module U. Self-attention layers [18] are also used to incor-
+porate global image information, since ﬁsheye distortion is
+viewed as an image-level characteristic. The warping module
+W is based on the Spatial Transformer Networks (STN) [19],
+performing a fully-differentiable re-sampling operation.
+Our discriminator D = (Dadv, Dcls) simply consists
+of multiple down-sampling and strided-convolution layers.
+Sharing initial layers, Dadv outputs real or fake labels while
+Dcls outputs the class labels, i.e. distorted or distortion-free.
+3.3. Quantitative Results
+We evaluate the effectiveness of our model by comparing
+with two state-of-the-art image translation methods, Cycle-
+GAN [20] and UNIT [21]. As listed in Table 1, we compute
+PSNR, SSIM, and RMSE between the recovered outputs
+and the ground truth distortion-free images. From this table,
+we see that our method performed favorably state-of-the-art
+unpaired image translation methods across all datasets.
+3.4. Qualitative Results
+We also perform visual quality comparisons to the aforemen-
+tioned models of [20, 21] and a popular ﬁsheye rectiﬁcation
+2250
+
+
+=== page 4 ===
+Fig. 2. Example rectiﬁcation results from MCindoor, Wireframes, andLSUN Churches datasets. Note that methods of Cycle-
+GAN [20], UNIT [21], and a popular method by Aleman-Flores [5] are considered for visual comparisons.
+method [5] in Fig. 2. From this ﬁgure, we see that our method
+was able to generate visually satisfactory and realistic rectiﬁ-
+cation outputs than the above methods did.
+We note that, in contrast with current translation meth-
+ods that focuses on translating image style such as colors and
+texture, our model is able to observe and incorporate geo-
+metric information via the proposed deep learning modules,
+while content and color information of the input image can
+be properly preserved. Moreover, as depicted in Fig. 2, our
+model performed favorably against traditional rectiﬁcation al-
+gorithms by a large margin. This is due to the fact that tradi-
+tional methods generally assume and use a single distortion
+model for rectiﬁcation [3, 5, 4], and thus only regress/predict
+a ﬁxed number of model parameters.
+3.5. Ablation Studies
+Finally, we conduct ablation studies to verify the design
+of our model. As shown in Table 2, we take images from
+MCindoor20000 [14] and compare different versions of our
+model.
+More precisely, we consider our model excluding
+self-attention layer, cross-rotation/intra-image warping con-
+sistency, and list the results in Table 2. From this table, we
+see that the full version of our model achieved the best re-
+sults, which supports the design of our architecture.
+It is
+worth repeating that, we do not require supervision in image
+correspondences (i.e., distorted images and their ground truth
+versions) during training, and thus is a fully self-supervised
+learning approach for ﬁsheye image rectiﬁcation.
+Table 2. Ablation studies and performance comparisons of
+our model using images from MCindoor [14]. Note that the
+numbers in bold denote the best performances in terms of
+each metric.
+Method
+PSNR
+SSIM
+RMSE
+Ours* (w/o self-attention layer)
+12.388
+0.361
+62.184
+Ours* (w/o cross-rotation consistency)
+11.021
+0.324
+72.889
+Ours* (w/o intra-image warping)
+12.38
+0.303
+62.319
+Ours (full version)
+15.215
+0.498
+45.672
+4. CONCLUSION
+We presented a unique and novel self-supervised learning
+model based on GAN, Fisheye GAN (FE-GAN), for rectify-
+ing ﬁsh-eye distortion from a single image. The novelty of
+our method lies in the unique design of geometric constraints
+observed from the input distorted images and the predicted
+distortion ﬂow (with the resulting output distortion-free im-
+ages). Using only unpaired images without any ground truth
+camera parameter supervision or requiring image pairs during
+training, our experiments conﬁrmed that our model quantita-
+tively outperformed state-of-the-arts image-translation based
+deep models. More importantly, our FE-GAN was able to
+produce satisfactory rectiﬁed distortion-free images than the
+aforementioned methods did.
+Therefore, the effectiveness
+and robustness of our model can be successfully veriﬁed.
+2251
+
+
+=== page 5 ===
+5. REFERENCES
+[1] Peter F. Sturm and Srikumar Ramalingam, “A generic
+concept for camera calibration,” in European Confer-
+ence on Computer Vision (ECCV), 2004.
+[2] Richard I. Hartley,
+“Self-calibration from multiple
+views with a rotating camera,” in European Conference
+on Computer Vision (ECCV), 1994.
+[3] A. W. Fitzgibbon, “Simultaneous linear estimation of
+multiple view geometry and lens distortion,” in IEEE
+Conference on Computer Vision and Pattern Recogni-
+tion (CVPR), 2001.
+[4] R. Melo, M. Antunes, J. P. Barreto, G. Falc˜ao, and
+N. Gonc¸alves, “Unsupervised intrinsic calibration from
+a single frame using a ”plumb-line” approach,” in IEEE
+International Conference on Computer Vision (ICCV),
+2013.
+[5] Miguel Alem´an-Flores, Luis Alvarez, Luis Deniz, and
+D. Santana-Cedr´es, “Automatic lens distortion correc-
+tion using one-parameter division models,” Image Pro-
+cessing On Line, 2014.
+[6] Faisal ”Bukhari and Matthew N.” Dailey, “Automatic
+radial distortion estimation from a single image,” Jour-
+nal of Mathematical Imaging and Vision, 2013.
+[7] Edward Rosten and Rohan Loveland, “Camera distor-
+tion self-calibration using the plumb-line constraint and
+minimal Hough entropy,” Machine Vision and Applica-
+tions, 2011.
+[8] Xiaoqing Yin, Xinchao Wang, Jun Yu, Maojun Zhang,
+Pascal Fua, and Dacheng Tao,
+“FishEyeRecNet: A
+Multi-Context Collaborative Deep Network for Fisheye
+Image Rectiﬁcation,” in European Conference on Com-
+puter Vision (ECCV), 2018.
+[9] Zhucun Xue, Nan Xue, Gui-Song Xia, and Weiming
+Shen, “Learning to calibrate straight lines for ﬁsheye
+image rectiﬁcation,” in IEEE Conference on Computer
+Vision and Pattern Recognition (CVPR), 2019.
+[10] Xiaoyu Li, Bo Zhang, Pedro V. Sander, and Jing
+Liao, “Blind Geometric Distortion Correction on Im-
+ages Through Deep Learning,”
+in IEEE Conference
+on Computer Vision and Pattern Recognition (CVPR),
+2019.
+[11] Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza,
+Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron
+Courville, and Yoshua Bengio, “Generative Adversarial
+Networks,” in Conference on Neural Information Pro-
+cessing Systems (NIPS), 2014.
+[12] Philipp Fischer, Alexey Dosovitskiy, Eddy Ilg, Philip
+H¨ausser, Caner Hazırbas,, Vladimir Golkov, Patrick
+van der Smagt, Daniel Cremers, and Thomas Brox,
+“FlowNet: Learning Optical Flow with Convolutional
+Networks,” in IEEE International Conference on Com-
+puter Vision (ICCV), 2015.
+[13] Huan Fu, Mingming Gong, Chaohui Wang, Kay-
+han Batmanghelich, Kun Zhang, and Dacheng Tao,
+“Geometry-Consistent
+Generative
+Adversarial
+Net-
+works for One-Sided Unsupervised Domain Mapping,”
+in IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR), 2019.
+[14] Fereshteh S. Bashiri, Eric R. LaRose, Peggy L. Peissig,
+and Ahmad P. Tafti, “Mcindoor20000: A fully-labeled
+image dataset to advance indoor objects detection,” in
+Data in brief, 2018.
+[15] Kun Huang, Yifan Wang, Zihan Zhou, Tianjiao Ding,
+Shenghua Gao, and Yi Ma, “Learning to parse wire-
+frames in images of man-made environments,” in IEEE
+Conference on Computer Vision and Pattern Recogni-
+tion (CVPR), 2018.
+[16] Fisher Yu, Ari Seff, Yinda Zhang, Shuran Song, Thomas
+Funkhouser, and Jianxiong Xiao, “LSUN: Construction
+of a Large-scale Image Dataset using Deep Learning
+with Humans in the Loop,” arXiv e-prints, 2015.
+[17] Anup Basu and Sergio Licardie, “Alternative models for
+ﬁsh-eye lenses,” Pattern Recogn. Lett., 1995.
+[18] Han Zhang, Ian Goodfellow, Dimitris Metaxas, and Au-
+gustus Odena, “Self-Attention Generative Adversarial
+Networks,”
+in International Conference on Machine
+Learning, (ICML), 2018.
+[19] Max Jaderberg, Karen Simonyan, Andrew Zisserman,
+and Koray Kavukcuoglu,
+“Spatial Transformer Net-
+works,” in Conference on Neural Information Process-
+ing Systems (NIPS), 2015.
+[20] Jun-Yan Zhu, Taesung Park, Phillip Isola, and Alexei A.
+Efros,
+“Unpaired Image-to-Image Translation using
+Cycle-Consistent Adversarial Networks,” in IEEE Inter-
+national Conference on Computer Vision (ICCV), 2017.
+[21] Ming-Yu Liu, Thomas Breuel, and Jan Kautz,
+“Un-
+supervised Image-to-Image Translation Networks,” in
+Conference on Neural Information Processing Systems
+(NIPS), 2017.
+2252
